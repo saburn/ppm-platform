@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Gantt Chart - AI PPM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f1f5f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+        }
+
+        .gantt-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .gantt-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gantt-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .gantt-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .gantt-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .gantt-toolbar {
+            background: #f8fafc;
+            padding: 16px 30px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .view-modes {
+            display: flex;
+            gap: 8px;
+        }
+
+        .view-mode {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .view-mode.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .gantt-content {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .gantt-table {
+            width: 100%;
+            min-width: 1200px;
+        }
+
+        .gantt-timeline {
+            position: relative;
+            height: 60px;
+            background: #f8fafc;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .timeline-header {
+            display: flex;
+            position: relative;
+            height: 100%;
+        }
+
+        .timeline-month {
+            flex: 1;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--dark);
+            position: relative;
+        }
+
+        .timeline-week {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .week-cell {
+            flex: 1;
+            border-right: 1px solid #e2e8f0;
+            text-align: center;
+            padding: 4px;
+            font-size: 10px;
+            color: #64748b;
+        }
+
+        .gantt-row {
+            display: flex;
+            border-bottom: 1px solid #f1f5f9;
+            min-height: 60px;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        .gantt-row:hover {
+            background: #f8fafc;
+        }
+
+        .task-info {
+            width: 300px;
+            padding: 12px 20px;
+            border-right: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .task-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-completed { background: var(--success); }
+        .status-in-progress { background: var(--primary); }
+        .status-planned { background: var(--warning); }
+        .status-delayed { background: var(--danger); }
+
+        .task-details {
+            flex: 1;
+        }
+
+        .task-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 2px;
+            cursor: pointer;
+        }
+
+        .task-name:hover {
+            color: var(--primary);
+        }
+
+        .task-assignee {
+            font-size: 12px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .assignee-avatar {
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            color: white;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gantt-timeline-cells {
+            flex: 1;
+            position: relative;
+            height: 100%;
+        }
+
+        .timeline-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+        }
+
+        .timeline-cell {
+            flex: 1;
+            border-right: 1px solid #f1f5f9;
+            position: relative;
+        }
+
+        .task-bar {
+            position: absolute;
+            height: 32px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 6px;
+            cursor: move;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            font-size: 12px;
+            color: white;
+            font-weight: 500;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .task-bar:hover {
+            transform: translateY(-50%) scale(1.05);
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .task-bar.completed {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .task-bar.in-progress {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+
+        .task-bar.planned {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .task-bar.delayed {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .task-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 0 0 6px 6px;
+        }
+
+        .dependency-line {
+            position: absolute;
+            background: #64748b;
+            z-index: 1;
+        }
+
+        .milestone {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            transform: translateY(-50%) rotate(45deg);
+            background: var(--warning);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .milestone:hover {
+            transform: translateY(-50%) rotate(45deg) scale(1.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .critical-path .task-bar {
+            border: 2px solid #dc2626;
+            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+        }
+
+        .legend {
+            padding: 16px 30px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        /* Task Details Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="min-h-screen bg-gray-50">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <button onclick="window.history.back()" class="mr-4 text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h1 class="text-xl font-semibold text-gray-900">Interactive Gantt Chart</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-print"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Gantt Chart Container -->
+            <div class="gantt-container">
+                <!-- Header -->
+                <div class="gantt-header">
+                    <div>
+                        <h2 class="text-2xl font-bold mb-2">Website Redesign Project</h2>
+                        <p class="opacity-90">Timeline: Jan 2024 - Jun 2024</p>
+                    </div>
+                    <div class="gantt-controls">
+                        <button class="gantt-btn" onclick="zoomIn()">
+                            <i class="fas fa-search-plus"></i> Zoom In
+                        </button>
+                        <button class="gantt-btn" onclick="zoomOut()">
+                            <i class="fas fa-search-minus"></i> Zoom Out
+                        </button>
+                        <button class="gantt-btn" onclick="toggleCriticalPath()">
+                            <i class="fas fa-route"></i> Critical Path
+                        </button>
+                        <button class="gantt-btn" onclick="addTask()">
+                            <i class="fas fa-plus"></i> Add Task
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="gantt-toolbar">
+                    <div class="view-modes">
+                        <button class="view-mode active" onclick="setViewMode('day', this)">Day</button>
+                        <button class="view-mode" onclick="setViewMode('week', this)">Week</button>
+                        <button class="view-mode" onclick="setViewMode('month', this)">Month</button>
+                        <button class="view-mode" onclick="setViewMode('quarter', this)">Quarter</button>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-600">Today: <span class="font-semibold">Mar 15, 2024</span></span>
+                        <button class="text-sm text-indigo-600 hover:text-indigo-800" onclick="scrollToToday()">
+                            Scroll to Today
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Gantt Content -->
+                <div class="gantt-content" id="ganttContent">
+                    <!-- Timeline Header -->
+                    <div class="gantt-timeline">
+                        <div class="timeline-header" id="timelineHeader"></div>
+                    </div>
+
+                    <!-- Gantt Rows -->
+                    <div id="ganttRows"></div>
+                </div>
+
+                <!-- Legend -->
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"></div>
+                        <span>Completed</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);"></div>
+                        <span>In Progress</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);"></div>
+                        <span>Planned</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);"></div>
+                        <span>Delayed</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f59e0b; transform: rotate(45deg);"></div>
+                        <span>Milestone</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+                <div class="bg-white rounded-lg p-6 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Total Tasks</p>
+                            <p class="text-2xl font-bold text-gray-900">12</p>
+                        </div>
+                        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-tasks text-indigo-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg p-6 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Completed</p>
+                            <p class="text-2xl font-bold text-green-600">5</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check text-green-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg p-6 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">In Progress</p>
+                            <p class="text-2xl font-bold text-blue-600">4</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-spinner text-blue-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg p-6 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Delayed</p>
+                            <p class="text-2xl font-bold text-red-600">2</p>
+                        </div>
+                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Details Modal -->
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-xl font-bold text-gray-900">Task Details</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Task Name</label>
+                    <input type="text" class="form-input" id="taskName" placeholder="Enter task name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Assignee</label>
+                    <input type="text" class="form-input" id="taskAssignee" placeholder="Enter assignee">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" class="form-input" id="taskStartDate">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">End Date</label>
+                    <input type="date" class="form-input" id="taskEndDate">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Progress (%)</label>
+                    <input type="number" class="form-input" id="taskProgress" min="0" max="100" placeholder="0-100">
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button class="btn-primary" onclick="saveTask()">Save Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample task data
+        const tasks = [
+            {
+                id: 1,
+                name: "Project Kickoff",
+                assignee: "John Smith",
+                startDate: "2024-01-02",
+                endDate: "2024-01-05",
+                progress: 100,
+                status: "completed",
+                dependencies: []
+            },
+            {
+                id: 2,
+                name: "Requirements Gathering",
+                assignee: "Sarah Chen",
+                startDate: "2024-01-08",
+                endDate: "2024-01-19",
+                progress: 100,
+                status: "completed",
+                dependencies: [1]
+            },
+            {
+                id: 3,
+                name: "UI/UX Design",
+                assignee: "Mike Johnson",
+                startDate: "2024-01-15",
+                endDate: "2024-02-02",
+                progress: 100,
+                status: "completed",
+                dependencies: [2]
+            },
+            {
+                id: 4,
+                name: "Database Design",
+                assignee: "Emily Davis",
+                startDate: "2024-01-22",
+                endDate: "2024-02-09",
+                progress: 85,
+                status: "in-progress",
+                dependencies: [2]
+            },
+            {
+                id: 5,
+                name: "Frontend Development",
+                assignee: "Chris Wilson",
+                startDate: "2024-02-05",
+                endDate: "2024-03-01",
+                progress: 70,
+                status: "in-progress",
+                dependencies: [3]
+            },
+            {
+                id: 6,
+                name: "Backend Development",
+                assignee: "Alex Brown",
+                startDate: "2024-02-05",
+                endDate: "2024-03-08",
+                progress: 60,
+                status: "in-progress",
+                dependencies: [4]
+            },
+            {
+                id: 7,
+                name: "API Integration",
+                assignee: "David Lee",
+                startDate: "2024-02-26",
+                endDate: "2024-03-15",
+                progress: 40,
+                status: "in-progress",
+                dependencies: [5, 6]
+            },
+            {
+                id: 8,
+                name: "Testing Phase",
+                assignee: "Lisa Anderson",
+                startDate: "2024-03-11",
+                endDate: "2024-03-29",
+                progress: 20,
+                status: "planned",
+                dependencies: [7]
+            },
+            {
+                id: 9,
+                name: "Bug Fixes",
+                assignee: "Tom Harris",
+                startDate: "2024-03-25",
+                endDate: "2024-04-05",
+                progress: 0,
+                status: "planned",
+                dependencies: [8]
+            },
+            {
+                id: 10,
+                name: "User Acceptance Testing",
+                assignee: "Rachel Green",
+                startDate: "2024-04-01",
+                endDate: "2024-04-12",
+                progress: 0,
+                status: "planned",
+                dependencies: [9]
+            },
+            {
+                id: 11,
+                name: "Deployment",
+                assignee: "Mark Taylor",
+                startDate: "2024-04-08",
+                endDate: "2024-04-19",
+                progress: 0,
+                status: "planned",
+                dependencies: [10]
+            },
+            {
+                id: 12,
+                name: "Project Launch",
+                assignee: "John Smith",
+                startDate: "2024-04-15",
+                endDate: "2024-04-15",
+                progress: 0,
+                status: "planned",
+                dependencies: [11],
+                isMilestone: true
+            }
+        ];
+
+        let viewMode = 'week';
+        let criticalPathEnabled = false;
+        let selectedTask = null;
+
+        // Initialize Gantt Chart
+        function initGanttChart() {
+            renderTimeline();
+            renderTasks();
+        }
+
+        // Render Timeline Header
+        function renderTimeline() {
+            const timelineHeader = document.getElementById('timelineHeader');
+            const startDate = moment('2024-01-01');
+            const endDate = moment('2024-06-30');
+            
+            let html = '';
+            
+            if (viewMode === 'month') {
+                let current = moment(startDate);
+                while (current.isBefore(endDate)) {
+                    const month = current.format('MMM YYYY');
+                    html += `<div class="timeline-month">${month}</div>`;
+                    current.add(1, 'month');
+                }
+            } else if (viewMode === 'week') {
+                let current = moment(startDate);
+                while (current.isBefore(endDate)) {
+                    const month = current.format('MMM');
+                    html += `<div class="timeline-month">
+                        ${month}
+                        <div class="timeline-week">
+                            <div class="week-cell">W1</div>
+                            <div class="week-cell">W2</div>
+                            <div class="week-cell">W3</div>
+                            <div class="week-cell">W4</div>
+                        </div>
+                    </div>`;
+                    current.add(1, 'month');
+                }
+            }
+            
+            timelineHeader.innerHTML = html;
+        }
+
+        // Render Tasks
+        function renderTasks() {
+            const ganttRows = document.getElementById('ganttRows');
+            let html = '';
+            
+            tasks.forEach(task => {
+                const taskRow = createTaskRow(task);
+                html += taskRow;
+            });
+            
+            ganttRows.innerHTML = html;
+        }
+
+        // Create Task Row
+        function createTaskRow(task) {
+            const startDate = moment('2024-01-01');
+            const taskStart = moment(task.startDate);
+            const taskEnd = moment(task.endDate);
+            
+            const totalDays = moment('2024-06-30').diff(startDate, 'days');
+            const startOffset = taskStart.diff(startDate, 'days');
+            const duration = taskEnd.diff(taskStart, 'days') + 1;
+            
+            const leftPercent = (startOffset / totalDays) * 100;
+            const widthPercent = (duration / totalDays) * 100;
+            
+            return `
+                <div class="gantt-row ${criticalPathEnabled && isOnCriticalPath(task) ? 'critical-path' : ''}" data-task-id="${task.id}">
+                    <div class="task-info">
+                        <div class="task-status status-${task.status}"></div>
+                        <div class="task-details">
+                            <div class="task-name" onclick="openTaskModal(${task.id})">${task.name}</div>
+                            <div class="task-assignee">
+                                <div class="assignee-avatar">${getInitials(task.assignee)}</div>
+                                ${task.assignee}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gantt-timeline-cells">
+                        <div class="timeline-grid">
+                            ${generateTimelineCells()}
+                        </div>
+                        ${task.isMilestone ? 
+                            `<div class="milestone" style="left: ${leftPercent}%;" title="${task.name}"></div>` :
+                            `<div class="task-bar ${task.status}" style="left: ${leftPercent}%; width: ${widthPercent}%;" 
+                                 draggable="true" 
+                                 ondragstart="handleDragStart(event, ${task.id})"
+                                 ondragend="handleDragEnd(event)"
+                                 title="${task.name} - ${task.progress}% complete">
+                                ${task.name}
+                                <div class="task-progress" style="width: ${task.progress}%"></div>
+                            </div>`
+                        }
+                    </div>
+                </div>
+            `;
+        }
+
+        // Generate Timeline Cells
+        function generateTimelineCells() {
+            let html = '';
+            const cellCount = viewMode === 'month' ? 6 : 24; // 6 months or 24 weeks
+            
+            for (let i = 0; i < cellCount; i++) {
+                html += '<div class="timeline-cell"></div>';
+            }
+            
+            return html;
+        }
+
+        // Get Initials
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase();
+        }
+
+        // Check if Task is on Critical Path
+        function isOnCriticalPath(task) {
+            // Simplified critical path calculation
+            const criticalTasks = [2, 3, 5, 7, 8, 9, 10, 11, 12];
+            return criticalTasks.includes(task.id);
+        }
+
+        // Drag and Drop Handlers
+        let draggedTask = null;
+
+        function handleDragStart(event, taskId) {
+            draggedTask = tasks.find(t => t.id === taskId);
+            event.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(event) {
+            // Calculate new position based on drop location
+            const timelineRect = event.target.parentElement.getBoundingClientRect();
+            const relativeX = event.clientX - timelineRect.left;
+            const percentX = (relativeX / timelineRect.width) * 100;
+            
+            // Update task dates (simplified)
+            if (draggedTask) {
+                const totalDays = moment('2024-06-30').diff(moment('2024-01-01'), 'days');
+                const dayOffset = Math.floor((percentX / 100) * totalDays);
+                const newStartDate = moment('2024-01-01').add(dayOffset, 'days');
+                const duration = moment(draggedTask.endDate).diff(moment(draggedTask.startDate), 'days');
+                const newEndDate = newStartDate.clone().add(duration, 'days');
+                
+                draggedTask.startDate = newStartDate.format('YYYY-MM-DD');
+                draggedTask.endDate = newEndDate.format('YYYY-MM-DD');
+                
+                renderTasks();
+            }
+        }
+
+        // View Mode Functions
+        function setViewMode(mode, element) {
+            viewMode = mode;
+            document.querySelectorAll('.view-mode').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            renderTimeline();
+            renderTasks();
+        }
+
+        // Toggle Critical Path
+        function toggleCriticalPath() {
+            criticalPathEnabled = !criticalPathEnabled;
+            renderTasks();
+        }
+
+        // Zoom Functions
+        function zoomIn() {
+            // Implement zoom in logic
+            console.log('Zoom in');
+        }
+
+        function zoomOut() {
+            // Implement zoom out logic
+            console.log('Zoom out');
+        }
+
+        // Scroll to Today
+        function scrollToToday() {
+            const today = moment();
+            const startDate = moment('2024-01-01');
+            const totalDays = moment('2024-06-30').diff(startDate, 'days');
+            const dayOffset = today.diff(startDate, 'days');
+            const scrollPercent = (dayOffset / totalDays) * 100;
+            
+            const ganttContent = document.getElementById('ganttContent');
+            ganttContent.scrollLeft = (ganttContent.scrollWidth * scrollPercent) / 100;
+        }
+
+        // Modal Functions
+        function openTaskModal(taskId) {
+            selectedTask = tasks.find(t => t.id === taskId);
+            if (selectedTask) {
+                document.getElementById('taskName').value = selectedTask.name;
+                document.getElementById('taskAssignee').value = selectedTask.assignee;
+                document.getElementById('taskStartDate').value = selectedTask.startDate;
+                document.getElementById('taskEndDate').value = selectedTask.endDate;
+                document.getElementById('taskProgress').value = selectedTask.progress;
+                document.getElementById('taskModal').classList.add('active');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('taskModal').classList.remove('active');
+            selectedTask = null;
+        }
+
+        function saveTask() {
+            if (selectedTask) {
+                selectedTask.name = document.getElementById('taskName').value;
+                selectedTask.assignee = document.getElementById('taskAssignee').value;
+                selectedTask.startDate = document.getElementById('taskStartDate').value;
+                selectedTask.endDate = document.getElementById('taskEndDate').value;
+                selectedTask.progress = parseInt(document.getElementById('taskProgress').value);
+                
+                // Update status based on progress
+                if (selectedTask.progress === 100) {
+                    selectedTask.status = 'completed';
+                } else if (selectedTask.progress > 0) {
+                    selectedTask.status = 'in-progress';
+                } else {
+                    selectedTask.status = 'planned';
+                }
+                
+                renderTasks();
+                closeModal();
+            }
+        }
+
+        function addTask() {
+            const newTask = {
+                id: tasks.length + 1,
+                name: "New Task",
+                assignee: "Unassigned",
+                startDate: moment().format('YYYY-MM-DD'),
+                endDate: moment().add(7, 'days').format('YYYY-MM-DD'),
+                progress: 0,
+                status: "planned",
+                dependencies: []
+            };
+            
+            tasks.push(newTask);
+            renderTasks();
+            openTaskModal(newTask.id);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initGanttChart();
+            
+            // Add global drag over handler
+            document.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

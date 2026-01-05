@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrations - Core Module</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .integration-card {
+            transition: all 0.3s ease;
+        }
+        .integration-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .slide-panel {
+            position: fixed;
+            right: -600px;
+            top: 0;
+            width: 600px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+        .slide-panel.active {
+            right: 0;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-available {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="gradient-bg text-white p-6 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">🔗 Integrations</h1>
+                    <p class="text-purple-100">Connect with 50+ tools and services</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="openIntegrationMarketplace()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-store mr-2"></i>Browse Marketplace
+                    </button>
+                    <button onclick="syncAll()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Sync All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Active</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-1">Connected</p>
+                <p class="text-3xl font-bold text-gray-800 mb-2">12</p>
+                <p class="text-xs text-gray-500">99.9% uptime</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-plug text-blue-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">Available</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-1">Total Available</p>
+                <p class="text-3xl font-bold text-gray-800 mb-2">50+</p>
+                <p class="text-xs text-gray-500">Pre-built integrations</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-exchange-alt text-purple-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">Live</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-1">Data Synced</p>
+                <p class="text-3xl font-bold text-gray-800 mb-2">2.4M</p>
+                <p class="text-xs text-gray-500">Records today</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">Real-time</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-1">Last Sync</p>
+                <p class="text-3xl font-bold text-gray-800 mb-2">2m</p>
+                <p class="text-xs text-gray-500">ago</p>
+            </div>
+        </div>
+
+        <!-- Connected Integrations -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-800">✅ Connected Integrations</h2>
+                <div class="flex gap-2">
+                    <input type="text" placeholder="Search integrations..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option>All Categories</option>
+                        <option>Project Management</option>
+                        <option>Communication</option>
+                        <option>Development</option>
+                        <option>Cloud Storage</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-6">
+                <!-- Jira Integration -->
+                <div class="integration-card border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-jira text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Jira</h3>
+                                <p class="text-xs text-gray-500">Project Management</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-connected">Connected</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Sync tasks, issues, and sprints bidirectionally</p>
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                        <span><i class="fas fa-sync-alt mr-1"></i>Last sync: 2m ago</span>
+                        <span><i class="fas fa-check-circle text-green-600 mr-1"></i>2,847 items</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="configureIntegration('jira')" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            Configure
+                        </button>
+                        <button onclick="disconnectIntegration('jira')" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-50">
+                            Disconnect
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Slack Integration -->
+                <div class="integration-card border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-slack text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Slack</h3>
+                                <p class="text-xs text-gray-500">Communication</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-connected">Connected</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Real-time notifications and team collaboration</p>
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                        <span><i class="fas fa-sync-alt mr-1"></i>Real-time</span>
+                        <span><i class="fas fa-check-circle text-green-600 mr-1"></i>5 channels</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="configureIntegration('slack')" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            Configure
+                        </button>
+                        <button onclick="disconnectIntegration('slack')" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-50">
+                            Disconnect
+                        </button>
+                    </div>
+                </div>
+
+                <!-- GitHub Integration -->
+                <div class="integration-card border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-github text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">GitHub</h3>
+                                <p class="text-xs text-gray-500">Development</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-connected">Connected</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Track commits, PRs, and code reviews</p>
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                        <span><i class="fas fa-sync-alt mr-1"></i>Last sync: 5m ago</span>
+                        <span><i class="fas fa-check-circle text-green-600 mr-1"></i>12 repos</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="configureIntegration('github')" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            Configure
+                        </button>
+                        <button onclick="disconnectIntegration('github')" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-50">
+                            Disconnect
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Google Drive Integration -->
+                <div class="integration-card border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-google-drive text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Google Drive</h3>
+                                <p class="text-xs text-gray-500">Cloud Storage</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-connected">Connected</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Store and share project documents</p>
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                        <span><i class="fas fa-sync-alt mr-1"></i>Last sync: 1m ago</span>
+                        <span><i class="fas fa-check-circle text-green-600 mr-1"></i>1,247 files</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="configureIntegration('gdrive')" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            Configure
+                        </button>
+                        <button onclick="disconnectIntegration('gdrive')" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-50">
+                            Disconnect
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Microsoft Teams Integration -->
+                <div class="integration-card border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-blue-700 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-microsoft text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Microsoft Teams</h3>
+                                <p class="text-xs text-gray-500">Communication</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-connected">Connected</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Collaborate with team channels and meetings</p>
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                        <span><i class="fas fa-sync-alt mr-1"></i>Real-time</span>
+                        <span><i class="fas fa-check-circle text-green-600 mr-1"></i>8 teams</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="configureIntegration('teams')" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            Configure
+                        </button>
+                        <button onclick="disconnectIntegration('teams')" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-50">
+                            Disconnect
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Salesforce Integration -->
+                <div class="integration-card border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-salesforce text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Salesforce</h3>
+                                <p class="text-xs text-gray-500">CRM</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-connected">Connected</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Sync customer data and opportunities</p>
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                        <span><i class="fas fa-sync-alt mr-1"></i>Last sync: 10m ago</span>
+                        <span><i class="fas fa-check-circle text-green-600 mr-1"></i>456 records</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="configureIntegration('salesforce')" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            Configure
+                        </button>
+                        <button onclick="disconnectIntegration('salesforce')" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-50">
+                            Disconnect
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Integrations -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">🔌 Available Integrations</h2>
+            <div class="grid grid-cols-4 gap-4">
+                <!-- Trello -->
+                <div class="integration-card border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fab fa-trello text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800 text-sm">Trello</h3>
+                            <span class="status-badge status-available">Available</span>
+                        </div>
+                    </div>
+                    <button onclick="connectIntegration('trello')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Connect
+                    </button>
+                </div>
+
+                <!-- Asana -->
+                <div class="integration-card border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800 text-sm">Asana</h3>
+                            <span class="status-badge status-available">Available</span>
+                        </div>
+                    </div>
+                    <button onclick="connectIntegration('asana')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Connect
+                    </button>
+                </div>
+
+                <!-- Dropbox -->
+                <div class="integration-card border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-blue-700 rounded-lg flex items-center justify-center">
+                            <i class="fab fa-dropbox text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800 text-sm">Dropbox</h3>
+                            <span class="status-badge status-available">Available</span>
+                        </div>
+                    </div>
+                    <button onclick="connectIntegration('dropbox')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Connect
+                    </button>
+                </div>
+
+                <!-- Zoom -->
+                <div class="integration-card border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-video text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800 text-sm">Zoom</h3>
+                            <span class="status-badge status-available">Available</span>
+                        </div>
+                    </div>
+                    <button onclick="connectIntegration('zoom')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Connect
+                    </button>
+                </div>
+
+                <!-- GitLab -->
+                <div class="integration-card border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
+                            <i class="fab fa-gitlab text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800 text-sm">GitLab</h3>
+                            <span class="status-badge status-available">Available</span>
+                        </div>
+                    </div>
+                    <button onclick="connectIntegration('gitlab')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Connect
+                    </button>
+                </div>
+
+                <!-- Bitbucket -->
+                <div class="integration-card border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fab fa-bitbucket text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800 text-sm">Bitbucket</h3>
+                            <span class="status-badge status-available">Available</span>
+                        </div>
+                    </div>
+                    <button onclick="connectIntegration('bitbucket')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Connect
+                    </button>
+                </div>
+
+                <!-- Confluence -->
+                <div class="integration-card border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-blue-700 rounded-lg flex items-center justify-center">
+                            <i class="fab fa-confluence text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800 text-sm">Confluence</h3>
+                            <span class="status-badge status-available">Available</span>
+                        </div>
+                    </div>
+                    <button onclick="connectIntegration('confluence')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Connect
+                    </button>
+                </div>
+
+                <!-- HubSpot -->
+                <div class="integration-card border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-bullseye text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800 text-sm">HubSpot</h3>
+                            <span class="status-badge status-available">Available</span>
+                        </div>
+                    </div>
+                    <button onclick="connectIntegration('hubspot')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Connect
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center">
+                <button onclick="openIntegrationMarketplace()" class="text-purple-600 font-semibold hover:text-purple-700">
+                    View All 50+ Integrations →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Slide Panel -->
+    <div id="configPanel" class="slide-panel">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Integration Settings</h2>
+                <button onclick="closeConfigPanel()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Integration Info -->
+                <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fab fa-jira text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">Jira</h3>
+                            <span class="status-badge status-connected">Connected</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">Sync tasks, issues, and sprints bidirectionally</p>
+                </div>
+
+                <!-- Sync Settings -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-3">Sync Settings</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Sync Frequency</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option>Real-time</option>
+                                <option>Every 5 minutes</option>
+                                <option>Every 15 minutes</option>
+                                <option>Every hour</option>
+                                <option>Manual only</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Sync Direction</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option>Bidirectional</option>
+                                <option>From Jira to PPM</option>
+                                <option>From PPM to Jira</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="mr-2">
+                                <span class="text-sm">Sync tasks</span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="mr-2">
+                                <span class="text-sm">Sync comments</span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="mr-2">
+                                <span class="text-sm">Sync attachments</span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-2">
+                                <span class="text-sm">Sync time tracking</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Field Mapping -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-3">Field Mapping</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <input type="text" value="Task Name" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg" readonly>
+                            <i class="fas fa-arrow-right text-gray-400"></i>
+                            <input type="text" value="Issue Summary" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg" readonly>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="text" value="Status" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg" readonly>
+                            <i class="fas fa-arrow-right text-gray-400"></i>
+                            <input type="text" value="Status" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg" readonly>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="text" value="Assignee" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg" readonly>
+                            <i class="fas fa-arrow-right text-gray-400"></i>
+                            <input type="text" value="Assignee" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Connection Status -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-3">Connection Status</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <span class="text-sm font-semibold text-gray-700">Status</span>
+                            <span class="text-sm text-green-600 font-semibold">Connected</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span class="text-sm font-semibold text-gray-700">Last Sync</span>
+                            <span class="text-sm text-gray-600">2 minutes ago</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span class="text-sm font-semibold text-gray-700">Items Synced</span>
+                            <span class="text-sm text-gray-600">2,847</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span class="text-sm font-semibold text-gray-700">Errors</span>
+                            <span class="text-sm text-gray-600">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3">
+                    <button onclick="saveConfiguration()" class="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700">
+                        Save Changes
+                    </button>
+                    <button onclick="testConnection()" class="px-6 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50">
+                        Test Connection
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Panel Management
+        function configureIntegration(name) {
+            document.getElementById('configPanel').classList.add('active');
+        }
+
+        function closeConfigPanel() {
+            document.getElementById('configPanel').classList.remove('active');
+        }
+
+        function openIntegrationMarketplace() {
+            showToast('Opening integration marketplace...');
+        }
+
+        // Integration Actions
+        function connectIntegration(name) {
+            showToast(`Connecting to ${name}...`);
+            setTimeout(() => {
+                showToast(`${name} connected successfully!`);
+            }, 1500);
+        }
+
+        function disconnectIntegration(name) {
+            if (confirm(`Are you sure you want to disconnect ${name}?`)) {
+                showToast(`${name} disconnected successfully!`);
+            }
+        }
+
+        function syncAll() {
+            showToast('Syncing all integrations...');
+            setTimeout(() => {
+                showToast('All integrations synced successfully!');
+            }, 2000);
+        }
+
+        function saveConfiguration() {
+            showToast('Configuration saved successfully!');
+            closeConfigPanel();
+        }
+
+        function testConnection() {
+            showToast('Testing connection...');
+            setTimeout(() => {
+                showToast('Connection test successful!');
+            }, 1500);
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

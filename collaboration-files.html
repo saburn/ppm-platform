@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaboration - File Sharing & Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .file-card {
+            transition: all 0.3s;
+        }
+        .file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .drop-zone {
+            border: 3px dashed #d1d5db;
+            transition: all 0.3s;
+        }
+        .drop-zone.drag-over {
+            border-color: #8b5cf6;
+            background: #f3f4f6;
+        }
+        .file-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .folder-item {
+            transition: all 0.2s;
+        }
+        .folder-item:hover {
+            background: #f3f4f6;
+            transform: translateX(5px);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold flex items-center">
+                        <i class="fas fa-folder-open mr-3"></i>
+                        Collaboration - File Sharing & Management
+                    </h1>
+                    <p class="text-purple-100 mt-2">Centralized file storage with 70% faster retrieval</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="document.getElementById('fileInput').click()" class="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-upload mr-2"></i>Upload Files
+                    </button>
+                    <button onclick="createFolder()" class="bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-folder-plus mr-2"></i>New Folder
+                    </button>
+                </div>
+            </div>
+            <input type="file" id="fileInput" multiple class="hidden" onchange="handleFileUpload(event)">
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-file text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">+24</span>
+                </div>
+                <p class="text-blue-100 text-sm font-medium">Total Files</p>
+                <p class="text-3xl font-bold mt-2">1,247</p>
+            </div>
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-hdd text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">68%</span>
+                </div>
+                <p class="text-green-100 text-sm font-medium">Storage Used</p>
+                <p class="text-3xl font-bold mt-2">34 GB</p>
+            </div>
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-users text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">+3</span>
+                </div>
+                <p class="text-purple-100 text-sm font-medium">Shared With</p>
+                <p class="text-3xl font-bold mt-2">156</p>
+            </div>
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-download text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">+12%</span>
+                </div>
+                <p class="text-orange-100 text-sm font-medium">Downloads</p>
+                <p class="text-3xl font-bold mt-2">3,842</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-6">
+            <!-- Left Sidebar - Folders -->
+            <div class="col-span-3">
+                <div class="bg-white rounded-xl shadow-lg p-4">
+                    <h3 class="font-bold text-gray-800 mb-4">Folders</h3>
+                    <div class="space-y-1">
+                        <div class="folder-item flex items-center gap-3 p-3 rounded-lg cursor-pointer bg-purple-50 border-l-4 border-purple-600">
+                            <i class="fas fa-folder text-purple-600 text-xl"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">All Files</div>
+                                <div class="text-xs text-gray-500">1,247 files</div>
+                            </div>
+                        </div>
+                        <div class="folder-item flex items-center gap-3 p-3 rounded-lg cursor-pointer text-gray-700">
+                            <i class="fas fa-folder text-blue-500 text-xl"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold">Projects</div>
+                                <div class="text-xs text-gray-500">342 files</div>
+                            </div>
+                        </div>
+                        <div class="folder-item flex items-center gap-3 p-3 rounded-lg cursor-pointer text-gray-700">
+                            <i class="fas fa-folder text-green-500 text-xl"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold">Documents</div>
+                                <div class="text-xs text-gray-500">156 files</div>
+                            </div>
+                        </div>
+                        <div class="folder-item flex items-center gap-3 p-3 rounded-lg cursor-pointer text-gray-700">
+                            <i class="fas fa-folder text-orange-500 text-xl"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold">Images</div>
+                                <div class="text-xs text-gray-500">428 files</div>
+                            </div>
+                        </div>
+                        <div class="folder-item flex items-center gap-3 p-3 rounded-lg cursor-pointer text-gray-700">
+                            <i class="fas fa-folder text-red-500 text-xl"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold">Videos</div>
+                                <div class="text-xs text-gray-500">89 files</div>
+                            </div>
+                        </div>
+                        <div class="folder-item flex items-center gap-3 p-3 rounded-lg cursor-pointer text-gray-700">
+                            <i class="fas fa-star text-yellow-500 text-xl"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold">Favorites</div>
+                                <div class="text-xs text-gray-500">45 files</div>
+                            </div>
+                        </div>
+                        <div class="folder-item flex items-center gap-3 p-3 rounded-lg cursor-pointer text-gray-700">
+                            <i class="fas fa-share-alt text-purple-500 text-xl"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold">Shared</div>
+                                <div class="text-xs text-gray-500">187 files</div>
+                            </div>
+                        </div>
+                        <div class="folder-item flex items-center gap-3 p-3 rounded-lg cursor-pointer text-gray-700">
+                            <i class="fas fa-trash text-gray-500 text-xl"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold">Trash</div>
+                                <div class="text-xs text-gray-500">12 files</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Storage Info -->
+                <div class="bg-white rounded-xl shadow-lg p-4 mt-4">
+                    <h3 class="font-bold text-gray-800 mb-4">Storage</h3>
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-gray-600">34 GB of 50 GB used</span>
+                            <span class="font-semibold text-gray-800">68%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 h-3 rounded-full" style="width: 68%"></div>
+                        </div>
+                    </div>
+                    <button class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all text-sm">
+                        <i class="fas fa-arrow-up mr-2"></i>Upgrade Storage
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-span-9">
+                <!-- Search and Filters -->
+                <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+                    <div class="flex gap-4 items-center">
+                        <div class="flex-1 relative">
+                            <input type="text" placeholder="Search files..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                        <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option>All Types</option>
+                            <option>Documents</option>
+                            <option>Images</option>
+                            <option>Videos</option>
+                            <option>PDFs</option>
+                        </select>
+                        <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option>Sort by Date</option>
+                            <option>Sort by Name</option>
+                            <option>Sort by Size</option>
+                            <option>Sort by Type</option>
+                        </select>
+                        <div class="flex gap-2">
+                            <button class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drop Zone -->
+                <div class="drop-zone bg-white rounded-xl shadow-lg p-12 mb-6 text-center" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt text-6xl text-purple-600 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Drag & Drop Files Here</h3>
+                    <p class="text-gray-600 mb-4">or click to browse from your computer</p>
+                    <button onclick="document.getElementById('fileInput').click()" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-upload mr-2"></i>Choose Files
+                    </button>
+                    <p class="text-sm text-gray-500 mt-4">Maximum file size: 100 MB</p>
+                </div>
+
+                <!-- Recent Files -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Recent Files</h3>
+                        <button class="text-purple-600 hover:text-purple-700 font-semibold">
+                            View All <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- File Card 1 -->
+                        <div class="file-card bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div class="bg-gradient-to-br from-blue-100 to-blue-200 h-40 flex items-center justify-center">
+                                <i class="fas fa-file-pdf text-6xl text-blue-600"></i>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="font-bold text-gray-800 mb-1 truncate">Project_Proposal_2024.pdf</h4>
+                                <p class="text-sm text-gray-500 mb-3">2.4 MB • Updated 2 hours ago</p>
+                                <div class="flex items-center gap-2 mb-3">
+                                    <img src="https://i.pravatar.cc/24?img=12" alt="User" class="w-6 h-6 rounded-full">
+                                    <span class="text-sm text-gray-600">Sarah Johnson</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 transition-all">
+                                        <i class="fas fa-eye mr-1"></i>View
+                                    </button>
+                                    <button class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                        <i class="fas fa-share-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- File Card 2 -->
+                        <div class="file-card bg-white rounded-xl shadow-lg overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1557821552-17105176677c?w=400&h=300&fit=crop" alt="Design" class="file-preview">
+                            <div class="p-4">
+                                <h4 class="font-bold text-gray-800 mb-1 truncate">Dashboard_Design_v3.png</h4>
+                                <p class="text-sm text-gray-500 mb-3">1.8 MB • Updated 5 hours ago</p>
+                                <div class="flex items-center gap-2 mb-3">
+                                    <img src="https://i.pravatar.cc/24?img=45" alt="User" class="w-6 h-6 rounded-full">
+                                    <span class="text-sm text-gray-600">Emily Rodriguez</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 transition-all">
+                                        <i class="fas fa-eye mr-1"></i>View
+                                    </button>
+                                    <button class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                        <i class="fas fa-share-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- File Card 3 -->
+                        <div class="file-card bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div class="bg-gradient-to-br from-green-100 to-green-200 h-40 flex items-center justify-center">
+                                <i class="fas fa-file-excel text-6xl text-green-600"></i>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="font-bold text-gray-800 mb-1 truncate">Q4_Budget_Analysis.xlsx</h4>
+                                <p class="text-sm text-gray-500 mb-3">856 KB • Updated 1 day ago</p>
+                                <div class="flex items-center gap-2 mb-3">
+                                    <img src="https://i.pravatar.cc/24?img=33" alt="User" class="w-6 h-6 rounded-full">
+                                    <span class="text-sm text-gray-600">Michael Chen</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 transition-all">
+                                        <i class="fas fa-eye mr-1"></i>View
+                                    </button>
+                                    <button class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                        <i class="fas fa-share-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- All Files List -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">All Files</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-all">
+                            <div class="bg-red-100 text-red-600 rounded-lg p-3">
+                                <i class="fas fa-file-pdf text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">Meeting_Notes_Dec_2024.pdf</div>
+                                <div class="text-sm text-gray-500">1.2 MB • Updated 3 hours ago by David Kim</div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="text-purple-600 hover:text-purple-700 p-2">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-800 p-2">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-800 p-2">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-800 p-2">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-all">
+                            <div class="bg-blue-100 text-blue-600 rounded-lg p-3">
+                                <i class="fas fa-file-word text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">Product_Requirements_Doc.docx</div>
+                                <div class="text-sm text-gray-500">3.5 MB • Updated 1 day ago by Lisa Anderson</div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="text-purple-600 hover:text-purple-700 p-2">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-800 p-2">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-800 p-2">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-800 p-2">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-all">
+                            <div class="bg-purple-100 text-purple-600 rounded-lg p-3">
+                                <i class="fas fa-file-image text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">Brand_Guidelines_2024.png</div>
+                                <div class="text-sm text-gray-500">4.2 MB • Updated 2 days ago by Rachel Green</div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="text-purple-600 hover:text-purple-700 p-2">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-800 p-2">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-800 p-2">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                                <button class="text-gray-600 hover:text-gray-800 p-2">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toast notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-check-circle text-2xl"></i>
+                    <span class="font-semibold">${message}</span>
+                </div>
+            `;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // File upload handler
+        function handleFileUpload(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                showToast(`${files.length} file(s) uploaded successfully`);
+            }
+        }
+
+        // Create folder
+        function createFolder() {
+            showToast('New folder created successfully');
+        }
+
+        // Drag and drop
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                showToast(`${files.length} file(s) uploaded successfully`);
+            }
+        });
+
+        dropZone.addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showToast('File management loaded successfully');
+        });
+    </script>
+</body>
+</html>

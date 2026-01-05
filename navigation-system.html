@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PPM Pro - Navigation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-200px);
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 50px;
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: #3b82f6;
+        }
+        
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-left-color: #3b82f6;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-250px);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        .chart-container {
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <i class="fas fa-brain mr-2 text-blue-400"></i>
+                    AI PPM Pro
+                </h2>
+                <button onclick="toggleSidebar()" class="text-white hover:text-blue-400 transition">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="MAIN-DASHBOARD-FINAL.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="project-management-hub.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-project-diagram w-5 mr-3"></i>
+                    Projects
+                </a>
+                <a href="gantt-chart-working.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-chart-gantt w-5 mr-3"></i>
+                    Gantt Charts
+                </a>
+                <a href="resource-allocation-working.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-users w-5 mr-3"></i>
+                    Resources
+                </a>
+                <a href="raid-management-working.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-shield-alt w-5 mr-3"></i>
+                    RAID Management
+                </a>
+                <a href="automated-reports-working-v2.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-chart-line w-5 mr-3"></i>
+                    Reports
+                </a>
+                <a href="team-collaboration.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-comments w-5 mr-3"></i>
+                    Team
+                </a>
+                <a href="ai-recommendations.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-robot w-5 mr-3"></i>
+                    AI Insights
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content" id="mainContent">
+        <div class="p-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">Navigation System Test</h1>
+            <p class="text-gray-600 mb-4">This page demonstrates the fixed navigation system. Use the sidebar to navigate between pages.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-2">✅ Navigation Fixed</h3>
+                    <p class="text-gray-600">Sticky sidebar navigation works across all pages</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-2">📊 Charts Fixed</h3>
+                    <p class="text-gray-600">Charts now have proper height constraints</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-2">🚫 No Popups</h3>
+                    <p class="text-gray-600">Replaced Windows-style popups with modern modals</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-2">📈 Reports Working</h3>
+                    <p class="text-gray-600">Reports now generate actual data</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-2">📱 Responsive</h3>
+                    <p class="text-gray-600">Mobile-friendly design implemented</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-2">⚡ Fast</h3>
+                    <p class="text-gray-600">Optimized performance and loading</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button onclick="toggleMobileMenu()" class="fixed top-4 left-4 z-50 bg-blue-600 text-white p-3 rounded-lg md:hidden">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Modal Template -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold" id="modalTitle">Modal Title</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="modalBody">
+                Modal content goes here
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle Sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+        
+        // Toggle Mobile Menu
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('mobile-open');
+        }
+        
+        // Modal Functions
+        function showModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = content;
+            document.getElementById('modal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+        
+        // Set active navigation item
+        function setActiveNavItem() {
+            const currentPath = window.location.pathname.split('/').pop();
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                if (item.getAttribute('href') === currentPath) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setActiveNavItem();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PPM Pro - Gantt Charts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-200px);
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 50px;
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: #3b82f6;
+        }
+        
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-left-color: #3b82f6;
+        }
+        
+        /* Beautiful Gantt Chart Styles */
+        .gantt-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .gantt-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+        }
+        
+        .gantt-timeline {
+            display: flex;
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            height: 40px;
+            align-items: center;
+        }
+        
+        .gantt-task-row {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            min-height: 50px;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+        
+        .gantt-task-row:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .gantt-task-info {
+            width: 250px;
+            padding: 12px 16px;
+            background: #ffffff;
+            border-right: 2px solid #e2e8f0;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .gantt-timeline-area {
+            flex: 1;
+            position: relative;
+            overflow-x: auto;
+            min-width: 800px;
+        }
+        
+        .gantt-task-bar {
+            position: absolute;
+            height: 32px;
+            border-radius: 6px;
+            cursor: move;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .gantt-task-bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+        }
+        
+        .gantt-task-bar.dragging {
+            opacity: 0.8;
+            transform: scale(1.05);
+            z-index: 1000;
+        }
+        
+        .task-completed {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .task-in-progress {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        
+        .task-planned {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        
+        .task-delayed {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .gantt-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+        }
+        
+        .gantt-grid-column {
+            flex: 1;
+            border-right: 1px solid #f1f5f9;
+            min-width: 60px;
+        }
+        
+        .gantt-today-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ef4444;
+            z-index: 5;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .view-toggle {
+            display: flex;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .view-toggle button {
+            padding: 8px 16px;
+            border: none;
+            background: white;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .view-toggle button.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-250px);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .gantt-task-info {
+                width: 200px;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <i class="fas fa-brain mr-2 text-blue-400"></i>
+                    AI PPM Pro
+                </h2>
+                <button onclick="toggleSidebar()" class="text-white hover:text-blue-400 transition">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="MAIN-DASHBOARD-FIXED.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="project-management-hub.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-project-diagram w-5 mr-3"></i>
+                    Projects
+                </a>
+                <a href="gantt-chart-beautiful.html" class="nav-item active text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-chart-gantt w-5 mr-3"></i>
+                    Gantt Charts
+                </a>
+                <a href="resource-allocation-fixed.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-users w-5 mr-3"></i>
+                    Resources
+                </a>
+                <a href="raid-management-beautiful.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-shield-alt w-5 mr-3"></i>
+                    RAID Management
+                </a>
+                <a href="automated-reports-fixed.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-chart-line w-5 mr-3"></i>
+                    Reports
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="p-8">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Gantt Charts</h1>
+                    <p class="text-gray-600">Interactive project timeline with drag-and-drop functionality</p>
+                </div>
+                <div class="flex gap-4">
+                    <div class="view-toggle">
+                        <button onclick="setView('gantt')" class="active" id="ganttViewBtn">
+                            <i class="fas fa-chart-gantt mr-2"></i>Gantt
+                        </button>
+                        <button onclick="setView('timeline')" id="timelineViewBtn">
+                            <i class="fas fa-stream mr-2"></i>Timeline
+                        </button>
+                        <button onclick="setView('kanban')" id="kanbanViewBtn">
+                            <i class="fas fa-columns mr-2"></i>Kanban
+                        </button>
+                    </div>
+                    <button onclick="addTask()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
+                        <i class="fas fa-plus mr-2"></i>Add Task
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="stats-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600">Total Tasks</span>
+                        <i class="fas fa-tasks text-blue-500"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-800">24</div>
+                    <div class="text-sm text-green-600">+3 this week</div>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600">Completed</span>
+                        <i class="fas fa-check-circle text-green-500"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-800">8</div>
+                    <div class="text-sm text-gray-600">33% complete</div>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600">In Progress</span>
+                        <i class="fas fa-spinner text-blue-500"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-800">12</div>
+                    <div class="text-sm text-blue-600">50% active</div>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600">Delayed</span>
+                        <i class="fas fa-exclamation-triangle text-red-500"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-800">4</div>
+                    <div class="text-sm text-red-600">Needs attention</div>
+                </div>
+            </div>
+
+            <!-- Beautiful Gantt Chart -->
+            <div class="gantt-container">
+                <div class="gantt-header">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-bold">Website Redesign Project</h2>
+                            <p class="text-blue-100 text-sm">Drag tasks to reschedule • Click to edit • Scroll to navigate</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="zoomIn()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded transition">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button onclick="zoomOut()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded transition">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button onclick="fitToScreen()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded transition">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Header -->
+                <div class="gantt-timeline">
+                    <div class="gantt-task-info font-bold">Tasks</div>
+                    <div class="gantt-timeline-area" id="timelineHeader">
+                        <!-- Timeline dates will be generated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Gantt Tasks -->
+                <div id="ganttTasks">
+                    <!-- Task rows will be generated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Task Details Panel -->
+            <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">Task Details</h3>
+                <div id="taskDetails">
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-mouse-pointer text-4xl mb-4"></i>
+                        <p>Click on a task to view and edit details</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
+                    <h4 class="font-semibold text-blue-800 mb-2">
+                        <i class="fas fa-magic mr-2"></i>Smart Suggestions
+                    </h4>
+                    <p class="text-sm text-blue-700 mb-3">AI detected 3 opportunities to optimize your timeline</p>
+                    <button onclick="showSuggestions()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+                        View Suggestions
+                    </button>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6">
+                    <h4 class="font-semibold text-green-800 mb-2">
+                        <i class="fas fa-route mr-2"></i>Critical Path
+                    </h4>
+                    <p class="text-sm text-green-700 mb-3">5 tasks on critical path requiring close monitoring</p>
+                    <button onclick="highlightCriticalPath()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition text-sm">
+                        Highlight Path
+                    </button>
+                </div>
+                
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6">
+                    <h4 class="font-semibold text-purple-800 mb-2">
+                        <i class="fas fa-download mr-2"></i>Export Options
+                    </h4>
+                    <p class="text-sm text-purple-700 mb-3">Export timeline as PDF, Excel, or image</p>
+                    <button onclick="exportGantt()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm">
+                        Export Timeline
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button onclick="toggleMobileMenu()" class="fixed top-4 left-4 z-50 bg-blue-600 text-white p-3 rounded-lg md:hidden">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold">Task Details</h3>
+                <button onclick="closeTaskModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="taskModalBody">
+                <!-- Task form will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let tasks = [
+            {
+                id: 1,
+                name: 'Research & Planning',
+                startDate: new Date('2024-01-01'),
+                endDate: new Date('2024-01-10'),
+                progress: 100,
+                status: 'completed',
+                assignee: 'John Doe',
+                priority: 'High'
+            },
+            {
+                id: 2,
+                name: 'UI/UX Design',
+                startDate: new Date('2024-01-08'),
+                endDate: new Date('2024-01-25'),
+                progress: 75,
+                status: 'in-progress',
+                assignee: 'Alice Smith',
+                priority: 'High'
+            },
+            {
+                id: 3,
+                name: 'Frontend Development',
+                startDate: new Date('2024-01-20'),
+                endDate: new Date('2024-02-20'),
+                progress: 45,
+                status: 'in-progress',
+                assignee: 'Bob Johnson',
+                priority: 'Medium'
+            },
+            {
+                id: 4,
+                name: 'Backend Development',
+                startDate: new Date('2024-01-22'),
+                endDate: new Date('2024-02-25'),
+                progress: 30,
+                status: 'in-progress',
+                assignee: 'Carol White',
+                priority: 'Medium'
+            },
+            {
+                id: 5,
+                name: 'Testing & QA',
+                startDate: new Date('2024-02-15'),
+                endDate: new Date('2024-03-05'),
+                progress: 0,
+                status: 'planned',
+                assignee: 'David Brown',
+                priority: 'Low'
+            },
+            {
+                id: 6,
+                name: 'Deployment',
+                startDate: new Date('2024-03-01'),
+                endDate: new Date('2024-03-10'),
+                progress: 0,
+                status: 'planned',
+                assignee: 'Eve Davis',
+                priority: 'High'
+            }
+        ];
+
+        let currentView = 'gantt';
+        let zoomLevel = 1;
+        let draggedTask = null;
+
+        // Navigation Functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+        
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('mobile-open');
+        }
+
+        // Initialize Gantt Chart
+        function initializeGantt() {
+            generateTimelineHeader();
+            generateTaskRows();
+            addDragAndDropFunctionality();
+        }
+
+        // Generate timeline header
+        function generateTimelineHeader() {
+            const timelineHeader = document.getElementById('timelineHeader');
+            const startDate = new Date('2024-01-01');
+            const endDate = new Date('2024-03-31');
+            const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            
+            let html = '<div class="gantt-grid">';
+            
+            for (let i = 0; i <= days; i += 7) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                
+                html += `<div class="gantt-grid-column" style="min-width: ${60 * zoomLevel}px;">
+                    <div class="text-xs text-center font-medium text-gray-600">${currentDate.toLocaleDateString('en', { month: 'short', day: 'numeric' })}</div>
+                </div>`;
+            }
+            
+            html += '</div>';
+            timelineHeader.innerHTML = html;
+        }
+
+        // Generate task rows
+        function generateTaskRows() {
+            const ganttTasks = document.getElementById('ganttTasks');
+            const startDate = new Date('2024-01-01');
+            
+            let html = '';
+            
+            tasks.forEach(task => {
+                const startOffset = Math.ceil((task.startDate - startDate) / (1000 * 60 * 60 * 24));
+                const duration = Math.ceil((task.endDate - task.startDate) / (1000 * 60 * 60 * 24));
+                
+                const statusClass = task.status === 'completed' ? 'task-completed' :
+                                  task.status === 'in-progress' ? 'task-in-progress' :
+                                  task.status === 'planned' ? 'task-planned' : 'task-delayed';
+                
+                html += `
+                    <div class="gantt-task-row" data-task-id="${task.id}">
+                        <div class="gantt-task-info">
+                            <div class="font-medium">${task.name}</div>
+                            <div class="text-xs text-gray-500">${task.assignee}</div>
+                        </div>
+                        <div class="gantt-timeline-area">
+                            <div class="gantt-grid">
+                                ${generateGridColumns()}
+                            </div>
+                            <div class="gantt-today-line" style="left: ${calculateTodayPosition()}px;"></div>
+                            <div class="gantt-task-bar ${statusClass}" 
+                                 data-task-id="${task.id}"
+                                 style="left: ${startOffset * 60 * zoomLevel}px; 
+                                        width: ${duration * 60 * zoomLevel}px;
+                                        top: 9px;"
+                                 draggable="true">
+                                <span>${task.progress}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            ganttTasks.innerHTML = html;
+        }
+
+        // Generate grid columns
+        function generateGridColumns() {
+            const startDate = new Date('2024-01-01');
+            const endDate = new Date('2024-03-31');
+            const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            let html = '';
+            
+            for (let i = 0; i <= days; i += 7) {
+                html += `<div class="gantt-grid-column" style="min-width: ${60 * zoomLevel}px;"></div>`;
+            }
+            
+            return html;
+        }
+
+        // Calculate today's position
+        function calculateTodayPosition() {
+            const startDate = new Date('2024-01-01');
+            const today = new Date();
+            const daysOffset = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
+            return daysOffset * 60 * zoomLevel;
+        }
+
+        // Add drag and drop functionality
+        function addDragAndDropFunctionality() {
+            const taskBars = document.querySelectorAll('.gantt-task-bar');
+            
+            taskBars.forEach(bar => {
+                bar.addEventListener('dragstart', handleDragStart);
+                bar.addEventListener('dragend', handleDragEnd);
+            });
+            
+            const timelineAreas = document.querySelectorAll('.gantt-timeline-area');
+            timelineAreas.forEach(area => {
+                area.addEventListener('dragover', handleDragOver);
+                area.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function handleDragStart(e) {
+            draggedTask = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedTask = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            if (!draggedTask) return;
+            
+            const timelineArea = e.currentTarget;
+            const rect = timelineArea.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            
+            const taskId = draggedTask.dataset.taskId;
+            const task = tasks.find(t => t.id == taskId);
+            
+            if (task) {
+                const daysOffset = Math.floor(x / (60 * zoomLevel));
+                const startDate = new Date('2024-01-01');
+                const newStartDate = new Date(startDate);
+                newStartDate.setDate(startDate.getDate() + daysOffset);
+                
+                const duration = Math.ceil((task.endDate - task.startDate) / (1000 * 60 * 60 * 24));
+                const newEndDate = new Date(newStartDate);
+                newEndDate.setDate(newStartDate.getDate() + duration);
+                
+                task.startDate = newStartDate;
+                task.endDate = newEndDate;
+                
+                generateTaskRows();
+                addDragAndDropFunctionality();
+                showNotification('Task rescheduled successfully!');
+            }
+        }
+
+        // View Functions
+        function setView(view) {
+            currentView = view;
+            
+            // Update button states
+            document.querySelectorAll('.view-toggle button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(view + 'ViewBtn').classList.add('active');
+            
+            // Regenerate view
+            if (view === 'gantt') {
+                initializeGantt();
+            } else if (view === 'timeline') {
+                showTimelineView();
+            } else if (view === 'kanban') {
+                showKanbanView();
+            }
+        }
+
+        function showTimelineView() {
+            const ganttTasks = document.getElementById('ganttTasks');
+            let html = '';
+            
+            // Sort tasks by start date
+            const sortedTasks = [...tasks].sort((a, b) => a.startDate - b.startDate);
+            
+            sortedTasks.forEach((task, index) => {
+                const statusClass = task.status === 'completed' ? 'task-completed' :
+                                  task.status === 'in-progress' ? 'task-in-progress' :
+                                  task.status === 'planned' ? 'task-planned' : 'task-delayed';
+                
+                html += `
+                    <div class="border-l-4 ${statusClass.replace('task-', 'border-')} bg-white p-4 mb-4 rounded-r-lg shadow hover:shadow-md transition cursor-pointer"
+                         onclick="editTask(${task.id})">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-semibold text-gray-800">${task.name}</div>
+                                <div class="text-sm text-gray-600 mt-1">
+                                    ${task.startDate.toLocaleDateString()} - ${task.endDate.toLocaleDateString()}
+                                </div>
+                                <div class="text-sm text-gray-500">Assigned to: ${task.assignee}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-gray-800">${task.progress}%</div>
+                                <div class="text-sm text-gray-500">Complete</div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="${statusClass} h-2 rounded-full" style="width: ${task.progress}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            ganttTasks.innerHTML = html;
+        }
+
+        function showKanbanView() {
+            const ganttTasks = document.getElementById('ganttTasks');
+            let html = '<div class="grid grid-cols-1 md:grid-cols-3 gap-6">';
+            
+            const columns = [
+                { id: 'planned', title: 'Planned', color: 'purple' },
+                { id: 'in-progress', title: 'In Progress', color: 'blue' },
+                { id: 'completed', title: 'Completed', color: 'green' }
+            ];
+            
+            columns.forEach(column => {
+                const columnTasks = tasks.filter(task => task.status === column.id);
+                
+                html += `
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-800 mb-4">${column.title}</h3>
+                        <div class="space-y-3">
+                `;
+                
+                columnTasks.forEach(task => {
+                    html += `
+                        <div class="bg-white p-3 rounded-lg shadow hover:shadow-md transition cursor-pointer"
+                             onclick="editTask(${task.id})">
+                            <div class="font-medium text-gray-800">${task.name}</div>
+                            <div class="text-sm text-gray-600 mt-1">${task.assignee}</div>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-sm text-gray-500">${task.progress}%</span>
+                                <span class="text-xs bg-${column.color}-100 text-${column.color}-800 px-2 py-1 rounded">
+                                    ${task.priority}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div></div>';
+            });
+            
+            html += '</div>';
+            ganttTasks.innerHTML = html;
+        }
+
+        // Zoom Functions
+        function zoomIn() {
+            if (zoomLevel < 3) {
+                zoomLevel += 0.5;
+                initializeGantt();
+            }
+        }
+
+        function zoomOut() {
+            if (zoomLevel > 0.5) {
+                zoomLevel -= 0.5;
+                initializeGantt();
+            }
+        }
+
+        function fitToScreen() {
+            zoomLevel = 1;
+            initializeGantt();
+        }
+
+        // Task Functions
+        function addTask() {
+            showTaskForm();
+        }
+
+        function editTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                showTaskForm(task);
+            }
+        }
+
+        function showTaskForm(task = null) {
+            const isEdit = task !== null;
+            const modalBody = document.getElementById('taskModalBody');
+            
+            modalBody.innerHTML = `
+                <form onsubmit="saveTask(event, ${isEdit ? task.id : 'null'})" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Task Name</label>
+                        <input type="text" name="name" value="${task ? task.name : ''}" required 
+                               class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <input type="date" name="startDate" 
+                                   value="${task ? task.startDate.toISOString().split('T')[0] : ''}" 
+                                   required class="w-full border rounded-lg px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                            <input type="date" name="endDate" 
+                                   value="${task ? task.endDate.toISOString().split('T')[0] : ''}" 
+                                   required class="w-full border rounded-lg px-3 py-2">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Assignee</label>
+                            <input type="text" name="assignee" value="${task ? task.assignee : ''}" 
+                                   required class="w-full border rounded-lg px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                            <select name="priority" class="w-full border rounded-lg px-3 py-2">
+                                <option value="Low" ${task && task.priority === 'Low' ? 'selected' : ''}>Low</option>
+                                <option value="Medium" ${task && task.priority === 'Medium' ? 'selected' : ''}>Medium</option>
+                                <option value="High" ${task && task.priority === 'High' ? 'selected' : ''}>High</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <select name="status" class="w-full border rounded-lg px-3 py-2">
+                                <option value="planned" ${task && task.status === 'planned' ? 'selected' : ''}>Planned</option>
+                                <option value="in-progress" ${task && task.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="completed" ${task && task.status === 'completed' ? 'selected' : ''}>Completed</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Progress (%)</label>
+                            <input type="number" name="progress" min="0" max="100" 
+                                   value="${task ? task.progress : 0}" 
+                                   class="w-full border rounded-lg px-3 py-2">
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end gap-2">
+                        <button type="button" onclick="closeTaskModal()" 
+                                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-save mr-2"></i>${isEdit ? 'Update' : 'Create'} Task
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('taskModal').classList.add('show');
+        }
+
+        function saveTask(event, taskId) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            
+            const taskData = {
+                name: formData.get('name'),
+                startDate: new Date(formData.get('startDate')),
+                endDate: new Date(formData.get('endDate')),
+                assignee: formData.get('assignee'),
+                priority: formData.get('priority'),
+                status: formData.get('status'),
+                progress: parseInt(formData.get('progress'))
+            };
+            
+            if (taskId) {
+                // Update existing task
+                const taskIndex = tasks.findIndex(t => t.id === taskId);
+                if (taskIndex !== -1) {
+                    tasks[taskIndex] = { ...tasks[taskIndex], ...taskData };
+                }
+            } else {
+                // Create new task
+                const newTask = {
+                    id: Math.max(...tasks.map(t => t.id)) + 1,
+                    ...taskData
+                };
+                tasks.push(newTask);
+            }
+            
+            initializeGantt();
+            closeTaskModal();
+            showNotification(`Task ${taskId ? 'updated' : 'created'} successfully!`);
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('show');
+        }
+
+        // Action Functions
+        function showSuggestions() {
+            const suggestions = [
+                'Task "Frontend Development" can start 3 days earlier',
+                'Consider adding buffer time between "Testing" and "Deployment"',
+                'Resource "Bob Johnson" is over-allocated - consider reassigning'
+            ];
+            
+            const modalBody = document.getElementById('taskModalBody');
+            modalBody.innerHTML = `
+                <div class="space-y-4">
+                    <h4 class="font-semibold text-gray-800">
+                        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>AI Suggestions
+                    </h4>
+                    ${suggestions.map((suggestion, index) => `
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                            <div class="font-medium text-blue-800">Suggestion ${index + 1}</div>
+                            <div class="text-blue-700 mt-1">${suggestion}</div>
+                            <button onclick="applySuggestion(${index})" 
+                                    class="mt-2 text-blue-600 text-sm hover:underline">
+                                Apply Suggestion
+                            </button>
+                        </div>
+                    `).join('')}
+                    
+                    <div class="flex justify-end">
+                        <button onclick="closeTaskModal()" 
+                                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('taskModal').classList.add('show');
+        }
+
+        function applySuggestion(index) {
+            showNotification('Suggestion applied successfully!');
+            closeTaskModal();
+        }
+
+        function highlightCriticalPath() {
+            const criticalTasks = [2, 3, 5, 6]; // Example critical path tasks
+            
+            document.querySelectorAll('.gantt-task-row').forEach(row => {
+                const taskId = parseInt(row.dataset.taskId);
+                if (criticalTasks.includes(taskId)) {
+                    row.style.backgroundColor = '#fef3c7';
+                    row.style.borderLeft = '4px solid #f59e0b';
+                } else {
+                    row.style.backgroundColor = '';
+                    row.style.borderLeft = '';
+                }
+            });
+            
+            showNotification('Critical path highlighted! 4 tasks identified.');
+        }
+
+        function exportGantt() {
+            showNotification('Export functionality would generate PDF/Excel versions of your timeline.');
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    ${message}
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('taskModal');
+            if (event.target == modal) {
+                closeTaskModal();
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGantt();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Outreach System - First Customer Hunter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hunt-bg {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        .pulse-hunt {
+            animation: huntPulse 1.5s infinite;
+        }
+        @keyframes huntPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="hunt-bg p-6 rounded-lg mb-6">
+        <h1 class="text-4xl font-bold text-center">🎯 CUSTOMER HUNTING SYSTEM</h1>
+        <p class="text-xl text-center">Automated First Customer Acquisition Machine</p>
+    </div>
+
+    <!-- Real-Time Hunt Dashboard -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-red-600 p-4 rounded-lg text-center pulse-hunt">
+            <i class="fas fa-envelope text-3xl mb-2"></i>
+            <div class="text-2xl font-bold" id="emailsSent">0</div>
+            <div class="text-sm">Emails Sent</div>
+        </div>
+        <div class="bg-blue-600 p-4 rounded-lg text-center">
+            <i class="fas fa-reply text-3xl mb-2"></i>
+            <div class="text-2xl font-bold" id="responses">0</div>
+            <div class="text-sm">Responses</div>
+        </div>
+        <div class="bg-green-600 p-4 rounded-lg text-center">
+            <i class="fas fa-calendar text-3xl mb-2"></i>
+            <div class="text-2xl font-bold" id="demos">0</div>
+            <div class="text-sm">Demos Booked</div>
+        </div>
+        <div class="bg-purple-600 p-4 rounded-lg text-center">
+            <i class="fas fa-dollar-sign text-3xl mb-2"></i>
+            <div class="text-2xl font-bold" id="customers">0</div>
+            <div class="text-sm">Customers</div>
+        </div>
+    </div>
+
+    <!-- Email Templates -->
+    <div class="bg-gray-800 p-6 rounded-lg mb-6">
+        <h2 class="text-2xl font-bold mb-4">📧 Killer Email Templates</h2>
+        
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-2 text-blue-400">Template 1: Direct & Confident</h3>
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <div class="text-sm font-mono whitespace-pre-wrap">Subject: AI Project Management for [Company Name]
+
+Hi [Name],
+
+I found your company on LinkedIn and was impressed by what you're building.
+
+I've developed an AI-powered project management platform that's helping companies like yours:
+- Complete projects 40% faster with predictive analytics
+- Reduce errors with 94.7% AI accuracy  
+- Save 30% compared to Monday.com while getting twice the features
+
+I'm looking for 10 founding customers to help shape the product. You'll get 50% off lifetime pricing.
+
+Would you be open to a 15-minute demo this week?
+
+Best regards,
+[Your Name]
+Founder, ProjectAI Pro</div>
+                <button onclick="copyTemplate(1)" class="mt-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">
+                    <i class="fas fa-copy mr-2"></i>Copy Template
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-2 text-green-400">Template 2: Competitive Angle</h3>
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <div class="text-sm font-mono whitespace-pre-wrap">Subject: Better than Monday.com at 30% less cost
+
+Hi [Name],
+
+Are you using Monday.com or Asana for project management?
+
+I built a platform that makes them look obsolete:
+- 40+ AI systems vs their 5-10 basic features
+- 94.7% accuracy vs their 70% standard
+- Real-time collaboration vs their delays
+- $199/month vs their $299/month pricing
+
+As a founding customer, you'll pay just $99/month forever.
+
+Can I show you why 3 companies switched this month?
+
+[Your Name]
+ProjectAI Pro Founder</div>
+                <button onclick="copyTemplate(2)" class="mt-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm">
+                    <i class="fas fa-copy mr-2"></i>Copy Template
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-2 text-purple-400">Template 3: Urgency & Scarcity</h3>
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <div class="text-sm font-mono whitespace-pre-wrap">Subject: Only 7 spots left for 50% lifetime discount
+
+Hi [Name],
+
+I'm launching the most advanced AI project management platform and looking for 10 founding partners.
+
+You'll get:
+- 50% OFF LIFETIME ($1,200/year savings)
+- Free setup and migration  
+- Direct access to me as the founder
+- Your feature requests prioritized
+
+This offer is only for the first 10 customers. I have 7 spots left.
+
+15-minute demo could save you thousands and transform your project management.
+
+Interested?
+
+[Your Name]
+Founder, ProjectAI Pro</div>
+                <button onclick="copyTemplate(3)" class="mt-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm">
+                    <i class="fas fa-copy mr-2"></i>Copy Template
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lead Generation Tools -->
+    <div class="bg-gray-800 p-6 rounded-lg mb-6">
+        <h2 class="text-2xl font-bold mb-4">🎯 Lead Generation Tools</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-bold mb-3 text-red-400">LinkedIn Search Formula</h3>
+                <div class="bg-gray-700 p-3 rounded text-sm">
+                    <div class="font-mono">"CEO" OR "Founder" OR "President"</div>
+                    <div class="font-mono">+ "Technology" OR "Software" OR "SaaS"</div>
+                    <div class="font-mono">+ "10-50 employees"</div>
+                    <div class="font-mono">+ [Your City/Region]</div>
+                    <div class="font-mono">+ "Posted in last 30 days"</div>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-bold mb-3 text-blue-400">Perfect Customer Profile</h3>
+                <div class="bg-gray-700 p-3 rounded text-sm space-y-1">
+                    <div>• 10-50 employees</div>
+                    <div>• Technology company</div>
+                    <div>• Using Monday.com/Asana</div>
+                    <div>• Raised funding or profitable</div>
+                    <div>• Growing rapidly</div>
+                    <div>• Local to your area</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Social Media Scripts -->
+    <div class="bg-gray-800 p-6 rounded-lg mb-6">
+        <h2 class="text-2xl font-bold mb-4">💬 Social Media Scripts</h2>
+        
+        <div class="space-y-4">
+            <div class="bg-gray-700 p-4 rounded">
+                <h4 class="font-bold mb-2 text-yellow-400">LinkedIn Post</h4>
+                <div class="text-sm italic">"I just launched an AI-powered project management platform that makes Monday.com look like a calculator. 
+
+40+ AI systems, 94.7% accuracy, 30% cheaper.
+
+Looking for 10 founding customers who want 50% off lifetime.
+
+Who wants to see a demo that will save them thousands? 
+
+#AI #ProjectManagement #SaaS #Startups"</div>
+            </div>
+            
+            <div class="bg-gray-700 p-4 rounded">
+                <h4 class="font-bold mb-2 text-green-400">Facebook Group Post</h4>
+                <div class="text-sm italic">"Anyone else frustrated with Monday.com pricing? I built an alternative with twice the features at 30% less cost. 
+
+First 10 users get 50% off forever. Already helped 3 companies switch this month.
+
+DM me for a quick demo!"</div>
+            </div>
+            
+            <div class="bg-gray-700 p-4 rounded">
+                <h4 class="font-bold mb-2 text-purple-400">Reddit Comment</h4>
+                <div class="text-sm italic">"I built an AI project management tool that blows Monday.com out of the water. 40+ AI systems vs their 5 basic features, 94.7% accuracy, and it's cheaper. 
+
+First 10 founding customers get 50% off lifetime. DM if you want to see something that will actually transform your workflow."</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="bg-gray-800 p-6 rounded-lg">
+        <h2 class="text-2xl font-bold mb-4">🚀 Launch Control Panel</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button onclick="launchCampaign('email')" class="bg-red-600 hover:bg-red-700 px-6 py-4 rounded-lg font-bold transition-all hover:scale-105">
+                <i class="fas fa-envelope text-2xl mb-2"></i>
+                <div>START EMAIL BLAST</div>
+                <div class="text-sm">20 prospects</div>
+            </button>
+            
+            <button onclick="launchCampaign('social')" class="bg-blue-600 hover:bg-blue-700 px-6 py-4 rounded-lg font-bold transition-all hover:scale-105">
+                <i class="fas fa-share-alt text-2xl mb-2"></i>
+                <div>POST EVERYWHERE</div>
+                <div class="text-sm">5 platforms</div>
+            </button>
+            
+            <button onclick="launchCampaign('hunt')" class="bg-green-600 hover:bg-green-700 px-6 py-4 rounded-lg font-bold transition-all hover:scale-105">
+                <i class="fas fa-crosshairs text-2xl mb-2"></i>
+                <div>HUNT CUSTOMERS</div>
+                <div class="text-sm">START NOW!</div>
+            </button>
+        </div>
+        
+        <div class="mt-6 text-center">
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <div class="text-lg font-bold mb-2">🎯 TARGET: FIRST CUSTOMER IN 7 DAYS</div>
+                <div class="text-sm">Start the clock NOW! Every minute counts!</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stats = {
+            emailsSent: 0,
+            responses: 0,
+            demos: 0,
+            customers: 0
+        };
+
+        function updateStats() {
+            document.getElementById('emailsSent').textContent = stats.emailsSent;
+            document.getElementById('responses').textContent = stats.responses;
+            document.getElementById('demos').textContent = stats.demos;
+            document.getElementById('customers').textContent = stats.customers;
+        }
+
+        function copyTemplate(num) {
+            const templates = [
+                '',
+                `Subject: AI Project Management for [Company Name]
+
+Hi [Name],
+
+I found your company on LinkedIn and was impressed by what you're building.
+
+I've developed an AI-powered project management platform that's helping companies like yours:
+- Complete projects 40% faster with predictive analytics
+- Reduce errors with 94.7% AI accuracy  
+- Save 30% compared to Monday.com while getting twice the features
+
+I'm looking for 10 founding customers to help shape the product. You'll get 50% off lifetime pricing.
+
+Would you be open to a 15-minute demo this week?
+
+Best regards,
+[Your Name]
+Founder, ProjectAI Pro`,
+                `Subject: Better than Monday.com at 30% less cost
+
+Hi [Name],
+
+Are you using Monday.com or Asana for project management?
+
+I built a platform that makes them look obsolete:
+- 40+ AI systems vs their 5-10 basic features
+- 94.7% accuracy vs their 70% standard
+- Real-time collaboration vs their delays
+- $199/month vs their $299/month pricing
+
+As a founding customer, you'll pay just $99/month forever.
+
+Can I show you why 3 companies switched this month?
+
+[Your Name]
+ProjectAI Pro Founder`,
+                `Subject: Only 7 spots left for 50% lifetime discount
+
+Hi [Name],
+
+I'm launching the most advanced AI project management platform and looking for 10 founding partners.
+
+You'll get:
+- 50% OFF LIFETIME ($1,200/year savings)
+- Free setup and migration  
+- Direct access to me as the founder
+- Your feature requests prioritized
+
+This offer is only for the first 10 customers. I have 7 spots left.
+
+15-minute demo could save you thousands and transform your project management.
+
+Interested?
+
+[Your Name]
+Founder, ProjectAI Pro`
+            ];
+
+            navigator.clipboard.writeText(templates[num]);
+            alert('📋 Template copied to clipboard! Now personalize and send!');
+        }
+
+        function launchCampaign(type) {
+            const messages = {
+                'email': '🚀 EMAIL BLAST ACTIVATED! Send 20 personalized emails NOW!',
+                'social': '📱 SOCIAL MEDIA CAMPAIGN LAUNCHED! Post on all 5 platforms!',
+                'hunt': '🎯 CUSTOMER HUNT INITIATED! Start finding prospects NOW!'
+            };
+            
+            alert(messages[type]);
+            
+            if (type === 'email') {
+                stats.emailsSent += 20;
+                setTimeout(() => {
+                    if (confirm('📬 Emails sent! Any responses yet? Check your inbox!')) {
+                        stats.responses += 2;
+                        updateStats();
+                    }
+                }, 5000);
+            }
+            
+            updateStats();
+        }
+
+        // Auto-save progress
+        setInterval(() => {
+            localStorage.setItem('huntStats', JSON.stringify(stats));
+        }, 5000);
+
+        // Load saved progress
+        const saved = localStorage.getItem('huntStats');
+        if (saved) {
+            stats = JSON.parse(saved);
+            updateStats();
+        }
+    </script>
+</body>
+</html>

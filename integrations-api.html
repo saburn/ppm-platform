@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Management - Integrations Module</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .slide-panel {
+            position: fixed;
+            right: -700px;
+            top: 0;
+            width: 700px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+        .slide-panel.active {
+            right: 0;
+        }
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+        .method-badge {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .method-get { background: #dbeafe; color: #1e40af; }
+        .method-post { background: #d1fae5; color: #065f46; }
+        .method-put { background: #fef3c7; color: #92400e; }
+        .method-delete { background: #fee2e2; color: #991b1b; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="gradient-bg text-white p-6 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">🔌 API Management & Webhooks</h1>
+                    <p class="text-purple-100">Manage API keys, endpoints, and webhook configurations</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="createAPIKey()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-key mr-2"></i>Create API Key
+                    </button>
+                    <button onclick="createWebhook()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-plus mr-2"></i>New Webhook
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- API Stats -->
+        <div class="grid grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-exchange-alt text-blue-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">Today</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-1">API Calls</p>
+                <p class="text-3xl font-bold text-gray-800 mb-2">847K</p>
+                <p class="text-xs text-green-600 font-semibold">↑ 12% vs yesterday</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Live</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-1">Success Rate</p>
+                <p class="text-3xl font-bold text-gray-800 mb-2">99.8%</p>
+                <p class="text-xs text-gray-500">1,692 errors</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-clock text-purple-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">Avg</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-1">Response Time</p>
+                <p class="text-3xl font-bold text-gray-800 mb-2">142ms</p>
+                <p class="text-xs text-green-600 font-semibold">↓ 8ms faster</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-bell text-yellow-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">Active</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-1">Webhooks</p>
+                <p class="text-3xl font-bold text-gray-800 mb-2">24</p>
+                <p class="text-xs text-gray-500">18 triggered today</p>
+            </div>
+        </div>
+
+        <!-- API Usage Chart -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">📊 API Usage (Last 7 Days)</h2>
+            <canvas id="apiUsageChart" height="80"></canvas>
+        </div>
+
+        <!-- API Keys Section -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-800">🔑 API Keys</h2>
+                <button onclick="createAPIKey()" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700">
+                    <i class="fas fa-plus mr-2"></i>Create New Key
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <!-- API Key 1 -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-bold text-gray-800">Production API Key</h3>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Active</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <code class="text-sm bg-gray-100 px-3 py-1 rounded font-mono">pk_live_4xK9mN2pQ7rS8tU5vW6xY7zA</code>
+                                <button onclick="copyToClipboard('pk_live_4xK9mN2pQ7rS8tU5vW6xY7zA')" class="text-purple-600 hover:text-purple-700">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-500">Created: Jan 15, 2024 • Last used: 2 minutes ago</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="viewAPIKeyDetails('prod')" class="text-gray-600 hover:text-purple-600">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="revokeAPIKey('prod')" class="text-gray-600 hover:text-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-500">Requests Today</p>
+                            <p class="font-bold text-gray-800">542,847</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Rate Limit</p>
+                            <p class="font-bold text-gray-800">10,000/min</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Permissions</p>
+                            <p class="font-bold text-gray-800">Read/Write</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Environment</p>
+                            <p class="font-bold text-gray-800">Production</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Key 2 -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-bold text-gray-800">Development API Key</h3>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">Active</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <code class="text-sm bg-gray-100 px-3 py-1 rounded font-mono">pk_test_1aB2cD3eF4gH5iJ6kL7mN8oP</code>
+                                <button onclick="copyToClipboard('pk_test_1aB2cD3eF4gH5iJ6kL7mN8oP')" class="text-purple-600 hover:text-purple-700">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-500">Created: Feb 1, 2024 • Last used: 15 minutes ago</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="viewAPIKeyDetails('dev')" class="text-gray-600 hover:text-purple-600">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="revokeAPIKey('dev')" class="text-gray-600 hover:text-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-500">Requests Today</p>
+                            <p class="font-bold text-gray-800">12,456</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Rate Limit</p>
+                            <p class="font-bold text-gray-800">1,000/min</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Permissions</p>
+                            <p class="font-bold text-gray-800">Read Only</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Environment</p>
+                            <p class="font-bold text-gray-800">Development</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Key 3 -->
+                <div class="border border-gray-200 rounded-lg p-4 opacity-50">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-bold text-gray-800">Legacy API Key</h3>
+                                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">Revoked</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <code class="text-sm bg-gray-100 px-3 py-1 rounded font-mono">pk_live_9qR0sT1uV2wX3yZ4aB5cD6eF</code>
+                            </div>
+                            <p class="text-sm text-gray-500">Created: Dec 1, 2023 • Revoked: Jan 30, 2024</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Endpoints Documentation -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">📚 API Endpoints</h2>
+            
+            <div class="space-y-4">
+                <!-- Projects Endpoints -->
+                <div>
+                    <h3 class="font-bold text-gray-700 mb-3">Projects</h3>
+                    <div class="space-y-2">
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer" onclick="viewEndpointDetails('get-projects')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="method-badge method-get">GET</span>
+                                    <code class="text-sm font-mono">/api/v1/projects</code>
+                                    <span class="text-sm text-gray-600">List all projects</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer" onclick="viewEndpointDetails('get-project')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="method-badge method-get">GET</span>
+                                    <code class="text-sm font-mono">/api/v1/projects/:id</code>
+                                    <span class="text-sm text-gray-600">Get project details</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer" onclick="viewEndpointDetails('create-project')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="method-badge method-post">POST</span>
+                                    <code class="text-sm font-mono">/api/v1/projects</code>
+                                    <span class="text-sm text-gray-600">Create new project</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer" onclick="viewEndpointDetails('update-project')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="method-badge method-put">PUT</span>
+                                    <code class="text-sm font-mono">/api/v1/projects/:id</code>
+                                    <span class="text-sm text-gray-600">Update project</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer" onclick="viewEndpointDetails('delete-project')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="method-badge method-delete">DELETE</span>
+                                    <code class="text-sm font-mono">/api/v1/projects/:id</code>
+                                    <span class="text-sm text-gray-600">Delete project</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks Endpoints -->
+                <div>
+                    <h3 class="font-bold text-gray-700 mb-3">Tasks</h3>
+                    <div class="space-y-2">
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="method-badge method-get">GET</span>
+                                    <code class="text-sm font-mono">/api/v1/tasks</code>
+                                    <span class="text-sm text-gray-600">List all tasks</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="method-badge method-post">POST</span>
+                                    <code class="text-sm font-mono">/api/v1/tasks</code>
+                                    <span class="text-sm text-gray-600">Create new task</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="method-badge method-put">PUT</span>
+                                    <code class="text-sm font-mono">/api/v1/tasks/:id</code>
+                                    <span class="text-sm text-gray-600">Update task</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resources Endpoints -->
+                <div>
+                    <h3 class="font-bold text-gray-700 mb-3">Resources</h3>
+                    <div class="space-y-2">
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="method-badge method-get">GET</span>
+                                    <code class="text-sm font-mono">/api/v1/resources</code>
+                                    <span class="text-sm text-gray-600">List all resources</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="method-badge method-get">GET</span>
+                                    <code class="text-sm font-mono">/api/v1/resources/:id/availability</code>
+                                    <span class="text-sm text-gray-600">Check availability</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-info-circle text-blue-600 mt-1"></i>
+                    <div>
+                        <p class="font-semibold text-blue-900 mb-1">API Documentation</p>
+                        <p class="text-sm text-blue-800">View complete API documentation with examples, authentication, and rate limits.</p>
+                        <button class="mt-2 text-sm text-blue-600 font-semibold hover:text-blue-700">
+                            View Full Documentation →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Webhooks Section -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-800">🔔 Webhooks</h2>
+                <button onclick="createWebhook()" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700">
+                    <i class="fas fa-plus mr-2"></i>Create Webhook
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Webhook 1 -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-bold text-gray-800">Project Status Updates</h3>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Active</span>
+                            </div>
+                            <code class="text-sm bg-gray-100 px-3 py-1 rounded">https://api.example.com/webhooks/project-status</code>
+                            <p class="text-sm text-gray-500 mt-2">Triggers when project status changes</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editWebhook('status')" class="text-gray-600 hover:text-purple-600">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="testWebhook('status')" class="text-gray-600 hover:text-blue-600">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button onclick="deleteWebhook('status')" class="text-gray-600 hover:text-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-500">Events</p>
+                            <p class="font-bold text-gray-800">project.updated</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Triggered Today</p>
+                            <p class="font-bold text-gray-800">47 times</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Success Rate</p>
+                            <p class="font-bold text-green-600">100%</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Last Triggered</p>
+                            <p class="font-bold text-gray-800">5 mins ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Webhook 2 -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-bold text-gray-800">Task Completion Notifications</h3>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Active</span>
+                            </div>
+                            <code class="text-sm bg-gray-100 px-3 py-1 rounded">https://api.example.com/webhooks/task-complete</code>
+                            <p class="text-sm text-gray-500 mt-2">Triggers when tasks are completed</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editWebhook('task')" class="text-gray-600 hover:text-purple-600">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="testWebhook('task')" class="text-gray-600 hover:text-blue-600">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button onclick="deleteWebhook('task')" class="text-gray-600 hover:text-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-500">Events</p>
+                            <p class="font-bold text-gray-800">task.completed</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Triggered Today</p>
+                            <p class="font-bold text-gray-800">124 times</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Success Rate</p>
+                            <p class="font-bold text-green-600">98.4%</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Last Triggered</p>
+                            <p class="font-bold text-gray-800">2 mins ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Webhook 3 -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-bold text-gray-800">Budget Alerts</h3>
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">Paused</span>
+                            </div>
+                            <code class="text-sm bg-gray-100 px-3 py-1 rounded">https://api.example.com/webhooks/budget-alert</code>
+                            <p class="text-sm text-gray-500 mt-2">Triggers when budget thresholds are exceeded</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editWebhook('budget')" class="text-gray-600 hover:text-purple-600">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="testWebhook('budget')" class="text-gray-600 hover:text-blue-600">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button onclick="deleteWebhook('budget')" class="text-gray-600 hover:text-red-600">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-500">Events</p>
+                            <p class="font-bold text-gray-800">budget.exceeded</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Triggered Today</p>
+                            <p class="font-bold text-gray-800">0 times</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Success Rate</p>
+                            <p class="font-bold text-gray-600">N/A</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Last Triggered</p>
+                            <p class="font-bold text-gray-800">Never</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Endpoint Details Panel -->
+    <div id="endpointPanel" class="slide-panel">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">API Endpoint Details</h2>
+                <button onclick="closeEndpointPanel()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Endpoint Info -->
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="method-badge method-get">GET</span>
+                        <code class="text-lg font-mono">/api/v1/projects</code>
+                    </div>
+                    <p class="text-gray-600">Retrieve a list of all projects with optional filtering and pagination.</p>
+                </div>
+
+                <!-- Authentication -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-3">Authentication</h3>
+                    <div class="code-block">
+Authorization: Bearer YOUR_API_KEY
+                    </div>
+                </div>
+
+                <!-- Query Parameters -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-3">Query Parameters</h3>
+                    <div class="space-y-2">
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-1">
+                                <code class="font-semibold">status</code>
+                                <span class="text-xs text-gray-500">string (optional)</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Filter by project status: active, completed, on-hold</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-1">
+                                <code class="font-semibold">page</code>
+                                <span class="text-xs text-gray-500">integer (optional)</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Page number for pagination (default: 1)</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-1">
+                                <code class="font-semibold">limit</code>
+                                <span class="text-xs text-gray-500">integer (optional)</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Number of items per page (default: 20, max: 100)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Example Request -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-3">Example Request</h3>
+                    <div class="code-block">
+curl -X GET "https://api.ppm.com/v1/projects?status=active&page=1&limit=20" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json"
+                    </div>
+                </div>
+
+                <!-- Example Response -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-3">Example Response</h3>
+                    <div class="code-block">
+{
+  "data": [
+    {
+      "id": "proj_123",
+      "name": "Project Alpha",
+      "status": "active",
+      "progress": 87,
+      "budget": 450000,
+      "start_date": "2024-01-15",
+      "end_date": "2024-06-30"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 42
+  }
+}
+                    </div>
+                </div>
+
+                <!-- Rate Limits -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-3">Rate Limits</h3>
+                    <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p class="text-sm text-yellow-800">
+                            <strong>Production:</strong> 10,000 requests per minute<br>
+                            <strong>Development:</strong> 1,000 requests per minute
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Try It Out -->
+                <div>
+                    <button onclick="tryEndpoint()" class="w-full bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700">
+                        <i class="fas fa-play mr-2"></i>Try It Out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Chart
+        function initChart() {
+            const ctx = document.getElementById('apiUsageChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'API Calls',
+                            data: [654000, 712000, 698000, 847000, 823000, 756000, 847000],
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return (value / 1000) + 'K';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initChart();
+        });
+
+        // Panel Management
+        function viewEndpointDetails(endpoint) {
+            document.getElementById('endpointPanel').classList.add('active');
+        }
+
+        function closeEndpointPanel() {
+            document.getElementById('endpointPanel').classList.remove('active');
+        }
+
+        // API Key Actions
+        function createAPIKey() {
+            showToast('Creating new API key...');
+            setTimeout(() => {
+                showToast('API key created successfully!');
+            }, 1500);
+        }
+
+        function viewAPIKeyDetails(key) {
+            showToast(`Viewing ${key} API key details...`);
+        }
+
+        function revokeAPIKey(key) {
+            if (confirm(`Are you sure you want to revoke the ${key} API key?`)) {
+                showToast(`${key} API key revoked successfully!`);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            showToast('API key copied to clipboard!');
+        }
+
+        // Webhook Actions
+        function createWebhook() {
+            showToast('Creating new webhook...');
+        }
+
+        function editWebhook(name) {
+            showToast(`Editing ${name} webhook...`);
+        }
+
+        function testWebhook(name) {
+            showToast(`Testing ${name} webhook...`);
+            setTimeout(() => {
+                showToast('Webhook test successful!');
+            }, 2000);
+        }
+
+        function deleteWebhook(name) {
+            if (confirm(`Are you sure you want to delete the ${name} webhook?`)) {
+                showToast(`${name} webhook deleted successfully!`);
+            }
+        }
+
+        function tryEndpoint() {
+            showToast('Executing API request...');
+            setTimeout(() => {
+                showToast('Request completed successfully!');
+            }, 1500);
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

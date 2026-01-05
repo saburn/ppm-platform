@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboards Module - Complete Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .metric-card {
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        }
+        .widget-card {
+            transition: all 0.3s ease;
+            cursor: move;
+        }
+        .widget-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .slide-panel {
+            position: fixed;
+            right: -500px;
+            top: 0;
+            width: 500px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+        .slide-panel.active {
+            right: 0;
+        }
+        .trend-up { color: #10b981; }
+        .trend-down { color: #ef4444; }
+        .insight-card {
+            border-left: 4px solid #667eea;
+            background: linear-gradient(to right, rgba(102, 126, 234, 0.05), transparent);
+        }
+        .prediction-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="gradient-bg text-white p-6 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">📊 Dashboards Module</h1>
+                    <p class="text-purple-100">Complete dashboard suite with AI-powered insights</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="refreshAll()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh All
+                    </button>
+                    <button onclick="exportDashboard()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex gap-2">
+                <button onclick="switchTab('executive')" class="tab-button active px-6 py-3 rounded-lg font-semibold text-white hover:bg-white hover:bg-opacity-20 transition">
+                    <i class="fas fa-chart-line mr-2"></i>Executive
+                </button>
+                <button onclick="switchTab('widgets')" class="tab-button px-6 py-3 rounded-lg font-semibold text-white hover:bg-white hover:bg-opacity-20 transition">
+                    <i class="fas fa-th mr-2"></i>Widgets
+                </button>
+                <button onclick="switchTab('analytics')" class="tab-button px-6 py-3 rounded-lg font-semibold text-white hover:bg-white hover:bg-opacity-20 transition">
+                    <i class="fas fa-brain mr-2"></i>Analytics
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Executive Dashboard Tab -->
+        <div id="executive-tab" class="tab-content active">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-4 gap-6 mb-6">
+                <div class="metric-card bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">Live</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Active Projects</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">42</p>
+                    <div class="flex items-center text-sm">
+                        <span class="text-green-600 font-semibold">35 On Track</span>
+                        <span class="text-gray-400 mx-2">•</span>
+                        <span class="text-yellow-600 font-semibold">5 At Risk</span>
+                    </div>
+                </div>
+
+                <div class="metric-card bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Live</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Total Budget</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">$2.4M</p>
+                    <div class="flex items-center text-sm">
+                        <i class="fas fa-arrow-up trend-up mr-1"></i>
+                        <span class="trend-up font-semibold">68% Utilized</span>
+                    </div>
+                </div>
+
+                <div class="metric-card bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-purple-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">Live</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Team Members</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">156</p>
+                    <div class="flex items-center text-sm">
+                        <span class="text-purple-600 font-semibold">87% Utilization</span>
+                    </div>
+                </div>
+
+                <div class="metric-card bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">Live</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Active Risks</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">12</p>
+                    <div class="flex items-center text-sm">
+                        <span class="text-red-600 font-semibold">3 High</span>
+                        <span class="text-gray-400 mx-2">•</span>
+                        <span class="text-yellow-600 font-semibold">9 Medium</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Project Status Distribution</h3>
+                    <canvas id="statusChart" height="250"></canvas>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">💰 Budget Overview</h3>
+                    <canvas id="budgetChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">📈 Team Velocity Trend</h3>
+                    <canvas id="velocityChart" height="250"></canvas>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">👥 Resource Utilization</h3>
+                    <canvas id="utilizationChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Projects -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">🏆 Top Projects</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-transparent rounded-lg border border-green-200">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-rocket text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-800">Project Alpha</p>
+                                <p class="text-sm text-gray-500">Mobile App Development</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Progress</p>
+                                <p class="font-bold text-gray-800">87%</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Budget</p>
+                                <p class="font-bold text-green-600">$450K</p>
+                            </div>
+                            <span class="px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold text-sm">On Track</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-transparent rounded-lg border border-blue-200">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-globe text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-800">Project Beta</p>
+                                <p class="text-sm text-gray-500">Website Redesign</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Progress</p>
+                                <p class="font-bold text-gray-800">72%</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Budget</p>
+                                <p class="font-bold text-blue-600">$320K</p>
+                            </div>
+                            <span class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-semibold text-sm">On Track</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-transparent rounded-lg border border-yellow-200">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-cog text-yellow-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-800">Project Gamma</p>
+                                <p class="text-sm text-gray-500">API Integration</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Progress</p>
+                                <p class="font-bold text-gray-800">58%</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Budget</p>
+                                <p class="font-bold text-yellow-600">$280K</p>
+                            </div>
+                            <span class="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg font-semibold text-sm">At Risk</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widgets Tab -->
+        <div id="widgets-tab" class="tab-content">
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Active Widgets</p>
+                            <p class="text-2xl font-bold text-purple-600">12</p>
+                        </div>
+                        <i class="fas fa-th text-purple-600 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Available Widgets</p>
+                            <p class="text-2xl font-bold text-blue-600">50+</p>
+                        </div>
+                        <i class="fas fa-puzzle-piece text-blue-600 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Custom Layouts</p>
+                            <p class="text-2xl font-bold text-green-600">8</p>
+                        </div>
+                        <i class="fas fa-layer-group text-green-600 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Last Saved</p>
+                            <p class="text-sm font-semibold text-gray-700">2 mins ago</p>
+                        </div>
+                        <i class="fas fa-clock text-gray-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layout Templates -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold mb-4">📐 Layout Templates</h2>
+                <div class="grid grid-cols-4 gap-4">
+                    <button onclick="applyLayout('executive')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 transition">
+                        <div class="text-center">
+                            <i class="fas fa-chart-line text-3xl text-purple-600 mb-2"></i>
+                            <p class="font-semibold">Executive</p>
+                            <p class="text-xs text-gray-500">High-level KPIs</p>
+                        </div>
+                    </button>
+                    <button onclick="applyLayout('project')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition">
+                        <div class="text-center">
+                            <i class="fas fa-tasks text-3xl text-blue-600 mb-2"></i>
+                            <p class="font-semibold">Project Manager</p>
+                            <p class="text-xs text-gray-500">Task & timeline focus</p>
+                        </div>
+                    </button>
+                    <button onclick="applyLayout('resource')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 transition">
+                        <div class="text-center">
+                            <i class="fas fa-users text-3xl text-green-600 mb-2"></i>
+                            <p class="font-semibold">Resource Manager</p>
+                            <p class="text-xs text-gray-500">Team & capacity</p>
+                        </div>
+                    </button>
+                    <button onclick="applyLayout('financial')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-yellow-500 transition">
+                        <div class="text-center">
+                            <i class="fas fa-dollar-sign text-3xl text-yellow-600 mb-2"></i>
+                            <p class="font-semibold">Financial</p>
+                            <p class="text-xs text-gray-500">Budget & costs</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Widget Grid -->
+            <div class="grid grid-cols-3 gap-6">
+                <div class="widget-card bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-800">Project Status</h3>
+                        <button class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                    <canvas id="widgetChart1" height="200"></canvas>
+                </div>
+
+                <div class="widget-card bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-800">Team Utilization</h3>
+                        <button class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Development</span>
+                                <span class="font-semibold">92%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-red-500 h-2 rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Design</span>
+                                <span class="font-semibold">78%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 78%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>QA</span>
+                                <span class="font-semibold">65%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 65%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widget-card bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-800">Recent Activities</h3>
+                        <button class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-check text-green-600 text-xs"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold">Task completed</p>
+                                <p class="text-xs text-gray-500">API Integration - 5 mins ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-comment text-blue-600 text-xs"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold">New comment</p>
+                                <p class="text-xs text-gray-500">Design Review - 12 mins ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics-tab" class="tab-content">
+            <!-- AI Insights Banner -->
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-brain text-3xl mr-3"></i>
+                            <h2 class="text-2xl font-bold">AI-Powered Insights</h2>
+                        </div>
+                        <p class="text-purple-100 mb-4">Based on analysis of 42 projects, 156 team members, and 2,847 activities</p>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                                <p class="text-sm text-purple-100">Prediction Accuracy</p>
+                                <p class="text-2xl font-bold">94.2%</p>
+                            </div>
+                            <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                                <p class="text-sm text-purple-100">Insights Generated</p>
+                                <p class="text-2xl font-bold">127</p>
+                            </div>
+                            <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                                <p class="text-sm text-purple-100">Recommendations</p>
+                                <p class="text-2xl font-bold">23</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Predictive Analytics -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-gray-800">📈 Project Completion Forecast</h3>
+                        <span class="prediction-badge"><i class="fas fa-brain mr-1"></i>AI Powered</span>
+                    </div>
+                    <canvas id="forecastChart" height="250"></canvas>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-gray-800">👥 Resource Demand Prediction</h3>
+                        <span class="prediction-badge"><i class="fas fa-brain mr-1"></i>AI Powered</span>
+                    </div>
+                    <canvas id="demandChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- AI Insights & Recommendations -->
+            <div class="grid grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">🎯 Critical Insights</h3>
+                    <div class="space-y-3">
+                        <div class="insight-card p-4 rounded-lg">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center">
+                                    <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                    <p class="font-semibold text-gray-800">High Risk Alert</p>
+                                </div>
+                                <span class="text-xs text-gray-500">2 hours ago</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Project Alpha shows 78% probability of delay.</p>
+                        </div>
+
+                        <div class="insight-card p-4 rounded-lg">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center">
+                                    <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                                    <p class="font-semibold text-gray-800">Resource Bottleneck</p>
+                                </div>
+                                <span class="text-xs text-gray-500">5 hours ago</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Development team at 95% capacity.</p>
+                        </div>
+
+                        <div class="insight-card p-4 rounded-lg">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center">
+                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                    <p class="font-semibold text-gray-800">Positive Trend</p>
+                                </div>
+                                <span class="text-xs text-gray-500">1 day ago</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Team velocity increased 15% this sprint.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">💡 AI Recommendations</h3>
+                    <div class="space-y-3">
+                        <div class="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
+                            <div class="flex items-start justify-between mb-2">
+                                <p class="font-semibold text-gray-800">Reallocate Resources</p>
+                                <span class="text-xs bg-purple-200 text-purple-700 px-2 py-1 rounded">High Impact</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Move 2 developers to Project Alpha.</p>
+                            <button onclick="applyRecommendation(1)" class="text-xs bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700">
+                                Apply Now
+                            </button>
+                        </div>
+
+                        <div class="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
+                            <div class="flex items-start justify-between mb-2">
+                                <p class="font-semibold text-gray-800">Adjust Timeline</p>
+                                <span class="text-xs bg-blue-200 text-blue-700 px-2 py-1 rounded">Medium Impact</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Extend Project Gamma by 1 week.</p>
+                            <button onclick="applyRecommendation(2)" class="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">
+                                Apply Now
+                            </button>
+                        </div>
+
+                        <div class="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                            <div class="flex items-start justify-between mb-2">
+                                <p class="font-semibold text-gray-800">Optimize Workflow</p>
+                                <span class="text-xs bg-green-200 text-green-700 px-2 py-1 rounded">High Impact</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Automate code review process.</p>
+                            <button onclick="applyRecommendation(3)" class="text-xs bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700">
+                                Apply Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.closest('.tab-button').classList.add('active');
+            
+            // Reinitialize charts for the active tab
+            setTimeout(() => initCharts(), 100);
+        }
+
+        // Initialize Charts
+        function initCharts() {
+            // Executive Tab Charts
+            const ctx1 = document.getElementById('statusChart');
+            if (ctx1 && ctx1.offsetParent !== null) {
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['On Track', 'At Risk', 'Delayed'],
+                        datasets: [{
+                            data: [35, 5, 2],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('budgetChart');
+            if (ctx2 && ctx2.offsetParent !== null) {
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                        datasets: [{
+                            label: 'Planned',
+                            data: [600, 650, 700, 750],
+                            backgroundColor: '#93c5fd'
+                        }, {
+                            label: 'Actual',
+                            data: [580, 620, 0, 0],
+                            backgroundColor: '#3b82f6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            const ctx3 = document.getElementById('velocityChart');
+            if (ctx3 && ctx3.offsetParent !== null) {
+                new Chart(ctx3, {
+                    type: 'line',
+                    data: {
+                        labels: ['Sprint 1', 'Sprint 2', 'Sprint 3', 'Sprint 4', 'Sprint 5', 'Sprint 6'],
+                        datasets: [{
+                            label: 'Velocity',
+                            data: [32, 35, 38, 36, 40, 42],
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            const ctx4 = document.getElementById('utilizationChart');
+            if (ctx4 && ctx4.offsetParent !== null) {
+                new Chart(ctx4, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Dev', 'Design', 'QA', 'PM', 'DevOps'],
+                        datasets: [{
+                            label: 'Utilization %',
+                            data: [92, 78, 65, 85, 88],
+                            backgroundColor: ['#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, max: 100 } }
+                    }
+                });
+            }
+
+            // Widget Tab Charts
+            const ctx5 = document.getElementById('widgetChart1');
+            if (ctx5 && ctx5.offsetParent !== null) {
+                new Chart(ctx5, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['On Track', 'At Risk', 'Delayed'],
+                        datasets: [{
+                            data: [35, 5, 2],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            // Analytics Tab Charts
+            const ctx6 = document.getElementById('forecastChart');
+            if (ctx6 && ctx6.offsetParent !== null) {
+                new Chart(ctx6, {
+                    type: 'line',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                        datasets: [{
+                            label: 'Actual',
+                            data: [15, 28, 42, 58, 72, 85],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Predicted',
+                            data: [null, null, null, null, 72, 85, 95, 100],
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            const ctx7 = document.getElementById('demandChart');
+            if (ctx7 && ctx7.offsetParent !== null) {
+                new Chart(ctx7, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Capacity',
+                            data: [120, 120, 125, 125, 130, 130],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Demand',
+                            data: [95, 108, 118, 135, 142, 148],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+        });
+
+        // Actions
+        function refreshAll() {
+            showToast('All dashboards refreshed successfully!');
+        }
+
+        function exportDashboard() {
+            showToast('Dashboard exported to PDF!');
+        }
+
+        function applyLayout(layout) {
+            showToast(`"${layout}" layout applied successfully!`);
+        }
+
+        function applyRecommendation(id) {
+            showToast(`Recommendation #${id} applied successfully!`);
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

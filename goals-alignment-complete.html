@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goals & Alignment - Complete Suite | PPM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .tab-button { padding: 12px 24px; border-radius: 8px; font-weight: 600; transition: all 0.3s ease; }
+        .tab-button.active { background: white; color: #667eea; }
+        .tab-button:not(.active) { color: rgba(255, 255, 255, 0.8); }
+        .tab-button:not(.active):hover { background: rgba(255, 255, 255, 0.1); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); }
+        .progress-ring { transform: rotate(-90deg); }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-bullseye text-3xl"></i>
+                    <div>
+                        <h1 class="text-3xl font-bold">Goals & Alignment</h1>
+                        <p class="text-purple-200">Strategic Goal Management & OKRs</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="createGoal()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-plus mr-2"></i>New Goal
+                    </button>
+                    <button onclick="exportGoals()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <button class="tab-button active" onclick="switchTab('goals')"><i class="fas fa-flag mr-2"></i>Goals</button>
+                <button class="tab-button" onclick="switchTab('okrs')"><i class="fas fa-chart-line mr-2"></i>OKRs</button>
+                <button class="tab-button" onclick="switchTab('alignment')"><i class="fas fa-project-diagram mr-2"></i>Alignment</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Goals Tab -->
+        <div id="goals-tab" class="tab-content active">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-blue-100 p-3 rounded-lg"><i class="fas fa-bullseye text-blue-600 text-2xl"></i></div>
+                        <span class="text-green-600 text-sm font-semibold"><i class="fas fa-arrow-up mr-1"></i>8</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Active Goals</h3>
+                    <p class="text-3xl font-bold text-gray-900">24</p>
+                    <p class="text-sm text-gray-500 mt-2">Across organization</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-green-100 p-3 rounded-lg"><i class="fas fa-check-circle text-green-600 text-2xl"></i></div>
+                        <span class="text-green-600 text-sm font-semibold">+45%</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Achievement Rate</h3>
+                    <p class="text-3xl font-bold text-gray-900">78%</p>
+                    <p class="text-sm text-gray-500 mt-2">Goals on track</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-purple-100 p-3 rounded-lg"><i class="fas fa-project-diagram text-purple-600 text-2xl"></i></div>
+                        <span class="text-purple-600 text-sm font-semibold">+30%</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Strategic Alignment</h3>
+                    <p class="text-3xl font-bold text-gray-900">85%</p>
+                    <p class="text-sm text-gray-500 mt-2">Projects aligned</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-orange-100 p-3 rounded-lg"><i class="fas fa-calendar text-orange-600 text-2xl"></i></div>
+                        <span class="text-blue-600 text-sm font-semibold">Q1 2024</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Current Quarter</h3>
+                    <p class="text-3xl font-bold text-gray-900">12</p>
+                    <p class="text-sm text-gray-500 mt-2">OKRs active</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Strategic Goals</h2>
+                <div class="space-y-4">
+                    ${generateGoals()}
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Goal Progress</h2>
+                <canvas id="goalProgressChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+
+        <!-- OKRs Tab -->
+        <div id="okrs-tab" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Q1 2024 OKRs</h2>
+                <div class="space-y-6">
+                    ${generateOKRs()}
+                </div>
+            </div>
+        </div>
+
+        <!-- Alignment Tab -->
+        <div id="alignment-tab" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Strategic Alignment Map</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <canvas id="alignmentChart" style="max-height: 300px;"></canvas>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-900">Revenue Growth</h4>
+                                <span class="text-green-600 font-bold">92%</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-2">18 projects aligned</p>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-900">Customer Satisfaction</h4>
+                                <span class="text-blue-600 font-bold">85%</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-2">12 projects aligned</p>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-purple-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-900">Operational Excellence</h4>
+                                <span class="text-purple-600 font-bold">78%</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-2">10 projects aligned</p>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-purple-500 h-2 rounded-full" style="width: 78%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function generateGoals() {
+            const goals = [
+                { name: 'Increase Revenue by 30%', progress: 68, status: 'on-track', owner: 'Sales Team', deadline: 'Q4 2024' },
+                { name: 'Launch 3 New Products', progress: 45, status: 'on-track', owner: 'Product Team', deadline: 'Q3 2024' },
+                { name: 'Improve Customer Satisfaction to 90%', progress: 82, status: 'ahead', owner: 'Support Team', deadline: 'Q2 2024' },
+                { name: 'Reduce Operational Costs by 15%', progress: 34, status: 'at-risk', owner: 'Operations', deadline: 'Q4 2024' }
+            ];
+            return goals.map(goal => `
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-900 mb-1">${goal.name}</h4>
+                        <div class="flex items-center space-x-4 text-sm text-gray-600">
+                            <span><i class="fas fa-user mr-1"></i>${goal.owner}</span>
+                            <span><i class="fas fa-calendar mr-1"></i>${goal.deadline}</span>
+                        </div>
+                        <div class="mt-3 flex items-center space-x-2">
+                            <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                <div class="bg-purple-600 h-2 rounded-full" style="width: ${goal.progress}%"></div>
+                            </div>
+                            <span class="text-sm font-semibold text-gray-900">${goal.progress}%</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function generateOKRs() {
+            return `
+                <div class="border-l-4 border-purple-500 pl-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Objective: Achieve Market Leadership</h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="font-semibold text-gray-900">KR1: Increase market share to 25%</p>
+                                <span class="text-green-600 font-bold">18%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 72%"></div>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="font-semibold text-gray-900">KR2: Launch in 5 new markets</p>
+                                <span class="text-blue-600 font-bold">3/5</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 60%"></div>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="font-semibold text-gray-900">KR3: Achieve NPS score of 70+</p>
+                                <span class="text-purple-600 font-bold">65</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-purple-500 h-2 rounded-full" style="width: 93%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+            if (tabName === 'goals') initGoalChart();
+            if (tabName === 'alignment') initAlignmentChart();
+        }
+
+        function initGoalChart() {
+            const ctx = document.getElementById('goalProgressChart')?.getContext('2d');
+            if (!ctx) return;
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Revenue', 'Products', 'Satisfaction', 'Costs'],
+                    datasets: [{
+                        label: 'Progress',
+                        data: [68, 45, 82, 34],
+                        backgroundColor: ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
+            });
+        }
+
+        function initAlignmentChart() {
+            const ctx = document.getElementById('alignmentChart')?.getContext('2d');
+            if (!ctx) return;
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Revenue Growth', 'Customer Satisfaction', 'Operational Excellence', 'Innovation'],
+                    datasets: [{ data: [18, 12, 10, 2], backgroundColor: ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        function createGoal() { showToast('Creating new goal...', 'success'); }
+        function exportGoals() { showToast('Exporting goals...', 'success'); }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-blue-500';
+            toast.className = `fixed top-20 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50`;
+            toast.innerHTML = `<div class="flex items-center space-x-3"><i class="fas fa-check-circle text-xl"></i><span class="font-semibold">${message}</span></div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', initGoalChart);
+    </script>
+</body>
+</html>

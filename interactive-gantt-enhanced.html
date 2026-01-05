@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Gantt System - Enhanced</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gantt-bar {
+            transition: all 0.3s ease;
+            cursor: move;
+        }
+        .gantt-bar:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+        .task-row {
+            transition: all 0.2s ease;
+        }
+        .task-row:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+        .resize-handle {
+            cursor: ew-resize;
+            width: 10px;
+            height: 100%;
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: rgba(255,255,255,0.3);
+        }
+        .resize-handle:hover {
+            background: rgba(255,255,255,0.6);
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+        .milestone {
+            shape-rendering: crispEdges;
+        }
+        .critical-path {
+            stroke: #ef4444;
+            stroke-width: 2;
+            fill: none;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation Header -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-chart-gantt text-purple-600 text-2xl mr-3"></i>
+                    <span class="font-bold text-xl text-gray-800">Interactive Gantt System</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="goBack()" class="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-arrow-left mr-1"></i> Back
+                    </button>
+                    <button onclick="exportGantt()" class="bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700">
+                        <i class="fas fa-download mr-1"></i> Export
+                    </button>
+                    <button onclick="saveProject()" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700">
+                        <i class="fas fa-save mr-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Project Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Website Redesign Project</h1>
+                    <p class="text-gray-600 mb-4">Modern responsive website with AI-powered features and optimized user experience</p>
+                    <div class="flex items-center space-x-6 text-sm">
+                        <span class="flex items-center text-gray-600">
+                            <i class="fas fa-calendar-alt mr-2 text-purple-600"></i>
+                            Jan 1, 2024 - Mar 31, 2024
+                        </span>
+                        <span class="flex items-center text-gray-600">
+                            <i class="fas fa-users mr-2 text-purple-600"></i>
+                            8 Team Members
+                        </span>
+                        <span class="flex items-center text-gray-600">
+                            <i class="fas fa-dollar-sign mr-2 text-purple-600"></i>
+                            $250,000 Budget
+                        </span>
+                        <span class="flex items-center text-gray-600">
+                            <i class="fas fa-tasks mr-2 text-purple-600"></i>
+                            75% Complete
+                        </span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-semibold mb-2">
+                        On Track
+                    </div>
+                    <div class="text-sm text-gray-600">Status: Active</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <div class="flex space-x-4">
+                    <button onclick="zoomIn()" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                        <i class="fas fa-search-plus"></i> Zoom In
+                    </button>
+                    <button onclick="zoomOut()" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                        <i class="fas fa-search-minus"></i> Zoom Out
+                    </button>
+                    <button onclick="toggleView('day')" class="view-btn bg-gray-200 px-3 py-1 rounded hover:bg-gray-300" data-view="day">
+                        Day
+                    </button>
+                    <button onclick="toggleView('week')" class="view-btn bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700" data-view="week">
+                        Week
+                    </button>
+                    <button onclick="toggleView('month')" class="view-btn bg-gray-200 px-3 py-1 rounded hover:bg-gray-300" data-view="month">
+                        Month
+                    </button>
+                    <button onclick="toggleCriticalPath()" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                        <i class="fas fa-route"></i> Critical Path
+                    </button>
+                </div>
+                <div class="flex space-x-4">
+                    <button onclick="addTask()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        <i class="fas fa-plus mr-1"></i> Add Task
+                    </button>
+                    <button onclick="optimizeSchedule()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                        <i class="fas fa-magic mr-1"></i> AI Optimize
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gantt Chart Container -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="mb-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-800">Project Timeline</h2>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-blue-500 rounded mr-2"></div>
+                        <span class="text-sm text-gray-600">On Track</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-yellow-500 rounded mr-2"></div>
+                        <span class="text-sm text-gray-600">At Risk</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-red-500 rounded mr-2"></div>
+                        <span class="text-sm text-gray-600">Delayed</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-purple-500 rounded mr-2"></div>
+                        <span class="text-sm text-gray-600">Complete</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gantt Chart Canvas -->
+            <div class="overflow-x-auto">
+                <svg id="ganttChart" width="1200" height="600" viewBox="0 0 1200 600">
+                    <!-- Grid Lines -->
+                    <defs>
+                        <pattern id="grid" width="50" height="40" patternUnits="userSpaceOnUse">
+                            <path d="M 50 0 L 0 0 0 40" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="1200" height="600" fill="url(#grid)" />
+                    
+                    <!-- Month Headers -->
+                    <text x="200" y="25" font-family="Arial" font-size="14" font-weight="bold" fill="#374151">January 2024</text>
+                    <text x="450" y="25" font-family="Arial" font-size="14" font-weight="bold" fill="#374151">February 2024</text>
+                    <text x="700" y="25" font-family="Arial" font-size="14" font-weight="bold" fill="#374151">March 2024</text>
+                    
+                    <!-- Week Separators -->
+                    <line x1="275" y1="30" x2="275" y2="600" stroke="#d1d5db" stroke-width="1" stroke-dasharray="5,5"/>
+                    <line x1="350" y1="30" x2="350" y2="600" stroke="#d1d5db" stroke-width="1" stroke-dasharray="5,5"/>
+                    <line x1="425" y1="30" x2="425" y2="600" stroke="#d1d5db" stroke-width="1" stroke-dasharray="5,5"/>
+                    <line x1="525" y1="30" x2="525" y2="600" stroke="#d1d5db" stroke-width="1" stroke-dasharray="5,5"/>
+                    <line x1="600" y1="30" x2="600" y2="600" stroke="#d1d5db" stroke-width="1" stroke-dasharray="5,5"/>
+                    <line x1="675" y1="30" x2="675" y2="600" stroke="#d1d5db" stroke-width="1" stroke-dasharray="5,5"/>
+                    <line x1="775" y1="30" x2="775" y2="600" stroke="#d1d5db" stroke-width="1" stroke-dasharray="5,5"/>
+                    <line x1="850" y1="30" x2="850" y2="600" stroke="#d1d5db" stroke-width="1" stroke-dasharray="5,5"/>
+                    <line x1="925" y1="30" x2="925" y2="600" stroke="#d1d5db" stroke-width="1" stroke-dasharray="5,5"/>
+                    
+                    <!-- Critical Path -->
+                    <path class="critical-path" d="M 200,80 L 400,80 L 450,120 L 650,120 L 700,160 L 900,160" />
+                    
+                    <!-- Task 1: Research & Planning -->
+                    <g class="task-row" data-task="1">
+                        <text x="10" y="85" font-family="Arial" font-size="12" fill="#374151">Research & Planning</text>
+                        <rect class="gantt-bar" x="200" y="70" width="200" height="25" rx="3" fill="#3b82f6" data-task="1"/>
+                        <rect class="resize-handle" x="390" y="70" width="10" height="25" data-task="1"/>
+                        <text x="300" y="87" font-family="Arial" font-size="11" fill="white" text-anchor="middle">100%</text>
+                    </g>
+                    
+                    <!-- Task 2: UI/UX Design -->
+                    <g class="task-row" data-task="2">
+                        <text x="10" y="125" font-family="Arial" font-size="12" fill="#374151">UI/UX Design</text>
+                        <rect class="gantt-bar" x="400" y="110" width="250" height="25" rx="3" fill="#3b82f6" data-task="2"/>
+                        <rect class="resize-handle" x="640" y="110" width="10" height="25" data-task="2"/>
+                        <text x="525" y="127" font-family="Arial" font-size="11" fill="white" text-anchor="middle">100%</text>
+                    </g>
+                    
+                    <!-- Task 3: Frontend Development -->
+                    <g class="task-row" data-task="3">
+                        <text x="10" y="165" font-family="Arial" font-size="12" fill="#374151">Frontend Development</text>
+                        <rect class="gantt-bar" x="650" y="150" width="250" height="25" rx="3" fill="#8b5cf6" data-task="3"/>
+                        <rect class="resize-handle" x="890" y="150" width="10" height="25" data-task="3"/>
+                        <text x="775" y="167" font-family="Arial" font-size="11" fill="white" text-anchor="middle">75%</text>
+                    </g>
+                    
+                    <!-- Task 4: Backend Development -->
+                    <g class="task-row" data-task="4">
+                        <text x="10" y="205" font-family="Arial" font-size="12" fill="#374151">Backend Development</text>
+                        <rect class="gantt-bar" x="700" y="190" width="200" height="25" rx="3" fill="#8b5cf6" data-task="4"/>
+                        <rect class="resize-handle" x="890" y="190" width="10" height="25" data-task="4"/>
+                        <text x="800" y="207" font-family="Arial" font-size="11" fill="white" text-anchor="middle">60%</text>
+                    </g>
+                    
+                    <!-- Task 5: Testing -->
+                    <g class="task-row" data-task="5">
+                        <text x="10" y="245" font-family="Arial" font-size="12" fill="#374151">Testing & QA</text>
+                        <rect class="gantt-bar" x="850" y="230" width="150" height="25" rx="3" fill="#f59e0b" data-task="5"/>
+                        <rect class="resize-handle" x="990" y="230" width="10" height="25" data-task="5"/>
+                        <text x="925" y="247" font-family="Arial" font-size="11" fill="white" text-anchor="middle">25%</text>
+                    </g>
+                    
+                    <!-- Task 6: Deployment -->
+                    <g class="task-row" data-task="6">
+                        <text x="10" y="285" font-family="Arial" font-size="12" fill="#374151">Deployment</text>
+                        <rect class="gantt-bar" x="950" y="270" width="100" height="25" rx="3" fill="#ef4444" data-task="6"/>
+                        <rect class="resize-handle" x="1040" y="270" width="10" height="25" data-task="6"/>
+                        <text x="1000" y="287" font-family="Arial" font-size="11" fill="white" text-anchor="middle">0%</text>
+                    </g>
+                    
+                    <!-- Milestone -->
+                    <g class="milestone">
+                        <text x="10" y="325" font-family="Arial" font-size="12" fill="#374151">Launch</text>
+                        <polygon points="1050,315 1060,325 1050,335 1040,325" fill="#10b981"/>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Task Details Panel -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Task Information -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Task Information</h3>
+                <div id="taskInfo" class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Selected Task:</span>
+                        <span class="font-semibold" id="selectedTask">Frontend Development</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Duration:</span>
+                        <span class="font-semibold">5 weeks</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Progress:</span>
+                        <span class="font-semibold">75%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Assigned To:</span>
+                        <span class="font-semibold">Dev Team A</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Dependencies:</span>
+                        <span class="font-semibold">UI/UX Design</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Allocation -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Resource Allocation</h3>
+                <canvas id="resourceChart" width="300" height="200"></canvas>
+            </div>
+
+            <!-- Progress Tracking -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Overall Progress</h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-sm text-gray-600">Project Progress</span>
+                            <span class="text-sm font-semibold">75%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-gradient-to-r from-purple-600 to-blue-600 h-3 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-sm text-gray-600">Budget Used</span>
+                            <span class="text-sm font-semibold">$187,500 / $250,000</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-gradient-to-r from-green-600 to-emerald-600 h-3 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-sm text-gray-600">Time Elapsed</span>
+                            <span class="text-sm font-semibold">67%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-gradient-to-r from-yellow-600 to-orange-600 h-3 rounded-full" style="width: 67%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <!-- Task Modal -->
+    <div id="taskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-96 max-w-full">
+            <h3 class="text-xl font-bold mb-4">Add New Task</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Task Name</label>
+                    <input type="text" id="taskName" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Enter task name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                    <input type="date" id="startDate" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Duration (weeks)</label>
+                    <input type="number" id="duration" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Enter duration">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Assign To</label>
+                    <select id="assignTo" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                        <option>Dev Team A</option>
+                        <option>Dev Team B</option>
+                        <option>Design Team</option>
+                        <option>QA Team</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="closeTaskModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button onclick="saveTask()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                    Add Task
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize variables
+        let currentView = 'week';
+        let zoomLevel = 1;
+        let selectedTask = null;
+        let isDragging = false;
+        let isResizing = false;
+        let dragOffset = { x: 0, y: 0 };
+
+        // Initialize Chart
+        const ctx = document.getElementById('resourceChart').getContext('2d');
+        const resourceChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Dev Team A', 'Dev Team B', 'Design Team', 'QA Team'],
+                datasets: [{
+                    data: [40, 25, 20, 15],
+                    backgroundColor: [
+                        '#3b82f6',
+                        '#8b5cf6',
+                        '#10b981',
+                        '#f59e0b'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Navigation functions
+        function goBack() {
+            window.history.back();
+        }
+
+        function exportGantt() {
+            alert('Gantt chart exported successfully!');
+        }
+
+        function saveProject() {
+            alert('Project saved successfully!');
+        }
+
+        function zoomIn() {
+            zoomLevel = Math.min(zoomLevel * 1.2, 3);
+            document.getElementById('ganttChart').style.transform = `scale(${zoomLevel})`;
+        }
+
+        function zoomOut() {
+            zoomLevel = Math.max(zoomLevel / 1.2, 0.5);
+            document.getElementById('ganttChart').style.transform = `scale(${zoomLevel})`;
+        }
+
+        function toggleView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                if (btn.dataset.view === view) {
+                    btn.classList.add('bg-purple-600', 'text-white');
+                    btn.classList.remove('bg-gray-200');
+                } else {
+                    btn.classList.remove('bg-purple-600', 'text-white');
+                    btn.classList.add('bg-gray-200');
+                }
+            });
+            // Update chart based on view
+            updateGanttView(view);
+        }
+
+        function toggleCriticalPath() {
+            const criticalPath = document.querySelector('.critical-path');
+            criticalPath.style.display = criticalPath.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function addTask() {
+            document.getElementById('taskModal').classList.remove('hidden');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.add('hidden');
+        }
+
+        function saveTask() {
+            const taskName = document.getElementById('taskName').value;
+            const startDate = document.getElementById('startDate').value;
+            const duration = document.getElementById('duration').value;
+            const assignTo = document.getElementById('assignTo').value;
+            
+            if (taskName && startDate && duration) {
+                alert(`Task "${taskName}" added successfully!`);
+                closeTaskModal();
+                // Clear form
+                document.getElementById('taskName').value = '';
+                document.getElementById('startDate').value = '';
+                document.getElementById('duration').value = '';
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        function optimizeSchedule() {
+            alert('AI schedule optimization complete! Project timeline optimized by 15%.');
+        }
+
+        function updateGanttView(view) {
+            // Update chart based on selected view
+            console.log(`Updating Gantt view to: ${view}`);
+        }
+
+        // Interactive features
+        document.addEventListener('DOMContentLoaded', function() {
+            const ganttBars = document.querySelectorAll('.gantt-bar');
+            const tooltip = document.getElementById('tooltip');
+            
+            ganttBars.forEach(bar => {
+                bar.addEventListener('mouseenter', function(e) {
+                    const taskId = this.dataset.task;
+                    const taskNames = ['', 'Research & Planning', 'UI/UX Design', 'Frontend Development', 'Backend Development', 'Testing & QA', 'Deployment'];
+                    const progress = ['', '100%', '100%', '75%', '60%', '25%', '0%'];
+                    
+                    tooltip.innerHTML = `
+                        <strong>${taskNames[taskId]}</strong><br>
+                        Progress: ${progress[taskId]}<br>
+                        Click to view details
+                    `;
+                    tooltip.style.display = 'block';
+                });
+                
+                bar.addEventListener('mousemove', function(e) {
+                    tooltip.style.left = e.pageX + 10 + 'px';
+                    tooltip.style.top = e.pageY - 30 + 'px';
+                });
+                
+                bar.addEventListener('mouseleave', function() {
+                    tooltip.style.display = 'none';
+                });
+                
+                bar.addEventListener('click', function() {
+                    const taskId = this.dataset.task;
+                    const taskNames = ['', 'Research & Planning', 'UI/UX Design', 'Frontend Development', 'Backend Development', 'Testing & QA', 'Deployment'];
+                    document.getElementById('selectedTask').textContent = taskNames[taskId];
+                });
+            });
+        });
+    </script>
+</body>
+</html>

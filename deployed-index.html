@@ -1,0 +1,2245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPM Pro - Project Portfolio Management</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <span class="ml-2 text-xl font-bold text-gray-900">PPM Pro</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="index.html" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                        🏠 Dashboard
+                    </a>
+                    <a href="team-collaboration.html" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                        👥 Team
+                    </a>
+                    <a href="gantt-timeline.html" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                        📊 Gantt
+                    </a>
+                    <a href="ai-recommendations.html" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                        🤖 AI Insights
+                    </a>
+                    <a href="resource-optimization.html" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                        ⚙️ Resources
+                    </a>
+                    <a href="automated-reports.html" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                        📈 Reports
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        🏠 Dashboard
+                    </a>
+                    <a href="team-collaboration.html" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        👥 Team
+                    </a>
+                    <a href="gantt-timeline.html" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        📊 Timeline
+                    </a>
+                    <a href="resource-optimization.html" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        ⚙️ Resources
+                    </a>
+                    <a href="ai-recommendations.html" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        🤖 AI Insights
+                    </a>
+                    <a href="automated-reports.html" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        📈 Reports
+                    </a>
+                    <button onclick="showLogin()" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        Sign In
+                    </button>
+                    <button onclick="showSignup()" class="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium">
+                        Get Started
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Landing Page -->
+    <div id="landing" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="text-center">
+            <h1 class="text-5xl font-extrabold text-gray-900 sm:text-6xl">
+                Project Portfolio Management
+                <span class="block text-blue-600">Powered by AI</span>
+            </h1>
+            <p class="mt-6 max-w-2xl mx-auto text-xl text-gray-600">
+                The world's most intelligent PPM tool. Manage projects, optimize resources, 
+                and predict outcomes with AI-powered insights.
+            </p>
+            <div class="mt-10 flex justify-center gap-4">
+                <button onclick="showSignup()" class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                    Start Free Trial →
+                </button>
+                <button class="inline-flex items-center px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Watch Demo
+                </button>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="mt-32 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white mb-4">
+                    ⚡
+                </div>
+                <h3 class="text-lg font-medium text-gray-900">AI-Powered Insights</h3>
+                <p class="mt-2 text-base text-gray-500">
+                    Predict project risks, optimize timelines, and get intelligent recommendations.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white mb-4">
+                    👥
+                </div>
+                <h3 class="text-lg font-medium text-gray-900">Resource Management</h3>
+                <p class="mt-2 text-base text-gray-500">
+                    Optimize team allocation and track capacity across all projects.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white mb-4">
+                    📅
+                </div>
+                <h3 class="text-lg font-medium text-gray-900">Timeline Tracking</h3>
+                <p class="mt-2 text-base text-gray-500">
+                    Gantt charts, Kanban boards, and critical path analysis in one place.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white mb-4">
+                    📊
+                </div>
+                <h3 class="text-lg font-medium text-gray-900">Portfolio Analytics</h3>
+                <p class="mt-2 text-base text-gray-500">
+                    Real-time dashboards and custom reports for executive decision-making.
+                </p>
+            </div>
+        </div>
+
+        <!-- Benefits Section -->
+        <div class="mt-32 bg-white rounded-2xl shadow-xl p-12">
+            <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">
+                Why Teams Choose PPM Pro
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="flex items-start">
+                    <span class="text-green-500 text-2xl mr-4">✓</span>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">50% Faster Project Delivery</h3>
+                        <p class="mt-1 text-gray-600">AI-optimized timelines and resource allocation</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <span class="text-green-500 text-2xl mr-4">✓</span>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">90% Risk Prediction Accuracy</h3>
+                        <p class="mt-1 text-gray-600">Identify issues before they become problems</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <span class="text-green-500 text-2xl mr-4">✓</span>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">30% Better Resource Utilization</h3>
+                        <p class="mt-1 text-gray-600">Smart allocation across your portfolio</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <span class="text-green-500 text-2xl mr-4">✓</span>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">Real-Time Collaboration</h3>
+                        <p class="mt-1 text-gray-600">Keep everyone aligned and informed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Portfolio Optimizer Modal -->
+    <div id="portfolioOptimizerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-5xl shadow-lg rounded-lg bg-white">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">🧠 AI Portfolio Optimizer</h3>
+                <button onclick="closePortfolioOptimizer()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Portfolio Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                    <h4 class="font-semibold text-indigo-900 mb-3">📊 Portfolio Health</h4>
+                    <div id="portfolioHealthScore" class="text-3xl font-bold text-indigo-600 mb-2">85%</div>
+                    <div class="text-sm text-indigo-700">Overall optimization score</div>
+                    <div class="mt-3 bg-white rounded-lg p-2">
+                        <div class="bg-gray-200 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h4 class="font-semibold text-green-900 mb-3">💰 Budget Optimization</h4>
+                    <div id="budgetOptimization" class="text-3xl font-bold text-green-600 mb-2">$125K</div>
+                    <div class="text-sm text-green-700">Potential savings identified</div>
+                    <div class="mt-2 text-xs text-green-600">12% reduction opportunity</div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h4 class="font-semibold text-yellow-900 mb-3">⚠️ Risk Distribution</h4>
+                    <div id="riskDistribution" class="text-3xl font-bold text-yellow-600 mb-2">Balanced</div>
+                    <div class="text-sm text-yellow-700">Low-Medium risk profile</div>
+                    <div class="mt-2 text-xs text-yellow-600">3 high-risk items identified</div>
+                </div>
+            </div>
+
+            <!-- AI Optimization Insights -->
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+                <h4 class="font-semibold text-purple-900 mb-3">🎯 AI Optimization Recommendations</h4>
+                <div id="optimizationRecommendations" class="space-y-2">
+                    <!-- AI recommendations will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Projects Analysis -->
+            <div class="mb-6">
+                <h4 class="font-semibold text-gray-900 mb-3">📋 Multi-Project Analysis</h4>
+                <div id="portfolioProjectsAnalysis" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Project analysis will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Resource Allocation -->
+            <div class="mb-6">
+                <h4 class="font-semibold text-gray-900 mb-3">👥 AI-Optimized Resource Allocation</h4>
+                <div id="resourceAllocationAnalysis" class="bg-gray-50 rounded-lg p-4">
+                    <!-- Resource allocation will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-3">
+                <button onclick="closePortfolioOptimizer()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
+                    Close
+                </button>
+                <button onclick="implementOptimizations()" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                    Implement AI Optimizations 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Assistant Modal -->
+    <div id="aiAssistantModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-lg bg-white">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">🤖 AI Project Assistant</h3>
+                <button onclick="closeAIAssistant()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-4" style="height: 400px; overflow-y: auto;">
+                <div id="aiChatMessages" class="space-y-3">
+                    <!-- Chat messages will appear here -->
+                    <div class="flex items-start">
+                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                            🤖
+                        </div>
+                        <div class="bg-white rounded-lg p-3 max-w-md">
+                            <p class="text-sm text-gray-800">Hello! I'm your AI Project Assistant. I can help you with:</p>
+                            <ul class="text-sm text-gray-600 mt-2 space-y-1">
+                                <li>• Project planning and optimization</li>
+                                <li>• Risk assessment and mitigation</li>
+                                <li>• Resource allocation recommendations</li>
+                                <li>• Timeline and budget forecasting</li>
+                                <li>• Strategic decision support</li>
+                            </ul>
+                            <p class="text-sm text-gray-800 mt-2">How can I assist you today?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="flex space-x-3">
+                <input 
+                    type="text" 
+                    id="aiChatInput" 
+                    placeholder="Ask me anything about your projects..." 
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    onkeypress="if(event.key === 'Enter') sendAIMessage()"
+                >
+                <button onclick="sendAIMessage()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                    Send 📤
+                </button>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="mt-4 flex flex-wrap gap-2">
+                <button onclick="quickAIQuestion('portfolio health')" class="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200">
+                    How's my portfolio health?
+                </button>
+                <button onclick="quickAIQuestion('risk assessment')" class="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200">
+                    Analyze project risks
+                </button>
+                <button onclick="quickAIQuestion('resource optimization')" class="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200">
+                    Optimize resources
+                </button>
+                <button onclick="quickAIQuestion('timeline prediction')" class="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200">
+                    Predict completion dates
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Project Creator Modal -->
+    <div id="aiProjectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-3xl shadow-lg rounded-lg bg-white">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">🤖 AI Project Creator</h3>
+                <button onclick="closeAIProjectCreator()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- AI Input Section -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Describe Your Project in Natural Language
+                </label>
+                <textarea 
+                    id="aiProjectDescription" 
+                    rows="4" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Example: I need to launch a new e-commerce website with product catalog, shopping cart, and payment integration. Budget is around $25,000 and I want to launch in 3 months."
+                ></textarea>
+                <div class="mt-2 flex flex-wrap gap-2">
+                    <button onclick="addExampleProject('website redesign')" class="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200">
+                        🌐 Website Redesign
+                    </button>
+                    <button onclick="addExampleProject('mobile app')" class="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200">
+                        📱 Mobile App
+                    </button>
+                    <button onclick="addExampleProject('marketing campaign')" class="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200">
+                        📢 Marketing Campaign
+                    </button>
+                    <button onclick="addExampleProject('product launch')" class="text-xs px-3 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200">
+                        🚀 Product Launch
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Processing Section -->
+            <div id="aiProcessingSection" class="hidden mb-6">
+                <div class="flex items-center justify-center py-8">
+                    <div class="text-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                        <p class="text-gray-600">🤖 AI is analyzing your project...</p>
+                        <p class="text-sm text-gray-500 mt-2">Generating optimal tasks, timeline, and resource recommendations</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Results Section -->
+            <div id="aiResultsSection" class="hidden">
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold text-purple-900 mb-3">🎯 AI Analysis Complete!</h4>
+                    <div id="aiProjectDetails"></div>
+                </div>
+
+                <!-- Generated Tasks -->
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-3">📋 AI-Generated Tasks</h4>
+                    <div id="aiGeneratedTasks" class="space-y-2 max-h-64 overflow-y-auto"></div>
+                </div>
+
+                <!-- Resource Recommendations -->
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-3">👥 Resource Recommendations</h4>
+                    <div id="aiResourceRecommendations"></div>
+                </div>
+
+                <!-- Risk Assessment -->
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-3">⚠️ Risk Assessment</h4>
+                    <div id="aiRiskAssessment"></div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeAIProjectCreator()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
+                        Cancel
+                    </button>
+                    <button onclick="createAIProject()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                        Create Project ✨
+                    </button>
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <div id="generateButtonSection" class="flex justify-end">
+                <button onclick="generateAIProject()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 font-medium">
+                    🤖 Generate Project Plan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
+            <h2 class="text-2xl font-bold mb-6">Sign In</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="loginEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" id="loginPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">
+                    Sign In
+                </button>
+                <button type="button" onclick="hideLogin()" class="w-full mt-2 text-gray-600 py-2">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
+            <h2 class="text-2xl font-bold mb-6">Create Account</h2>
+            <form onsubmit="handleSignup(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <input type="text" id="signupName" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="signupEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" id="signupPassword" required minlength="6" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">
+                    Create Account
+                </button>
+                <button type="button" onclick="hideSignup()" class="w-full mt-2 text-gray-600 py-2">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// Check if user is confirmed from email redirect
+window.addEventListener('load', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const errorDescription = urlParams.get('error_description');
+    
+    if (error) {
+        // Show user-friendly message for confirmation errors
+        if (error === 'access_denied' && errorDescription) {
+            const message = document.createElement('div');
+            message.className = 'fixed top-4 left-4 right-4 bg-yellow-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 text-center';
+            message.innerHTML = '⚠️ Email confirmation issue detected. Your account was created successfully! Please try logging in directly below.';
+            document.body.appendChild(message);
+            
+            // Auto-show login modal
+            setTimeout(() => {
+                showLogin();
+                message.remove();
+            }, 3000);
+        }
+    }
+    
+    // Check if there's an access token (successful confirmation)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    
+    if (accessToken) {
+        try {
+            // User was confirmed, set up session
+            const { data, error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: hashParams.get('refresh_token') || ''
+            });
+            
+            if (!error) {
+                alert('🎉 Email confirmed successfully! Welcome to PPM Pro!');
+                // Clear the URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        } catch (err) {
+            console.log('Session setup completed');
+        }
+    }
+});
+</script>
+    <script>
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(
+            'https://airkbxpliubghdvpwqty.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpcmtieHBsaXViZ2hkdnB3cXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NzM4NjEsImV4cCI6MjA4MDM0OTg2MX0.S8XZyLBfk_aIvFMuNiusdvlVAwNFbgID0McDP-cdi24'
+        );
+
+        function showLogin() {
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+
+        function hideLogin() {
+            document.getElementById('loginModal').classList.add('hidden');
+        }
+
+        function showSignup() {
+            document.getElementById('signupModal').classList.remove('hidden');
+        }
+
+        function hideSignup() {
+            document.getElementById('signupModal').classList.add('hidden');
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) throw error;
+
+                alert('Login successful! Welcome back! Welcome to PPM Pro! 🎉');
+                hideLogin();
+                
+                // Show success message
+                const successDiv = document.createElement('div');
+                successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50';
+                successDiv.innerHTML = '✅ Successfully logged in! Welcome to PPM Pro! Your dashboard is coming next...';
+                document.body.appendChild(successDiv);
+                
+                setTimeout(() => {
+                    successDiv.remove();
+                }, 5000);
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
+        }
+
+        async function handleSignup(event) {
+            event.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            full_name: name
+                        },
+                        emailRedirectTo: 'https://sites.super.myninja.ai/de58bcba-2268-49c0-a9c6-ac1950ea9056/86df3a1d/index.html'
+                    }
+                });
+
+                if (error) throw error;
+
+                alert('Account created! Please check your email to confirm your account.\n\nIMPORTANT: After clicking the email link, you will see an error page. Just click the back button and sign in here.');
+                hideSignup();
+            } catch (error) {
+                alert('Signup failed: ' + error.message);
+            }
+        }
+    </script>
+<!-- Dashboard Page (Hidden by default) -->
+    <div id="dashboard" class="hidden min-h-screen bg-gray-50">
+        <!-- Top Navigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <span class="ml-2 text-xl font-bold text-gray-900">PPM Pro</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span id="userEmail" class="text-sm text-gray-700"></span>
+                        <button onclick="handleLogout()" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Dashboard Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Advanced AI Features Banner -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-lg p-6 mb-8 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold mb-2">🧠 Advanced AI Intelligence</h2>
+                        <p class="text-indigo-100">Portfolio optimization, predictive analytics, and AI assistant</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button onclick="openPortfolioOptimizer()" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-indigo-50 transition-colors">
+                            📊 Portfolio AI
+                        </button>
+                        <button onclick="openAIAssistant()" class="bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-400 transition-colors">
+                            🤖 AI Assistant
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Project Creator Banner -->
+            <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow-lg p-6 mb-8 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold mb-2">🤖 AI Project Assistant</h2>
+                        <p class="text-purple-100">Describe your project in natural language and let AI generate the complete plan</p>
+                    </div>
+                    <button onclick="openAIProjectCreator()" class="bg-white text-purple-600 px-6 py-3 rounded-lg font-medium hover:bg-purple-50 transition-colors">
+                        Create with AI →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Welcome Section -->
+            <div class="mb-8">
+                <h1 id="welcomeMessage" class="text-3xl font-bold text-gray-900">
+                    Welcome back! 👋
+                </h1>
+                <p class="mt-2 text-gray-600">
+                    Here's what's happening with your AI-enhanced projects today.
+                </p>
+            </div>
+
+            <!-- Interactive AI Stats Grid -->
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 mb-8">
+                <div onclick="showProjectsList()" class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-blue-500 cursor-pointer hover:shadow-lg transition-shadow">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                📁
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">
+                                        Active Projects
+                                    </dt>
+                                    <dd class="flex items-baseline">
+                                        <div id="activeProjectsCount" class="text-2xl font-semibold text-gray-900">0</div>
+                                        <div class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
+                                            📈 Click to view
+                                        </div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="showAIOptimizedProjects()" class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-green-500 cursor-pointer hover:shadow-lg transition-shadow">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                🤖
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">
+                                        AI Optimized
+                                    </dt>
+                                    <dd class="flex items-baseline">
+                                        <div id="aiOptimizedCount" class="text-2xl font-semibold text-gray-900">0</div>
+                                        <div class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
+                                            ⚡ Click to view
+                                        </div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="showRiskAlerts()" class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-yellow-500 cursor-pointer hover:shadow-lg transition-shadow">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                ⚠️
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">
+                                        Risk Alerts
+                                    </dt>
+                                    <dd class="flex items-baseline">
+                                        <div id="riskAlertsCount" class="text-2xl font-semibold text-gray-900">0</div>
+                                        <div class="ml-2 flex items-baseline text-sm font-semibold text-yellow-600">
+                                            🎯 Click to view
+                                        </div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="showPredictiveAnalytics()" class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-orange-500 cursor-pointer hover:shadow-lg transition-shadow">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                📈
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">
+                                        Predictions
+                                    </dt>
+                                    <dd class="flex items-baseline">
+                                        <div id="predictionsCount" class="text-2xl font-semibold text-gray-900">0</div>
+                                        <div class="ml-2 flex items-baseline text-sm font-semibold text-orange-600">
+                                            🔮 Click to view
+                                        </div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="openAIAssistant()" class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-purple-500 cursor-pointer hover:shadow-lg transition-shadow">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                💡
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">
+                                        AI Assistant
+                                    </dt>
+                                    <dd class="flex items-baseline">
+                                        <div id="aiAssistantStatus" class="text-2xl font-semibold text-gray-900">🟢</div>
+                                        <div class="ml-2 flex items-baseline text-sm font-semibold text-purple-600">
+                                            🤖 Chat now
+                                        </div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white shadow rounded-lg p-6 mb-8">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <button onclick="createProject()" class="inline-flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                        ➕ New Project
+                    </button>
+                    <button onclick="showComingSoon('Team Management')" class="inline-flex items-center justify-center px-4 py-3 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        👥 Add Team Member
+                    </button>
+                    <button onclick="showComingSoon('Calendar')" class="inline-flex items-center justify-center px-4 py-3 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        📅 Schedule Meeting
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Projects Display -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-gray-900">🤖 AI-Enhanced Projects</h3>
+                    <div class="flex space-x-2">
+                        <button onclick="refreshProjects()" class="text-sm text-gray-600 hover:text-gray-900">
+                            🔄 Refresh
+                        </button>
+                        <button onclick="clearAllProjects()" class="text-sm text-red-600 hover:text-red-900">
+                            🗑️ Clear All
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="projectsList" class="space-y-4">
+                        <!-- Projects will be displayed here -->
+                        <div class="text-center py-8 text-gray-500">
+                            <div class="text-6xl mb-4">🤖</div>
+                            <p class="text-lg font-medium">No AI projects yet</p>
+                            <p class="text-sm mt-2">Click "Create with AI →" above to generate your first intelligent project</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Details Modal (Hidden by default) -->
+            <div id="projectDetailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-lg bg-white">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-gray-900">📊 Project Details</h3>
+                        <button onclick="closeProjectDetails()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="projectDetailsContent">
+                        <!-- Project details will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Initialize Supabase
+
+        // Check authentication state on page load
+        window.addEventListener('load', async () => {
+            console.log('Page loaded, checking auth...');
+            
+            const { data: { session }, authError } = await supabase.auth.getSession();
+            
+            console.log('Session:', session);
+            console.log('AuthError:', authError);
+            
+            if (session) {
+                console.log('User is logged in, showing dashboard');
+                showDashboard(session.user);
+            } else {
+                console.log('User is not logged in, showing landing page');
+                showLandingPage();
+            }
+
+            // Handle email confirmation from URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlError = urlParams.get('error');
+            const errorDescription = urlParams.get('error_description');
+            
+            if (urlError) {
+                if (urlError === 'access_denied' && errorDescription) {
+                    const message = document.createElement('div');
+                    message.className = 'fixed top-4 left-4 right-4 bg-yellow-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 text-center';
+                    message.innerHTML = '⚠️ Email confirmation issue detected. Your account was created successfully! Please try logging in directly below.';
+                    document.body.appendChild(message);
+                    
+                    setTimeout(() => {
+                        showLogin();
+                        message.remove();
+                    }, 3000);
+                }
+            }
+            
+            // Check if there's an access token (successful confirmation)
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            
+            if (accessToken) {
+                try {
+                    const { data, sessionError } = await supabase.auth.setSession({
+                        access_token: accessToken,
+                        refresh_token: hashParams.get('refresh_token') || ''
+                    });
+                    
+                    if (!sessionError && data.user) {
+                        alert('🎉 Email confirmed successfully! Welcome to PPM Pro!');
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        showDashboard(data.user);
+                    }
+                } catch (err) {
+                    console.log('Session setup completed');
+                }
+            }
+        });
+
+        function showLandingPage() {
+            document.getElementById('landing').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+        }
+
+        function showDashboard(user) {
+            console.log('Showing dashboard for user:', user);
+            
+            // Hide landing page
+            const landing = document.getElementById('landing');
+            const dashboard = document.getElementById('dashboard');
+            
+            console.log('Landing element exists:', !!landing);
+            console.log('Dashboard element exists:', !!dashboard);
+            
+            if (landing) {
+                landing.style.display = 'none';
+                console.log('Landing hidden via display none');
+            }
+            
+            if (dashboard) {
+                dashboard.style.display = 'block';
+                dashboard.classList.remove('hidden');
+                console.log('Dashboard shown via display block and remove hidden');
+            }
+            
+            // Update user info
+            const userEmailElement = document.getElementById('userEmail');
+            const welcomeMessageElement = document.getElementById('welcomeMessage');
+            
+            console.log('User email element exists:', !!userEmailElement);
+            console.log('Welcome message element exists:', !!welcomeMessageElement);
+            
+            if (userEmailElement) {
+                userEmailElement.textContent = user.email || 'User';
+                console.log('User email updated to:', user.email);
+            }
+            
+            if (welcomeMessageElement) {
+                const userName = user.user_metadata?.full_name?.split(' ')[0] || 'there';
+                welcomeMessageElement.textContent = `Welcome back, ${userName}! 👋`;
+                console.log('Welcome message updated to:', welcomeMessageElement.textContent);
+            }
+            
+            // Force a refresh of the view
+            setTimeout(() => {
+                console.log('Forcing view refresh...');
+                console.log('Dashboard visible:', dashboard && dashboard.style.display !== 'none');
+                console.log('Landing hidden:', landing && landing.style.display === 'none');
+            }, 100);
+        }
+
+        function showLogin() {
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+
+        function hideLogin() {
+            document.getElementById('loginModal').classList.add('hidden');
+        }
+
+        function showSignup() {
+            document.getElementById('signupModal').classList.remove('hidden');
+        }
+
+        function hideSignup() {
+            document.getElementById('signupModal').classList.add('hidden');
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) throw error;
+
+                hideLogin();
+                console.log('Login successful, user:', data.user);
+                showDashboard(data.user);
+                
+                // Show success message
+                const successDiv = document.createElement('div');
+                successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50';
+                successDiv.innerHTML = '✅ Successfully logged in! Welcome to PPM Pro! Your dashboard is ready! 🎉';
+                document.body.appendChild(successDiv);
+                
+                setTimeout(() => {
+                    successDiv.remove();
+                }, 5000);
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
+        }
+
+        async function handleSignup(event) {
+            event.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            full_name: name
+                        },
+                        emailRedirectTo: 'https://sites.super.myninja.ai/de58bcba-2268-49c0-a9c6-ac1950ea9056/4ccd0909/index.html'
+                    }
+                });
+
+                if (error) throw error;
+
+                alert('Account created! You can now log in directly.');
+                hideSignup();
+                showLogin();
+            } catch (error) {
+                alert('Signup failed: ' + error.message);
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                const { error } = await supabase.auth.signOut();
+                if (error) throw error;
+                
+                showLandingPage();
+                
+                // Show logout message
+                const message = document.createElement('div');
+                message.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg z-50';
+                message.innerHTML = '👋 Logged out successfully!';
+                document.body.appendChild(message);
+                
+                setTimeout(() => {
+                    message.remove();
+                }, 3000);
+            } catch (error) {
+                alert('Logout failed: ' + error.message);
+            }
+        }
+
+        function createProject() {
+            alert('🚧 Project creation feature coming soon! This will be our next feature to build.');
+        }
+
+        function showComingSoon(feature) {
+            alert(`🚧 ${feature} feature coming soon! We\'ll build this next.`);
+        }
+    // AI Project Creator Functions
+        function openAIProjectCreator() {
+            document.getElementById('aiProjectModal').classList.remove('hidden');
+            // Reset the modal
+            document.getElementById('aiProcessingSection').classList.add('hidden');
+            document.getElementById('aiResultsSection').classList.add('hidden');
+            document.getElementById('generateButtonSection').classList.remove('hidden');
+            document.getElementById('aiProjectDescription').value = '';
+        }
+
+        function closeAIProjectCreator() {
+            document.getElementById('aiProjectModal').classList.add('hidden');
+        }
+
+        function addExampleProject(type) {
+            const examples = {
+                'website redesign': 'I need to redesign our company website with a modern look, improve user experience, add a blog section, and optimize for mobile. Budget is $15,000 and we want to launch in 2 months.',
+                'mobile app': 'I want to develop a mobile app for iOS and Android that allows users to track fitness activities, set goals, and share progress with friends. Budget is $30,000 and timeline is 4 months.',
+                'marketing campaign': 'I need to plan and execute a digital marketing campaign for our new product launch, including social media, email marketing, and content creation. Budget is $10,000 for a 6-week campaign.',
+                'product launch': 'I need to coordinate a complete product launch including market research, product development, marketing materials, and distribution setup. Budget is $50,000 and we want to launch in 6 months.'
+            };
+            
+            document.getElementById('aiProjectDescription').value = examples[type];
+        }
+
+        async function generateAIProject() {
+            const description = document.getElementById('aiProjectDescription').value.trim();
+            
+            if (!description) {
+                alert('Please describe your project first!');
+                return;
+            }
+
+            // Show processing state
+            document.getElementById('generateButtonSection').classList.add('hidden');
+            document.getElementById('aiProcessingSection').classList.remove('hidden');
+
+            // Simulate AI processing
+            setTimeout(() => {
+                const aiAnalysis = analyzeProjectWithAI(description);
+                displayAIResults(aiAnalysis);
+            }, 2000);
+        }
+
+        function analyzeProjectWithAI(description) {
+            // AI-like analysis based on keywords and patterns
+            const lowerDesc = description.toLowerCase();
+            
+            // Determine project type and complexity
+            let projectType = 'General';
+            let complexity = 'Medium';
+            let estimatedDuration = '3 months';
+            let budgetRange = '$25,000';
+            
+            if (lowerDesc.includes('website') || lowerDesc.includes('web')) {
+                projectType = 'Web Development';
+                complexity = lowerDesc.includes('e-commerce') ? 'High' : 'Medium';
+                estimatedDuration = lowerDesc.includes('e-commerce') ? '4 months' : '2-3 months';
+                budgetRange = lowerDesc.includes('e-commerce') ? '$35,000' : '$15,000';
+            } else if (lowerDesc.includes('mobile') || lowerDesc.includes('app')) {
+                projectType = 'Mobile Development';
+                complexity = 'High';
+                estimatedDuration = '4-6 months';
+                budgetRange = '$30,000';
+            } else if (lowerDesc.includes('marketing') || lowerDesc.includes('campaign')) {
+                projectType = 'Marketing Campaign';
+                complexity = 'Medium';
+                estimatedDuration = '6 weeks';
+                budgetRange = '$10,000';
+            } else if (lowerDesc.includes('product launch')) {
+                projectType = 'Product Launch';
+                complexity = 'High';
+                estimatedDuration = '6 months';
+                budgetRange = '$50,000';
+            }
+
+            // Extract budget from description if mentioned
+            const budgetMatch = description.match(/\$([0-9,]+)/);
+            if (budgetMatch) {
+                budgetRange = '$' + budgetMatch[1];
+            }
+
+            // Extract timeline from description if mentioned
+            const timelineMatch = description.match(/(\d+)\s*(month|week|day)s?/);
+            if (timelineMatch) {
+                estimatedDuration = timelineMatch[0];
+            }
+
+            // Generate tasks based on project type
+            const tasks = generateProjectTasks(projectType, complexity);
+            
+            // Generate resource recommendations
+            const resources = generateResourceRecommendations(projectType, complexity);
+            
+            // Generate risk assessment
+            const risks = generateRiskAssessment(projectType, complexity);
+
+            // Calculate success score
+            const successScore = calculateSuccessScore(complexity, budgetRange, estimatedDuration);
+
+            return {
+                projectType,
+                complexity,
+                estimatedDuration,
+                budgetRange,
+                successScore,
+                tasks,
+                resources,
+                risks,
+                originalDescription: description
+            };
+        }
+
+        function generateProjectTasks(type, complexity) {
+            const taskTemplates = {
+                'Web Development': [
+                    'Project Planning & Requirements Gathering',
+                    'UX/UI Design & Wireframing',
+                    'Frontend Development (HTML, CSS, JavaScript)',
+                    'Backend Development (API, Database)',
+                    'Content Management System Setup',
+                    'Testing & Quality Assurance',
+                    'Deployment & Launch',
+                    'Post-launch Support & Optimization'
+                ],
+                'Mobile Development': [
+                    'Market Research & Feature Planning',
+                    'UI/UX Design for Mobile',
+                    'iOS Development Setup',
+                    'Android Development Setup',
+                    'Core Feature Implementation',
+                    'API Integration',
+                    'Testing on Multiple Devices',
+                    'App Store Submission',
+                    'Launch & Marketing'
+                ],
+                'Marketing Campaign': [
+                    'Campaign Strategy Development',
+                    'Target Audience Analysis',
+                    'Content Creation (Blog, Social, Email)',
+                    'Social Media Campaign Setup',
+                    'Email Marketing Campaign',
+                    'Paid Advertising Setup',
+                    'Analytics & Tracking Implementation',
+                    'Campaign Monitoring & Optimization',
+                    'Results Analysis & Reporting'
+                ],
+                'Product Launch': [
+                    'Market Research & Validation',
+                    'Product Development Planning',
+                    'Prototype Development',
+                    'Marketing Strategy Development',
+                    'Sales Channel Setup',
+                    'PR & Communications',
+                    'Launch Event Planning',
+                    'Customer Support Setup',
+                    'Launch Execution',
+                    'Post-launch Analysis'
+                ]
+            };
+
+            let baseTasks = taskTemplates[type] || taskTemplates['Web Development'];
+            
+            if (complexity === 'High') {
+                baseTasks = baseTasks.map(task => task + ' (Detailed Planning Required)');
+                baseTasks.splice(2, 0, 'Risk Assessment & Mitigation Planning');
+                baseTasks.splice(5, 0, 'Stakeholder Management');
+            }
+
+            return baseTasks.map((task, index) => ({
+                id: index + 1,
+                title: task,
+                duration: Math.floor(Math.random() * 10) + 3,
+                priority: index < 3 ? 'High' : index < 6 ? 'Medium' : 'Low',
+                dependencies: index > 0 ? [index] : []
+            }));
+        }
+
+        function generateResourceRecommendations(type, complexity) {
+            const baseResources = ['Project Manager'];
+            
+            const typeResources = {
+                'Web Development': ['Frontend Developer', 'Backend Developer', 'UX/UI Designer', 'QA Tester'],
+                'Mobile Development': ['iOS Developer', 'Android Developer', 'UI Designer', 'Mobile QA'],
+                'Marketing Campaign': ['Marketing Manager', 'Content Creator', 'Social Media Specialist', 'Data Analyst'],
+                'Product Launch': ['Product Manager', 'Marketing Manager', 'Sales Manager', 'PR Specialist']
+            };
+
+            const resources = [...baseResources, ...(typeResources[type] || typeResources['Web Development'])];
+            
+            if (complexity === 'High') {
+                resources.push('Business Analyst', 'Technical Lead', 'Stakeholder Manager');
+            }
+
+            return resources.map(role => ({
+                role,
+                recommended: true,
+                experience: complexity === 'High' ? 'Senior' : 'Mid-Level',
+                allocation: '40-60 hours/week'
+            }));
+        }
+
+        function generateRiskAssessment(type, complexity) {
+            const baseRisks = ['Timeline delays', 'Budget overruns'];
+            
+            const typeRisks = {
+                'Web Development': ['Technical debt', 'Browser compatibility issues', 'Security vulnerabilities'],
+                'Mobile Development': ['Platform approval delays', 'Device fragmentation', 'Performance issues'],
+                'Marketing Campaign': ['Low engagement rates', 'Budget inefficiency', 'Brand messaging issues'],
+                'Product Launch': ['Market acceptance', 'Competitor response', 'Supply chain issues']
+            };
+
+            const risks = [...baseRisks, ...(typeRisks[type] || typeRisks['Web Development'])];
+            
+            if (complexity === 'High') {
+                risks.push('Team coordination challenges', 'Stakeholder alignment issues');
+            }
+
+            return risks.map((risk, index) => ({
+                risk,
+                probability: index < 2 ? 'High' : index < 4 ? 'Medium' : 'Low',
+                impact: index < 2 ? 'High' : 'Medium',
+                mitigation: getMitigationStrategy(risk)
+            }));
+        }
+
+        function getMitigationStrategy(risk) {
+            const strategies = {
+                'Timeline delays': 'Buffer time allocation and regular milestone reviews',
+                'Budget overruns': 'Detailed cost tracking and contingency planning',
+                'Technical debt': 'Code reviews and refactoring schedules',
+                'Browser compatibility': 'Cross-browser testing and progressive enhancement',
+                'Security vulnerabilities': 'Regular security audits and penetration testing',
+                'Platform approval delays': 'Early submission and compliance checking',
+                'Device fragmentation': 'Focus on primary devices and gradual expansion',
+                'Performance issues': 'Performance testing and optimization sprints',
+                'Low engagement rates': 'A/B testing and audience feedback loops',
+                'Budget inefficiency': 'ROI tracking and channel optimization',
+                'Brand messaging issues': 'Brand guidelines and message testing',
+                'Market acceptance': 'Market research and MVP approach',
+                'Competitor response': 'Competitive analysis and differentiation strategy',
+                'Supply chain issues': 'Supplier diversification and inventory planning',
+                'Team coordination challenges': 'Daily standups and clear communication protocols',
+                'Stakeholder alignment issues': 'Regular stakeholder meetings and status reports'
+            };
+            
+            return strategies[risk] || 'Regular monitoring and proactive management';
+        }
+
+        function calculateSuccessScore(complexity, budget, timeline) {
+            let baseScore = 75;
+            
+            if (complexity === 'High') baseScore -= 10;
+            if (complexity === 'Low') baseScore += 10;
+            
+            const budgetNum = parseInt(budget.replace(/[^0-9]/g, ''));
+            if (budgetNum > 30000) baseScore += 5;
+            else if (budgetNum < 15000) baseScore -= 5;
+            
+            if (timeline.includes('month') && parseInt(timeline) > 4) baseScore += 5;
+            else if (timeline.includes('week')) baseScore -= 5;
+            
+            return Math.min(95, Math.max(45, baseScore));
+        }
+
+        function displayAIResults(analysis) {
+            // Hide processing, show results
+            document.getElementById('aiProcessingSection').classList.add('hidden');
+            document.getElementById('aiResultsSection').classList.remove('hidden');
+
+            // Display project details
+            const detailsHtml = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <span class="text-sm text-purple-700">Project Type:</span>
+                        <span class="ml-2 font-semibold">${analysis.projectType}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm text-purple-700">Complexity:</span>
+                        <span class="ml-2 font-semibold">${analysis.complexity}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm text-purple-700">Estimated Duration:</span>
+                        <span class="ml-2 font-semibold">${analysis.estimatedDuration}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm text-purple-700">Budget Range:</span>
+                        <span class="ml-2 font-semibold">${analysis.budgetRange}</span>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm text-purple-700">AI Success Score:</span>
+                    <div class="mt-2 bg-white rounded-lg p-3">
+                        <div class="flex items-center">
+                            <div class="flex-1">
+                                <div class="bg-gray-200 rounded-full h-4">
+                                    <div class="bg-gradient-to-r from-purple-500 to-blue-500 h-4 rounded-full" style="width: ${analysis.successScore}%"></div>
+                                </div>
+                            </div>
+                            <span class="ml-3 font-bold text-purple-900">${analysis.successScore}%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('aiProjectDetails').innerHTML = detailsHtml;
+
+            // Display tasks
+            const tasksHtml = analysis.tasks.map(task => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <span class="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-semibold mr-3">${task.id}</span>
+                        <div>
+                            <div class="font-medium text-gray-900">${task.title}</div>
+                            <div class="text-xs text-gray-500">${task.duration} days • Priority: ${task.priority}</div>
+                        </div>
+                    </div>
+                    <span class="px-2 py-1 text-xs font-medium ${task.priority === 'High' ? 'bg-red-100 text-red-700' : task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'} rounded-full">
+                        ${task.priority}
+                    </span>
+                </div>
+            `).join('');
+            document.getElementById('aiGeneratedTasks').innerHTML = tasksHtml;
+
+            // Display resources
+            const resourcesHtml = analysis.resources.map(resource => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <div class="font-medium text-gray-900">${resource.role}</div>
+                        <div class="text-xs text-gray-500">${resource.experience} • ${resource.allocation}</div>
+                    </div>
+                    <span class="text-green-600 text-sm font-medium">✓ Recommended</span>
+                </div>
+            `).join('');
+            document.getElementById('aiResourceRecommendations').innerHTML = resourcesHtml;
+
+            // Display risks
+            const risksHtml = analysis.risks.map(risk => `
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-medium text-gray-900">${risk.risk}</div>
+                        <span class="px-2 py-1 text-xs font-medium ${risk.probability === 'High' ? 'bg-red-100 text-red-700' : risk.probability === 'Medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'} rounded-full">
+                            ${risk.probability} Probability
+                        </span>
+                    </div>
+                    <div class="text-xs text-gray-600">
+                        <strong>Mitigation:</strong> ${risk.mitigation}
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('aiRiskAssessment').innerHTML = risksHtml;
+        }
+
+        function createAIProject() {
+            // Get the AI analysis (we could store it globally or re-analyze)
+            const description = document.getElementById('aiProjectDescription').value.trim();
+            const analysis = analyzeProjectWithAI(description);
+            
+            // In a real app, this would save to a database
+            console.log('Creating AI Project:', analysis);
+            
+            alert(`🎉 AI-powered project "${analysis.projectType}" created successfully!\n\n✨ ${analysis.tasks.length} tasks generated\n👥 ${analysis.resources.length} resources recommended\n⚠️ ${analysis.risks.length} risks identified\n📊 Success Score: ${analysis.successScore}%`);
+            
+            closeAIProjectCreator();
+            
+            // Refresh the dashboard to show the new project
+            updateDashboardWithNewProject(analysis);
+        }
+
+        // Global project storage (in real app, this would be a database)
+        let projects = [];
+        let currentProjectId = 0;
+
+        function updateDashboardWithNewProject(project) {
+            // Store the project
+            project.id = ++currentProjectId;
+            project.createdAt = new Date().toLocaleDateString();
+            project.status = 'Active';
+            projects.push(project);
+            
+            // Save to localStorage for persistence
+            localStorage.setItem('aiProjects', JSON.stringify(projects));
+            
+            // Update the display
+            updateProjectsDisplay();
+            updateStatistics();
+            
+            // Show success message
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            if (welcomeMessage) {
+                welcomeMessage.innerHTML = `Welcome back! 👋<br><span class="text-lg text-green-600">🤖 AI project "${project.projectType}" created successfully!</span>`;
+            }
+        }
+
+        function updateProjectsDisplay() {
+            const projectsList = document.getElementById('projectsList');
+            
+            if (projects.length === 0) {
+                projectsList.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <div class="text-6xl mb-4">🤖</div>
+                        <p class="text-lg font-medium">No AI projects yet</p>
+                        <p class="text-sm mt-2">Click "Create with AI →" above to generate your first intelligent project</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const projectsHtml = projects.map(project => `
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" onclick="showProjectDetails(${project.id})">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <h4 class="font-medium text-gray-900 mr-3">${project.projectType} Project</h4>
+                                <span class="px-2 py-1 text-xs font-medium text-purple-700 bg-purple-100 rounded-full">AI Generated</span>
+                                <span class="ml-2 px-2 py-1 text-xs font-medium ${project.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'} rounded-full">
+                                    ${project.status}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-2">${project.originalDescription.substring(0, 100)}${project.originalDescription.length > 100 ? '...' : ''}</p>
+                            <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                <span>📊 ${project.tasks.length} Tasks</span>
+                                <span>👥 ${project.resources.length} Resources</span>
+                                <span>⚠️ ${project.risks.length} Risks</span>
+                                <span>🎯 ${project.successScore}% Success Score</span>
+                                <span>📅 ${project.createdAt}</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col space-y-2 ml-4">
+                            <button onclick="event.stopPropagation(); showProjectDetails(${project.id})" class="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
+                                📋 View Details
+                            </button>
+                            <button onclick="event.stopPropagation(); deleteProject(${project.id})" class="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            projectsList.innerHTML = projectsHtml;
+        }
+
+        function showProjectDetails(projectId) {
+            // Open the project detail page in a new window/tab
+            const projectIndex = projects.findIndex(p => p.id === projectId);
+            if (projectIndex !== -1) {
+                // Save current project to localStorage for the detail page to access
+                localStorage.setItem('current_project_index', projectIndex);
+                window.open('project-detail.html?id=' + projectIndex, '_blank');
+            }
+        }
+
+        function closeProjectDetails() {
+            document.getElementById('projectDetailsModal').classList.add('hidden');
+        }
+
+        function deleteProject(projectId) {
+            if (confirm('Are you sure you want to delete this AI-generated project?')) {
+                projects = projects.filter(p => p.id !== projectId);
+                localStorage.setItem('aiProjects', JSON.stringify(projects));
+                updateProjectsDisplay();
+                updateStatistics();
+                
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                if (welcomeMessage) {
+                    welcomeMessage.innerHTML = `Welcome back! 👋<br><span class="text-lg text-red-600">🗑️ Project deleted</span>`;
+                }
+            }
+        }
+
+        function editProject(projectId) {
+            alert('Edit functionality coming soon! This will allow you to modify AI-generated tasks and resources.');
+        }
+
+        function refreshProjects() {
+            updateProjectsDisplay();
+            updateStatistics();
+            
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            if (welcomeMessage) {
+                welcomeMessage.innerHTML = `Welcome back! 👋<br><span class="text-lg text-blue-600">🔄 Projects refreshed</span>`;
+            }
+        }
+
+        function clearAllProjects() {
+            if (projects.length === 0) {
+                alert('No projects to clear!');
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to delete all ${projects.length} AI-generated projects?`)) {
+                projects = [];
+                localStorage.setItem('aiProjects', JSON.stringify(projects));
+                updateProjectsDisplay();
+                updateStatistics();
+                
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                if (welcomeMessage) {
+                    welcomeMessage.innerHTML = `Welcome back! 👋<br><span class="text-lg text-red-600">🗑️ All projects cleared</span>`;
+                }
+            }
+        }
+
+        function updateStatistics() {
+            // Update stats cards
+            document.getElementById('activeProjectsCount').textContent = projects.length;
+            document.getElementById('aiOptimizedCount').textContent = projects.length;
+            
+            // Calculate total risks
+            const totalRisks = projects.reduce((sum, project) => sum + project.risks.length, 0);
+            document.getElementById('riskAlertsCount').textContent = totalRisks;
+            
+            // Calculate total insights (tasks + risks)
+            const totalInsights = projects.reduce((sum, project) => sum + project.tasks.length + project.risks.length, 0);
+            document.getElementById('aiInsightsCount').textContent = totalInsights;
+        }
+
+        function showProjectsList() {
+            // Scroll to projects section
+            document.getElementById('projectsList').scrollIntoView({ behavior: 'smooth' });
+            
+            // Highlight the section
+            const projectsSection = document.getElementById('projectsList').closest('.bg-white');
+            projectsSection.classList.add('ring-2', 'ring-blue-500');
+            setTimeout(() => {
+                projectsSection.classList.remove('ring-2', 'ring-blue-500');
+            }, 2000);
+        }
+
+        function showAIOptimizedProjects() {
+            showProjectsList();
+        }
+
+        function showRiskAlerts() {
+            showProjectsList();
+        }
+
+        function showAIInsights() {
+            showProjectsList();
+        }
+
+        // Load projects from localStorage on page load
+        function loadProjectsFromStorage() {
+            const storedProjects = localStorage.getItem('aiProjects');
+            if (storedProjects) {
+                projects = JSON.parse(storedProjects);
+                currentProjectId = projects.length > 0 ? Math.max(...projects.map(p => p.id)) : 0;
+                updateProjectsDisplay();
+                updateStatistics();
+            }
+        }
+
+        // ADVANCED AI FEATURES FUNCTIONS
+
+        // Portfolio Optimizer Functions
+        function openPortfolioOptimizer() {
+            document.getElementById('portfolioOptimizerModal').classList.remove('hidden');
+            analyzePortfolio();
+        }
+
+        function closePortfolioOptimizer() {
+            document.getElementById('portfolioOptimizerModal').classList.add('hidden');
+        }
+
+        function analyzePortfolio() {
+            if (projects.length === 0) {
+                document.getElementById('optimizationRecommendations').innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <div class="text-4xl mb-4">📊</div>
+                        <p class="text-lg font-medium">No projects to analyze</p>
+                        <p class="text-sm mt-2">Create some AI projects first to optimize your portfolio</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // AI Portfolio Analysis
+            const portfolioAnalysis = performPortfolioOptimization();
+            
+            // Update portfolio health score
+            document.getElementById('portfolioHealthScore').textContent = portfolioAnalysis.healthScore + '%';
+            
+            // Update budget optimization
+            document.getElementById('budgetOptimization').innerHTML = `
+                <div class="text-3xl font-bold text-green-600 mb-2">$${portfolioAnalysis.potentialSavings}K</div>
+                <div class="text-sm text-green-700">Potential savings identified</div>
+                <div class="mt-2 text-xs text-green-600">${portfolioAnalysis.savingsPercentage}% reduction opportunity</div>
+            `;
+            
+            // Update risk distribution
+            document.getElementById('riskDistribution').innerHTML = `
+                <div class="text-3xl font-bold text-yellow-600 mb-2">${portfolioAnalysis.riskProfile}</div>
+                <div class="text-sm text-yellow-700">${portfolioAnalysis.riskDescription}</div>
+                <div class="mt-2 text-xs text-yellow-600">${portfolioAnalysis.highRiskCount} high-risk items identified</div>
+            `;
+            
+            // Display optimization recommendations
+            displayOptimizationRecommendations(portfolioAnalysis);
+            
+            // Display projects analysis
+            displayPortfolioProjectsAnalysis(portfolioAnalysis);
+            
+            // Display resource allocation
+            displayResourceAllocation(portfolioAnalysis);
+        }
+
+        function performPortfolioOptimization() {
+            // Advanced AI analysis of the entire project portfolio
+            const totalBudget = projects.reduce((sum, p) => sum + parseInt(p.budgetRange.replace(/[^0-9]/g, '') || 0), 0);
+            const avgSuccessScore = projects.reduce((sum, p) => sum + p.successScore, 0) / projects.length || 0;
+            const totalRisks = projects.reduce((sum, p) => sum + p.risks.length, 0);
+            const totalTasks = projects.reduce((sum, p) => sum + p.tasks.length, 0);
+            
+            // Calculate optimization metrics
+            const healthScore = Math.min(95, Math.round(avgSuccessScore + (projects.length > 3 ? 5 : 0) - (totalRisks > 10 ? 10 : 0)));
+            const potentialSavings = Math.round(totalBudget * 0.12); // AI identifies 12% savings opportunity
+            const savingsPercentage = 12;
+            const highRiskCount = projects.reduce((sum, p) => sum + p.risks.filter(r => r.probability === 'High').length, 0);
+            
+            // Determine risk profile
+            let riskProfile = 'Balanced';
+            let riskDescription = 'Low-Medium risk profile';
+            if (highRiskCount > 5) {
+                riskProfile = 'High Risk';
+                riskDescription = 'Multiple high-risk items need attention';
+            } else if (highRiskCount === 0) {
+                riskProfile = 'Low Risk';
+                riskDescription = 'Portfolio is well-managed';
+            }
+            
+            // Generate AI recommendations
+            const recommendations = generatePortfolioRecommendations(projects, totalBudget, avgSuccessScore);
+            
+            // Analyze project dependencies and synergies
+            const projectSynergies = analyzeProjectSynergies(projects);
+            
+            return {
+                healthScore,
+                potentialSavings,
+                savingsPercentage,
+                riskProfile,
+                riskDescription,
+                highRiskCount,
+                recommendations,
+                projectSynergies,
+                totalBudget,
+                avgSuccessScore,
+                totalRisks,
+                totalTasks
+            };
+        }
+
+        function generatePortfolioRecommendations(projects, totalBudget, avgSuccessScore) {
+            const recommendations = [];
+            
+            // Budget optimization recommendations
+            if (totalBudget > 50000) {
+                recommendations.push({
+                    type: 'budget',
+                    title: '💰 Resource Pooling Opportunity',
+                    description: 'Combine similar resources across projects to save 12% on costs',
+                    impact: 'High',
+                    savings: '$' + Math.round(totalBudget * 0.12) + 'K'
+                });
+            }
+            
+            // Risk mitigation recommendations
+            const highRiskProjects = projects.filter(p => p.risks.some(r => r.probability === 'High'));
+            if (highRiskProjects.length > 0) {
+                recommendations.push({
+                    type: 'risk',
+                    title: '⚠️ Risk Mitigation Required',
+                    description: `${highRiskProjects.length} projects have high-risk items requiring immediate attention`,
+                    impact: 'Critical',
+                    action: 'Schedule risk review meetings'
+                });
+            }
+            
+            // Timeline optimization
+            const longProjects = projects.filter(p => p.estimatedDuration.includes('month') && parseInt(p.estimatedDuration) > 4);
+            if (longProjects.length > 0) {
+                recommendations.push({
+                    type: 'timeline',
+                    title: '📅 Timeline Optimization',
+                    description: `${longProjects.length} projects could benefit from phased delivery approach`,
+                    impact: 'Medium',
+                    benefit: 'Reduce time-to-market by 25%'
+                });
+            }
+            
+            // Success score improvement
+            if (avgSuccessScore < 75) {
+                recommendations.push({
+                    type: 'success',
+                    title: '🎯 Success Score Improvement',
+                    description: 'Portfolio success score below optimal range',
+                    impact: 'Medium',
+                    action: 'Implement AI-suggested optimizations'
+                });
+            }
+            
+            // Resource balancing
+            const resourceRecommendations = analyzeResourceImbalance(projects);
+            if (resourceRecommendations.length > 0) {
+                recommendations.push({
+                    type: 'resources',
+                    title: '👥 Resource Reallocation',
+                    description: 'Balance resource allocation across projects for optimal efficiency',
+                    impact: 'High',
+                    details: resourceRecommendations
+                });
+            }
+            
+            return recommendations;
+        }
+
+        function analyzeResourceImbalance(projects) {
+            const resourceCount = {};
+            
+            projects.forEach(project => {
+                project.resources.forEach(resource => {
+                    resourceCount[resource.role] = (resourceCount[resource.role] || 0) + 1;
+                });
+            });
+            
+            const recommendations = [];
+            
+            // Check for over-allocation
+            Object.entries(resourceCount).forEach(([role, count]) => {
+                if (count > projects.length * 0.7) {
+                    recommendations.push(`${role} over-allocated by ${Math.round((count / projects.length) * 100 - 70)}%`);
+                }
+            });
+            
+            return recommendations;
+        }
+
+        function analyzeProjectSynergies(projects) {
+            const synergies = [];
+            
+            // Find projects with similar types or resources
+            const projectTypes = {};
+            projects.forEach(project => {
+                projectTypes[project.projectType] = (projectTypes[project.projectType] || 0) + 1;
+            });
+            
+            Object.entries(projectTypes).forEach(([type, count]) => {
+                if (count > 1) {
+                    synergies.push({
+                        type: type,
+                        count: count,
+                        opportunity: 'Shared resources and best practices',
+                        savings: Math.round(count * 5000)
+                    });
+                }
+            });
+            
+            return synergies;
+        }
+
+        function displayOptimizationRecommendations(analysis) {
+            const recommendationsHtml = analysis.recommendations.map(rec => `
+                <div class="flex items-start justify-between p-3 bg-white rounded-lg border border-purple-200">
+                    <div class="flex-1">
+                        <div class="font-medium text-gray-900">${rec.title}</div>
+                        <div class="text-sm text-gray-600 mt-1">${rec.description}</div>
+                        ${rec.action ? `<div class="text-xs text-purple-600 mt-1">Action: ${rec.action}</div>` : ''}
+                        ${rec.benefit ? `<div class="text-xs text-green-600 mt-1">Benefit: ${rec.benefit}</div>` : ''}
+                    </div>
+                    <div class="ml-4 text-right">
+                        <span class="px-2 py-1 text-xs font-medium ${
+                            rec.impact === 'Critical' ? 'bg-red-100 text-red-700' :
+                            rec.impact === 'High' ? 'bg-orange-100 text-orange-700' :
+                            'bg-blue-100 text-blue-700'
+                        } rounded-full">
+                            ${rec.impact} Impact
+                        </span>
+                        ${rec.savings ? `<div class="text-sm font-bold text-green-600 mt-1">${rec.savings}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('optimizationRecommendations').innerHTML = recommendationsHtml || 
+                '<p class="text-gray-500">Portfolio is well-optimized. No immediate recommendations.</p>';
+        }
+
+        function displayPortfolioProjectsAnalysis(analysis) {
+            const projectsHtml = projects.map(project => {
+                const optimizationScore = calculateProjectOptimizationScore(project);
+                return `
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <h5 class="font-semibold text-gray-900">${project.projectType}</h5>
+                            <span class="px-2 py-1 text-xs font-medium ${
+                                optimizationScore > 80 ? 'bg-green-100 text-green-700' :
+                                optimizationScore > 60 ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-red-100 text-red-700'
+                            } rounded-full">
+                                ${optimizationScore}% Optimized
+                            </span>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Success Score:</span>
+                                <span class="font-medium">${project.successScore}%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Tasks:</span>
+                                <span class="font-medium">${project.tasks.length}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Risks:</span>
+                                <span class="font-medium">${project.risks.length}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Resources:</span>
+                                <span class="font-medium">${project.resources.length}</span>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                            <div class="text-xs text-gray-500">
+                                AI Recommendation: ${getProjectOptimizationTip(optimizationScore)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('portfolioProjectsAnalysis').innerHTML = projectsHtml || 
+                '<p class="text-center text-gray-500 col-span-2">No projects to analyze</p>';
+        }
+
+        function calculateProjectOptimizationScore(project) {
+            let score = project.successScore || 50;
+            
+            // Adjust based on task count
+            if (project.tasks.length > 10) score += 5;
+            if (project.tasks.length > 20) score += 5;
+            
+            // Adjust based on risk management
+            const lowRiskCount = project.risks.filter(r => r.probability === 'Low').length;
+            if (lowRiskCount > project.risks.length / 2) score += 10;
+            
+            // Adjust based on resource allocation
+            if (project.resources.length > 5) score += 5;
+            
+            return Math.min(95, Math.round(score));
+        }
+
+        function getProjectOptimizationTip(score) {
+            if (score > 80) return 'Project is well-optimized';
+            if (score > 60) return 'Consider resource balancing';
+            return 'Requires optimization attention';
+        }
+
+        function displayResourceAllocation(analysis) {
+            const resourceAnalysis = analyzeResourcePortfolio(projects);
+            
+            const allocationHtml = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h5 class="font-semibold text-gray-900 mb-3">Current Resource Allocation</h5>
+                        <div class="space-y-2">
+                            ${resourceAnalysis.currentAllocation.map(resource => `
+                                <div class="flex justify-between items-center p-2 bg-white rounded">
+                                    <span class="text-sm">${resource.role}</span>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-20 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-500 h-2 rounded-full" style="width: ${resource.utilization}%"></div>
+                                        </div>
+                                        <span class="text-xs text-gray-600">${resource.count}x</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="font-semibold text-gray-900 mb-3">AI-Optimized Allocation</h5>
+                        <div class="space-y-2">
+                            ${resourceAnalysis.optimizedAllocation.map(resource => `
+                                <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
+                                    <span class="text-sm font-medium">${resource.role}</span>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-20 bg-green-200 rounded-full h-2">
+                                            <div class="bg-green-500 h-2 rounded-full" style="width: ${resource.utilization}%"></div>
+                                        </div>
+                                        <span class="text-xs text-green-600 font-medium">${resource.count}x</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700">
+                            💡 This optimization saves ${resourceAnalysis.totalSavings}% in resource costs
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('resourceAllocationAnalysis').innerHTML = allocationHtml;
+        }
+
+        function analyzeResourcePortfolio(projects) {
+            const resourceCount = {};
+            
+            projects.forEach(project => {
+                project.resources.forEach(resource => {
+                    resourceCount[resource.role] = (resourceCount[resource.role] || 0) + 1;
+                });
+            });
+            
+            const currentAllocation = Object.entries(resourceCount).map(([role, count]) => ({
+                role,
+                count,
+                utilization: Math.min(100, Math.round((count / projects.length) * 100))
+            }));
+            
+            // AI optimization - suggest balanced allocation
+            const optimizedAllocation = currentAllocation.map(resource => ({
+                ...resource,
+                count: Math.max(1, Math.round(resource.count * 0.85)), // Reduce by 15%
+                utilization: Math.min(100, Math.round((resource.count * 0.85 / projects.length) * 100))
+            }));
+            
+            return {
+                currentAllocation,
+                optimizedAllocation,
+                totalSavings: 15
+            };
+        }
+
+        function implementOptimizations() {
+            alert('🚀 AI optimizations implemented!\n\n✅ Portfolio rebalanced\n✅ Resources optimized\n✅ Risks mitigated\n✅ Budget saved\n\nYour portfolio is now 15% more efficient!');
+            closePortfolioOptimizer();
+            
+            // Update the welcome message
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            if (welcomeMessage) {
+                welcomeMessage.innerHTML = `Welcome back! 👋<br><span class="text-lg text-green-600">🚀 AI optimizations implemented successfully!</span>`;
+            }
+        }
+
+        // AI Assistant Functions
+        function openAIAssistant() {
+            document.getElementById('aiAssistantModal').classList.remove('hidden');
+            document.getElementById('aiChatInput').focus();
+        }
+
+        function closeAIAssistant() {
+            document.getElementById('aiAssistantModal').classList.add('hidden');
+        }
+
+        function sendAIMessage() {
+            const input = document.getElementById('aiChatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addChatMessage(message, 'user');
+            
+            // Clear input
+            input.value = '';
+            
+            // Simulate AI thinking
+            setTimeout(() => {
+                const aiResponse = generateAIResponse(message);
+                addChatMessage(aiResponse, 'ai');
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function addChatMessage(message, sender) {
+            const chatMessages = document.getElementById('aiChatMessages');
+            
+            const messageHtml = sender === 'user' ? `
+                <div class="flex items-start justify-end">
+                    <div class="bg-purple-600 text-white rounded-lg p-3 max-w-md mr-3">
+                        <p class="text-sm">${message}</p>
+                    </div>
+                    <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                        👤
+                    </div>
+                </div>
+            ` : `
+                <div class="flex items-start">
+                    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                        🤖
+                    </div>
+                    <div class="bg-white rounded-lg p-3 max-w-md border border-gray-200">
+                        <div class="text-sm text-gray-800">${message}</div>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function generateAIResponse(userMessage) {
+            const lowerMessage = userMessage.toLowerCase();
+            
+            // Portfolio health queries
+            if (lowerMessage.includes('portfolio') || lowerMessage.includes('health')) {
+                return generatePortfolioHealthResponse();
+            }
+            
+            // Risk assessment queries
+            if (lowerMessage.includes('risk') || lowerMessage.includes('danger')) {
+                return generateRiskAssessmentResponse();
+            }
+            
+            // Resource optimization queries
+            if (lowerMessage.includes('resource') || lowerMessage.includes('team') || lowerMessage.includes('optimize')) {
+                return generateResourceOptimizationResponse();
+            }
+            
+            // Timeline prediction queries
+            if (lowerMessage.includes('timeline') || lowerMessage.includes('schedule') || lowerMessage.includes('predict') || lowerMessage.includes('completion')) {
+                return generateTimelinePredictionResponse();
+            }
+            
+            // Budget queries
+            if (lowerMessage.includes('budget') || lowerMessage.includes('cost') || lowerMessage.includes('money')) {
+                return generateBudgetResponse();
+            }
+            
+            // Project creation help
+            if (lowerMessage.includes('create') || lowerMessage.includes('new project') || lowerMessage.includes('start')) {
+                return generateProjectCreationResponse();
+            }
+            
+            // General help
+            return generateGeneralHelpResponse();
+        }
+
+        function generatePortfolioHealthResponse() {
+            const healthScore = projects.length > 0 ? 
+                Math.round(projects.reduce((sum, p) => sum + p.successScore, 0) / projects.length) : 0;
+            
+            if (projects.length === 0) {
+                return "Your portfolio is empty! Start by creating some AI-generated projects to establish a baseline portfolio health score.";
+            }
+            
+            if (healthScore > 80) {
+                return `Your portfolio health is excellent at ${healthScore}%! You have ${projects.length} active projects with strong success probabilities. I recommend focusing on maintaining current performance levels and consider taking on slightly more ambitious projects.`;
+            } else if (healthScore > 60) {
+                return `Your portfolio health is good at ${healthScore}% with ${projects.length} projects. There's room for improvement - I suggest reviewing the high-risk items and implementing the optimization recommendations from the Portfolio Optimizer.`;
+            } else {
+                return `Your portfolio health needs attention at ${healthScore}%. With ${projects.length} projects, I recommend immediate action: focus on risk mitigation, resource reallocation, and consider pausing lower-priority projects.`;
+            }
+        }
+
+        function generateRiskAssessmentResponse() {
+            const totalRisks = projects.reduce((sum, p) => sum + p.risks.length, 0);
+            const highRisks = projects.reduce((sum, p) => sum + p.risks.filter(r => r.probability === 'High').length, 0);
+            
+            if (projects.length === 0) {
+                return "No projects to analyze for risks. Create some projects first and I'll provide comprehensive risk assessments.";
+            }
+            
+            let response = `I've analyzed your ${projects.length} projects and identified ${totalRisks} total risks.`;
+            
+            if (highRisks > 0) {
+                response += ` ⚠️ **${highRisks} high-risk items** require immediate attention. I recommend:\n\n• Schedule risk review meetings\n• Implement mitigation strategies\n• Consider buffer allocation for high-risk projects\n\nWould you like me to create a detailed risk mitigation plan?`;
+            } else {
+                response += ` Good news - no critical risks detected! Your portfolio is well-managed with proper risk planning. Continue monitoring and proactive risk management.`;
+            }
+            
+            return response;
+        }
+
+        function generateResourceOptimizationResponse() {
+            if (projects.length === 0) {
+                return "No projects to optimize. Create some AI-generated projects first, and I'll provide detailed resource optimization recommendations.";
+            }
+            
+            const totalResources = projects.reduce((sum, p) => sum + p.resources.length, 0);
+            const uniqueRoles = [...new Set(projects.flatMap(p => p.resources.map(r => r.role)))];
+            
+            return `Based on your ${projects.length} projects, I've identified several resource optimization opportunities:\n\n**Current State:**\n• ${totalResources} total resources allocated\n• ${uniqueRoles.length} different roles across projects\n\n**AI Recommendations:**\n• Pool similar resources to save 12-15% on costs\n• Balance workload across team members\n• Consider cross-training for flexibility\n\nI suggest running the Portfolio Optimizer for detailed resource allocation strategies. Would you like me to do that?`;
+        }
+
+        function generateTimelinePredictionResponse() {
+            if (projects.length === 0) {
+                return "No projects to analyze. Create projects first and I'll provide timeline predictions.";
+            }
+            
+            const longProjects = projects.filter(p => p.estimatedDuration.includes('month'));
+            const shortProjects = projects.filter(p => p.estimatedDuration.includes('week'));
+            
+            let response = `I've analyzed your project timelines:\n\n**${longProjects.length} long-term projects** (months duration)\n**${shortProjects.length} short-term projects** (weeks duration)\n\n**AI Predictions:**\n`;
+            
+            if (longProjects.length > 0) {
+                response += `• Long projects: 85% on-time completion probability\n• Consider phased delivery to reduce time-to-market\n• Add 15% buffer for complex projects\n\n`;
+            }
+            
+            if (shortProjects.length > 0) {
+                response += `• Short projects: 92% on-time completion probability\n• Excellent for quick wins and ROI\n• Maintain current sprint approach`;
+            }
+            
+            response += `\nWould you like detailed timeline optimization for specific projects?`;
+            
+            return response;
+        }
+
+        function generateBudgetResponse() {
+            if (projects.length === 0) {
+                return "No budget data available. Create projects first and I'll provide comprehensive budget analysis.";
+            }
+            
+            const totalBudget = projects.reduce((sum, p) => sum + parseInt(p.budgetRange.replace(/[^0-9]/g, '') || 0), 0);
+            const avgBudget = totalBudget / projects.length;
+            
+            return `Budget analysis for your ${projects.length} projects:\n\n**Total Portfolio Budget:** $${totalBudget.toLocaleString()}\n**Average per Project:** $${Math.round(avgBudget).toLocaleString()}\n\n**AI Insights:**\n• Portfolio shows ${totalBudget > 50000 ? 'healthy' : 'conservative'} investment levels\n• Potential for 12% budget optimization through resource pooling\n• Consider ROI-based budget reallocation for higher returns\n\nI recommend running the Portfolio Optimizer for specific budget optimization strategies. Would you like me to analyze individual project budgets?`;
+        }
+
+        function generateProjectCreationResponse() {
+            return "I'd be happy to help you create a new project! The AI Project Creator can generate comprehensive project plans including:\n\n• Detailed task breakdowns\n• Resource recommendations\n• Risk assessments\n• Timeline predictions\n• Success scoring\n\nClick 'Create with AI →' on the dashboard, describe your project in natural language, and I'll generate a complete project plan instantly. You can also ask me for project planning advice specific to your goals!";
+        }
+
+        function generateGeneralHelpResponse() {
+            return `I'm your AI Project Assistant! I can help you with:\n\n📊 **Portfolio Analysis** - Health scores, optimization, risk assessment\n🤖 **Project Creation** - Generate complete project plans from descriptions\n📈 **Predictive Analytics** - Timeline, budget, and success predictions\n👥 **Resource Management** - Optimize team allocation and utilization\n⚠️ **Risk Management** - Identify and mitigate project risks\n🎯 **Strategic Planning** - Portfolio optimization and decision support\n\nTry asking me about your portfolio health, specific projects, or optimization strategies. I'm here to help you succeed!`;
+        }
+
+        function quickAIQuestion(topic) {
+            const questions = {
+                'portfolio health': 'How is my portfolio health?',
+                'risk assessment': 'What are the biggest risks in my projects?',
+                'resource optimization': 'How can I optimize my resources?',
+                'timeline prediction': 'When will my projects be completed?'
+            };
+            
+            document.getElementById('aiChatInput').value = questions[topic];
+            sendAIMessage();
+        }
+
+        function showPredictiveAnalytics() {
+            openAIAssistant();
+            setTimeout(() => {
+                document.getElementById('aiChatInput').value = 'Show me predictive analytics for my projects';
+                sendAIMessage();
+            }, 500);
+        }
+
+        // Enhanced statistics update
+        function updateStatistics() {
+            // Update existing stats
+            document.getElementById('activeProjectsCount').textContent = projects.length;
+            document.getElementById('aiOptimizedCount').textContent = projects.length;
+            
+            // Calculate total risks
+            const totalRisks = projects.reduce((sum, project) => sum + project.risks.length, 0);
+            document.getElementById('riskAlertsCount').textContent = totalRisks;
+            
+            // Calculate total insights (tasks + risks)
+            const totalInsights = projects.reduce((sum, project) => sum + project.tasks.length + project.risks.length, 0);
+            document.getElementById('aiInsightsCount').textContent = totalInsights;
+            
+            // Update predictions count
+            const predictionsCount = projects.length > 0 ? 
+                Math.round(projects.reduce((sum, p) => sum + p.successScore, 0) / projects.length) : 0;
+            document.getElementById('predictionsCount').textContent = predictionsCount;
+        }
+
+        // Advanced Features Navigation
+        function openTeamCollaboration() {
+            window.open('team-collaboration.html', '_blank');
+        }
+
+        function openGanttTimeline() {
+            window.open('gantt-timeline.html', '_blank');
+        }
+
+        function openAIRecommendations() {
+            window.open('ai-recommendations.html', '_blank');
+        }
+
+        function openResourceOptimization() {
+            window.open('resource-optimization.html', '_blank');
+        }
+
+        function openAutomatedReports() {
+            window.open('automated-reports.html', '_blank');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProjectsFromStorage();
+        });
+
+        </script>
+</body>
+</html>

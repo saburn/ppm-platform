@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Progress Reports - AI-Enhanced PPM Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .slide-up { animation: slideUp 0.3s ease-out; }
+        
+        .report-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .report-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: #3b82f6;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .report-preview {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        
+        .metric-card {
+            transition: all 0.2s ease;
+        }
+        
+        .metric-card:hover {
+            transform: scale(1.02);
+        }
+        
+        .status-indicator {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .export-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .schedule-badge {
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .progress-ring {
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        
+        .insight-highlight {
+            background: linear-gradient(120deg, #fef3c7 0%, #fef3c7 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 60%;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-chart-line text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Automated Progress Reports</h1>
+                        <p class="text-purple-100 text-sm">AI-powered analytics and intelligent reporting</p>
+                    </div>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="generateReport()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-magic mr-2"></i>Generate Report
+                    </button>
+                    <button onclick="goToDashboard()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Report Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center metric-card">
+                <i class="fas fa-file-alt text-3xl text-blue-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="totalReports">0</p>
+                <p class="text-sm text-gray-600">Total Reports</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center metric-card">
+                <i class="fas fa-calendar-check text-3xl text-green-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="scheduledReports">0</p>
+                <p class="text-sm text-gray-600">Scheduled</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center metric-card">
+                <i class="fas fa-users text-3xl text-purple-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="reportRecipients">0</p>
+                <p class="text-sm text-gray-600">Recipients</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center metric-card">
+                <i class="fas fa-clock text-3xl text-amber-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="lastGenerated">--</p>
+                <p class="text-sm text-gray-600">Last Generated</p>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Report Generation Section (2/3 width) -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Report Templates -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-file-contract mr-2 text-blue-600"></i>Report Templates
+                        </h3>
+                        <button onclick="createCustomTemplate()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-plus mr-2"></i>Create Template
+                        </button>
+                    </div>
+
+                    <div id="reportTemplates" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Report templates will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Generated Reports -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-history mr-2 text-green-600"></i>Recent Reports
+                        </h3>
+                        <div class="flex space-x-2">
+                            <select id="reportFilter" onchange="filterReports()" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                                <option value="all">All Types</option>
+                                <option value="progress">Progress</option>
+                                <option value="financial">Financial</option>
+                                <option value="portfolio">Portfolio</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="recentReports" class="space-y-4">
+                        <!-- Recent reports will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Report Preview -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-eye mr-2 text-purple-600"></i>Report Preview
+                        </h3>
+                        <div class="flex space-x-2">
+                            <button onclick="exportPDF()" class="export-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+                                <i class="fas fa-file-pdf mr-1"></i>PDF
+                            </button>
+                            <button onclick="exportExcel()" class="export-btn bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                                <i class="fas fa-file-excel mr-1"></i>Excel
+                            </button>
+                            <button onclick="emailReport()" class="export-btn bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                                <i class="fas fa-envelope mr-1"></i>Email
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="reportPreview" class="report-preview p-6">
+                        <!-- Report preview will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar (1/3 width) -->
+            <div class="space-y-6">
+                <!-- Automated Scheduling -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-clock mr-2 text-amber-600"></i>Automated Scheduling
+                    </h3>
+                    <div id="scheduledReportsList" class="space-y-3">
+                        <!-- Scheduled reports will be populated here -->
+                    </div>
+                    <button onclick="scheduleReport()" class="mt-4 w-full bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-calendar-plus mr-2"></i>Schedule Report
+                    </button>
+                </div>
+
+                <!-- Report Analytics -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-bar mr-2 text-indigo-600"></i>Report Analytics
+                    </h3>
+                    <canvas id="reportAnalyticsChart" width="400" height="200"></canvas>
+                    <div class="mt-4 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Avg Generation Time</span>
+                            <span class="font-semibold text-green-600">2.3 sec</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Data Accuracy</span>
+                            <span class="font-semibold text-blue-600">99.7%</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">User Satisfaction</span>
+                            <span class="font-semibold text-purple-600">94%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Insights -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>Key Insights
+                    </h3>
+                    <div id="keyInsights" class="space-y-3">
+                        <!-- Key insights will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Report Generation Modal -->
+    <div id="reportGenerationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-2xl w-full mx-4 slide-up">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Generate Custom Report</h3>
+            <form id="reportGenerationForm" onsubmit="generateCustomReport(event)">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+                        <select id="reportType" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Type</option>
+                            <option value="progress">Progress Report</option>
+                            <option value="financial">Financial Report</option>
+                            <option value="portfolio">Portfolio Overview</option>
+                            <option value="team">Team Performance</option>
+                            <option value="custom">Custom Analysis</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Time Period</label>
+                        <select id="timePeriod" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                            <option value="yearly">Yearly</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Projects</label>
+                    <div id="projectSelection" class="max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-2">
+                        <!-- Project checkboxes will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Include Sections</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="sections" value="summary" checked class="mr-2">
+                            <span class="text-sm">Executive Summary</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="sections" value="progress" checked class="mr-2">
+                            <span class="text-sm">Progress Metrics</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="sections" value="financial" checked class="mr-2">
+                            <span class="text-sm">Financial Analysis</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="sections" value="risks" class="mr-2">
+                            <span class="text-sm">Risk Assessment</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="sections" value="team" class="mr-2">
+                            <span class="text-sm">Team Performance</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="sections" value="insights" checked class="mr-2">
+                            <span class="text-sm">AI Insights</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeReportModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                        Generate Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data Management
+        let projects = [];
+        let reports = [];
+        let reportTemplates = [];
+        let scheduledReports = [];
+        let reportAnalytics = null;
+        let currentReport = null;
+
+        // Initialize data
+        function initializeData() {
+            // Load projects from localStorage
+            const savedProjects = localStorage.getItem('ppm_projects');
+            if (savedProjects) {
+                projects = JSON.parse(savedProjects);
+            }
+
+            // Initialize report templates
+            reportTemplates = [
+                {
+                    id: 1,
+                    name: "Executive Summary",
+                    description: "High-level overview for stakeholders",
+                    type: "executive",
+                    icon: "fa-briefcase",
+                    sections: ["summary", "progress", "financial", "insights"],
+                    usageCount: 45
+                },
+                {
+                    id: 2,
+                    name: "Progress Report",
+                    description: "Detailed project progress tracking",
+                    type: "progress",
+                    icon: "fa-chart-line",
+                    sections: ["progress", "tasks", "timeline", "risks"],
+                    usageCount: 38
+                },
+                {
+                    id: 3,
+                    name: "Financial Analysis",
+                    description: "Budget, costs, and ROI analysis",
+                    type: "financial",
+                    icon: "fa-dollar-sign",
+                    sections: ["financial", "roi", "forecasting"],
+                    usageCount: 27
+                },
+                {
+                    id: 4,
+                    name: "Portfolio Overview",
+                    description: "Cross-project portfolio insights",
+                    type: "portfolio",
+                    icon: "fa-project-diagram",
+                    sections: ["summary", "progress", "financial", "risks", "insights"],
+                    usageCount: 52
+                }
+            ];
+
+            // Generate sample reports
+            generateSampleReports();
+            
+            // Initialize scheduled reports
+            initializeScheduledReports();
+            
+            updateUI();
+        }
+
+        // Generate sample reports
+        function generateSampleReports() {
+            const reportTypes = ['progress', 'financial', 'portfolio'];
+            const now = new Date();
+            
+            reports = reportTypes.map((type, index) => ({
+                id: Date.now() + index,
+                name: `${type.charAt(0).toUpperCase() + type.slice(1)} Report - ${new Date(Date.now() - index * 86400000).toLocaleDateString()}`,
+                type: type,
+                generatedAt: new Date(Date.now() - index * 86400000).toISOString(),
+                projectsCount: projects.length,
+                pages: 12 + Math.floor(Math.random() * 8),
+                size: (2.3 + Math.random() * 1.5).toFixed(1) + ' MB',
+                status: 'completed'
+            }));
+        }
+
+        // Initialize scheduled reports
+        function initializeScheduledReports() {
+            scheduledReports = [
+                {
+                    id: 1,
+                    name: "Weekly Progress Report",
+                    frequency: "weekly",
+                    nextRun: getNextRunDate('weekly'),
+                    recipients: 5,
+                    active: true
+                },
+                {
+                    id: 2,
+                    name: "Monthly Financial Report",
+                    frequency: "monthly",
+                    nextRun: getNextRunDate('monthly'),
+                    recipients: 8,
+                    active: true
+                },
+                {
+                    id: 3,
+                    name: "Quarterly Portfolio Review",
+                    frequency: "quarterly",
+                    nextRun: getNextRunDate('quarterly'),
+                    recipients: 12,
+                    active: false
+                }
+            ];
+        }
+
+        // Get next run date for scheduled reports
+        function getNextRunDate(frequency) {
+            const now = new Date();
+            const next = new Date(now);
+            
+            switch(frequency) {
+                case 'weekly':
+                    next.setDate(now.getDate() + 7);
+                    break;
+                case 'monthly':
+                    next.setMonth(now.getMonth() + 1);
+                    break;
+                case 'quarterly':
+                    next.setMonth(now.getMonth() + 3);
+                    break;
+            }
+            
+            return next.toLocaleDateString();
+        }
+
+        // Update UI
+        function updateUI() {
+            updateOverviewStats();
+            displayReportTemplates();
+            displayRecentReports();
+            generateReportPreview();
+            displayScheduledReports();
+            updateReportAnalytics();
+            displayKeyInsights();
+        }
+
+        // Update overview statistics
+        function updateOverviewStats() {
+            const activeScheduledCount = scheduledReports.filter(s => s.active).length;
+            const totalRecipients = scheduledReports.reduce((sum, s) => sum + s.recipients, 0);
+            const lastGenerated = reports.length > 0 ? 
+                new Date(Math.max(...reports.map(r => new Date(r.generatedAt)))).toLocaleDateString() : '--';
+            
+            document.getElementById('totalReports').textContent = reports.length;
+            document.getElementById('scheduledReports').textContent = activeScheduledCount;
+            document.getElementById('reportRecipients').textContent = totalRecipients;
+            document.getElementById('lastGenerated').textContent = lastGenerated;
+        }
+
+        // Display report templates
+        function displayReportTemplates() {
+            const container = document.getElementById('reportTemplates');
+            container.innerHTML = '';
+            
+            reportTemplates.forEach(template => {
+                const templateCard = document.createElement('div');
+                templateCard.className = 'report-card bg-gray-50 rounded-lg p-4 cursor-pointer';
+                templateCard.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas ${template.icon} text-blue-600 text-lg"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">${template.name}</h4>
+                            <p class="text-sm text-gray-600 mb-2">${template.description}</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-500">${template.usageCount} uses</span>
+                                <button onclick="useTemplate(${template.id})" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                    Use Template →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                templateCard.addEventListener('click', () => useTemplate(template.id));
+                container.appendChild(templateCard);
+            });
+        }
+
+        // Display recent reports
+        function displayRecentReports() {
+            const container = document.getElementById('recentReports');
+            container.innerHTML = '';
+            
+            reports.slice(0, 5).forEach(report => {
+                const reportCard = document.createElement('div');
+                reportCard.className = 'bg-gray-50 rounded-lg p-4 flex justify-between items-center';
+                
+                const typeIcon = {
+                    'progress': 'fa-chart-line text-green-600',
+                    'financial': 'fa-dollar-sign text-blue-600',
+                    'portfolio': 'fa-project-diagram text-purple-600'
+                }[report.type] || 'fa-file-alt text-gray-600';
+                
+                reportCard.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <i class="fas ${typeIcon} text-xl"></i>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">${report.name}</h4>
+                            <div class="flex items-center space-x-3 text-sm text-gray-600">
+                                <span><i class="fas fa-calendar mr-1"></i>${new Date(report.generatedAt).toLocaleDateString()}</span>
+                                <span><i class="fas fa-file mr-1"></i>${report.pages} pages</span>
+                                <span><i class="fas fa-database mr-1"></i>${report.size}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="viewReport(${report.id})" class="text-blue-600 hover:text-blue-800 text-sm">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        <button onclick="downloadReport(${report.id})" class="text-green-600 hover:text-green-800 text-sm">
+                            <i class="fas fa-download mr-1"></i>Download
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(reportCard);
+            });
+            
+            if (reports.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">No reports generated yet. Create your first report to get started!</p>';
+            }
+        }
+
+        // Generate report preview
+        function generateReportPreview() {
+            const container = document.getElementById('reportPreview');
+            
+            // Generate a sample preview
+            const totalProjects = projects.length;
+            const completedTasks = projects.reduce((sum, p) => 
+                sum + (p.tasks?.filter(t => t.progress === 100).length || 0), 0
+            );
+            const totalTasks = projects.reduce((sum, p) => sum + (p.tasks?.length || 0), 0);
+            const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="text-center border-b border-gray-200 pb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Portfolio Progress Report</h2>
+                        <p class="text-gray-600">Generated on ${new Date().toLocaleDateString()}</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-blue-800 mb-2">Executive Summary</h3>
+                            <p class="text-sm text-gray-700">
+                                Portfolio consists of ${totalProjects} active projects with ${overallProgress}% overall completion. 
+                                Performance is <span class="insight-highlight font-semibold">above target</span> for this quarter.
+                            </p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-green-800 mb-2">Key Metrics</h3>
+                            <ul class="text-sm text-gray-700 space-y-1">
+                                <li>• Projects: ${totalProjects}</li>
+                                <li>• Total Tasks: ${totalTasks}</li>
+                                <li>• Completed: ${completedTasks}</li>
+                                <li>• Progress: ${overallProgress}%</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-800 mb-3">Project Performance</h3>
+                        <div class="space-y-2">
+                            ${projects.slice(0, 3).map(project => {
+                                const projectProgress = project.tasks?.length > 0 ? 
+                                    Math.round((project.tasks?.filter(t => t.progress === 100).length || 0) / project.tasks.length * 100) : 0;
+                                return `
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">${project.name}</span>
+                                        <div class="flex items-center space-x-2">
+                                            <div class="w-24 bg-gray-200 rounded-full h-2">
+                                                <div class="bg-blue-500 h-2 rounded-full" style="width: ${projectProgress}%"></div>
+                                            </div>
+                                            <span class="text-xs font-medium">${projectProgress}%</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="bg-amber-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-amber-800 mb-2">AI Insights</h3>
+                        <p class="text-sm text-gray-700">
+                            <i class="fas fa-lightbulb text-amber-600 mr-2"></i>
+                            Based on current trends, portfolio is on track to complete 15% ahead of schedule. 
+                            Consider reallocating resources from high-performing projects to those requiring attention.
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Display scheduled reports
+        function displayScheduledReports() {
+            const container = document.getElementById('scheduledReportsList');
+            container.innerHTML = '';
+            
+            scheduledReports.forEach(report => {
+                const reportCard = document.createElement('div');
+                reportCard.className = `schedule-badge bg-gray-50 rounded-lg p-3 border-l-4 ${report.active ? 'border-green-500' : 'border-gray-300'}`;
+                
+                const frequencyIcon = {
+                    'weekly': 'fa-calendar-week',
+                    'monthly': 'fa-calendar-alt',
+                    'quarterly': 'fa-calendar'
+                }[report.frequency] || 'fa-calendar';
+                
+                reportCard.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas ${frequencyIcon} text-gray-600"></i>
+                            <div>
+                                <p class="font-medium text-sm text-gray-800">${report.name}</p>
+                                <p class="text-xs text-gray-600">Next: ${report.nextRun} • ${report.recipients} recipients</p>
+                            </div>
+                        </div>
+                        <button onclick="toggleScheduledReport(${report.id})" class="text-sm ${report.active ? 'text-green-600' : 'text-gray-400'}">
+                            <i class="fas fa-toggle-${report.active ? 'on' : 'off'}"></i>
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(reportCard);
+            });
+        }
+
+        // Update report analytics chart
+        function updateReportAnalytics() {
+            const ctx = document.getElementById('reportAnalyticsChart').getContext('2d');
+            
+            if (reportAnalytics) {
+                reportAnalytics.destroy();
+            }
+            
+            reportAnalytics = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                    datasets: [{
+                        label: 'Reports Generated',
+                        data: [12, 19, 15, 25, 22],
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Display key insights
+        function displayKeyInsights() {
+            const container = document.getElementById('keyInsights');
+            
+            const insights = [
+                {
+                    type: 'trend',
+                    icon: 'fa-chart-line text-green-600',
+                    text: 'Report generation increased 35% this month'
+                },
+                {
+                    type: 'efficiency',
+                    icon: 'fa-clock text-blue-600',
+                    text: 'Average generation time reduced by 1.2 seconds'
+                },
+                {
+                    type: 'usage',
+                    icon: 'fa-users text-purple-600',
+                    text: 'Portfolio reports are most popular (52% usage)'
+                }
+            ];
+            
+            container.innerHTML = '';
+            insights.forEach(insight => {
+                const insightCard = document.createElement('div');
+                insightCard.className = 'bg-gray-50 rounded-lg p-3';
+                insightCard.innerHTML = `
+                    <div class="flex items-start space-x-2">
+                        <i class="fas ${insight.icon} mt-0.5"></i>
+                        <p class="text-sm text-gray-700">${insight.text}</p>
+                    </div>
+                `;
+                container.appendChild(insightCard);
+            });
+        }
+
+        // Interaction functions
+        function generateReport() {
+            openReportModal();
+        }
+
+        function useTemplate(templateId) {
+            const template = reportTemplates.find(t => t.id === templateId);
+            if (template) {
+                currentReport = template;
+                openReportModal();
+            }
+        }
+
+        function createCustomTemplate() {
+            alert('Custom template creation would open a template builder interface.');
+        }
+
+        function filterReports() {
+            const filter = document.getElementById('reportFilter').value;
+            // Implementation for report filtering
+            console.log('Filtering reports by:', filter);
+        }
+
+        function openReportModal() {
+            // Populate project selection
+            const projectSelection = document.getElementById('projectSelection');
+            projectSelection.innerHTML = '';
+            
+            projects.forEach(project => {
+                const checkbox = document.createElement('label');
+                checkbox.className = 'flex items-center p-2 hover:bg-gray-50 rounded';
+                checkbox.innerHTML = `
+                    <input type="checkbox" name="projects" value="${project.id}" checked class="mr-2">
+                    <span class="text-sm">${project.name}</span>
+                `;
+                projectSelection.appendChild(checkbox);
+            });
+            
+            document.getElementById('reportGenerationModal').classList.remove('hidden');
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportGenerationModal').classList.add('hidden');
+        }
+
+        function generateCustomReport(event) {
+            event.preventDefault();
+            
+            const reportType = document.getElementById('reportType').value;
+            const timePeriod = document.getElementById('timePeriod').value;
+            
+            // Simulate report generation
+            const newReport = {
+                id: Date.now(),
+                name: `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report - ${new Date().toLocaleDateString()}`,
+                type: reportType,
+                generatedAt: new Date().toISOString(),
+                projectsCount: projects.length,
+                pages: 15 + Math.floor(Math.random() * 10),
+                size: (2.5 + Math.random() * 2).toFixed(1) + ' MB',
+                status: 'completed'
+            };
+            
+            reports.unshift(newReport);
+            updateUI();
+            closeReportModal();
+            
+            alert('Report generated successfully! The report is now available in the recent reports section.');
+        }
+
+        function viewReport(reportId) {
+            const report = reports.find(r => r.id === reportId);
+            if (report) {
+                alert('Opening report: ' + report.name);
+            }
+        }
+
+        function downloadReport(reportId) {
+            const report = reports.find(r => r.id === reportId);
+            if (report) {
+                alert('Downloading report: ' + report.name);
+            }
+        }
+
+        function exportPDF() {
+            alert('Exporting report to PDF... This would generate and download a PDF version of the report.');
+        }
+
+        function exportExcel() {
+            alert('Exporting report to Excel... This would generate and download an Excel version of the report.');
+        }
+
+        function emailReport() {
+            alert('Email report dialog would open, allowing you to send the report to stakeholders.');
+        }
+
+        function scheduleReport() {
+            alert('Report scheduling interface would open, allowing you to configure automated report generation.');
+        }
+
+        function toggleScheduledReport(reportId) {
+            const report = scheduledReports.find(r => r.id === reportId);
+            if (report) {
+                report.active = !report.active;
+                displayScheduledReports();
+            }
+        }
+
+        function goToDashboard() {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeData();
+        });
+    </script>
+</body>
+</html>

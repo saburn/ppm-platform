@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gantt Chart & Timeline - AI-Enhanced PPM Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <style>
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .slide-up { animation: slideUp 0.3s ease-out; }
+        
+        .gantt-container {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        
+        .gantt-row {
+            display: flex;
+            align-items: center;
+            min-height: 40px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .gantt-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: white;
+        }
+        
+        .gantt-task {
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            font-size: 12px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: absolute;
+        }
+        
+        .gantt-task:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .gantt-milestone {
+            width: 16px;
+            height: 16px;
+            background: #fbbf24;
+            border: 2px solid #f59e0b;
+            border-radius: 50%;
+            position: absolute;
+            top: 12px;
+            cursor: pointer;
+        }
+        
+        .gantt-dependency {
+            stroke: #6b7280;
+            stroke-width: 1;
+            fill: none;
+        }
+        
+        .timeline-view {
+            transition: all 0.3s ease;
+        }
+        
+        .task-card {
+            transition: all 0.2s ease;
+        }
+        .task-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .critical-path {
+            border-left: 3px solid #ef4444;
+        }
+        
+        .on-track {
+            border-left: 3px solid #10b981;
+        }
+        
+        .at-risk {
+            border-left: 3px solid #f59e0b;
+        }
+        
+        .overdue {
+            border-left: 3px solid #ef4444;
+        }
+        
+        .zoom-controls {
+            position: sticky;
+            top: 10px;
+            right: 10px;
+            z-index: 20;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: #1f2937;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-chart-gantt text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Gantt Chart & Timeline</h1>
+                        <p class="text-purple-100 text-sm">Visualize project timelines, dependencies, and critical paths</p>
+                    </div>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="exportTimeline()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                    <button onclick="goToDashboard()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Timeline Controls -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <div class="flex space-x-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>
+                        <select id="projectSelector" onchange="changeProject()" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="all">All Projects</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">View</label>
+                        <select id="viewSelector" onchange="changeView()" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="gantt">Gantt Chart</option>
+                            <option value="timeline">Timeline View</option>
+                            <option value="calendar">Calendar View</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Time Range</label>
+                        <select id="timeRangeSelector" onchange="changeTimeRange()" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="week">Week</option>
+                            <option value="month" selected>Month</option>
+                            <option value="quarter">Quarter</option>
+                            <option value="year">Year</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="zoomIn()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button onclick="zoomOut()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button onclick="resetZoom()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                        <i class="fas fa-compress"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+                <i class="fas fa-calendar-check text-2xl text-blue-600 mb-2"></i>
+                <p class="text-xl font-bold text-gray-800" id="totalTasks">0</p>
+                <p class="text-sm text-gray-600">Total Tasks</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+                <i class="fas fa-route text-2xl text-red-600 mb-2"></i>
+                <p class="text-xl font-bold text-gray-800" id="criticalPathTasks">0</p>
+                <p class="text-sm text-gray-600">Critical Path</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+                <i class="fas fa-clock text-2xl text-amber-600 mb-2"></i>
+                <p class="text-xl font-bold text-gray-800" id="projectDuration">0d</p>
+                <p class="text-sm text-gray-600">Duration</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+                <i class="fas fa-exclamation-triangle text-2xl text-purple-600 mb-2"></i>
+                <p class="text-xl font-bold text-gray-800" id="overdueTasks">0</p>
+                <p class="text-sm text-gray-600">Overdue</p>
+            </div>
+        </div>
+
+        <!-- Gantt Chart View -->
+        <div id="ganttView" class="bg-white rounded-xl shadow-lg p-6">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-chart-gantt mr-2 text-blue-600"></i>Project Gantt Chart
+                </h3>
+            </div>
+            
+            <div class="gantt-container border border-gray-200 rounded-lg">
+                <!-- Gantt chart will be rendered here -->
+                <div id="ganttChart">
+                    <!-- Chart content will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline View (Hidden by default) -->
+        <div id="timelineView" class="bg-white rounded-xl shadow-lg p-6 hidden">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-stream mr-2 text-blue-600"></i>Timeline View
+                </h3>
+            </div>
+            
+            <div id="timelineChart" class="space-y-4">
+                <!-- Timeline content will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Calendar View (Hidden by default) -->
+        <div id="calendarView" class="bg-white rounded-xl shadow-lg p-6 hidden">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>Calendar View
+                </h3>
+            </div>
+            
+            <div id="calendarChart">
+                <!-- Calendar content will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Critical Path Analysis -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-route mr-2 text-red-600"></i>Critical Path Analysis
+                </h3>
+            </div>
+            
+            <div id="criticalPathAnalysis" class="space-y-3">
+                <!-- Critical path analysis will be generated here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Task Details Modal -->
+    <div id="taskDetailsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 slide-up">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Task Details</h3>
+            <div id="taskDetailsContent">
+                <!-- Task details will be populated here -->
+            </div>
+            <div class="flex justify-end mt-4">
+                <button onclick="closeTaskDetails()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        // Data Management
+        let projects = [];
+        let currentProject = 'all';
+        let currentView = 'gantt';
+        let currentTimeRange = 'month';
+        let zoomLevel = 1;
+        let ganttData = [];
+
+        // Initialize data
+        function initializeData() {
+            // Load projects from localStorage
+            const savedProjects = localStorage.getItem('ppm_projects');
+            if (savedProjects) {
+                projects = JSON.parse(savedProjects);
+            } else {
+                // Create sample project for demonstration
+                projects = [{
+                    id: 1,
+                    name: "AI-Powered E-Commerce Platform",
+                    startDate: "2024-01-01",
+                    endDate: "2024-06-30",
+                    tasks: [
+                        {
+                            id: 1,
+                            name: "Project Setup & Architecture",
+                            startDate: "2024-01-01",
+                            endDate: "2024-01-15",
+                            progress: 100,
+                            dependencies: [],
+                            assignee: "Alex Johnson",
+                            priority: "High"
+                        },
+                        {
+                            id: 2,
+                            name: "Database Design",
+                            startDate: "2024-01-10",
+                            endDate: "2024-01-25",
+                            progress: 100,
+                            dependencies: [1],
+                            assignee: "Sarah Chen",
+                            priority: "High"
+                        },
+                        {
+                            id: 3,
+                            name: "User Authentication",
+                            startDate: "2024-01-20",
+                            endDate: "2024-02-10",
+                            progress: 75,
+                            dependencies: [2],
+                            assignee: "Alex Johnson",
+                            priority: "High"
+                        },
+                        {
+                            id: 4,
+                            name: "Product Catalog",
+                            startDate: "2024-02-01",
+                            endDate: "2024-02-28",
+                            progress: 60,
+                            dependencies: [3],
+                            assignee: "Mike Wilson",
+                            priority: "Medium"
+                        },
+                        {
+                            id: 5,
+                            name: "Shopping Cart",
+                            startDate: "2024-02-15",
+                            endDate: "2024-03-15",
+                            progress: 30,
+                            dependencies: [4],
+                            assignee: "Alex Johnson",
+                            priority: "High"
+                        },
+                        {
+                            id: 6,
+                            name: "Payment Integration",
+                            startDate: "2024-03-01",
+                            endDate: "2024-03-30",
+                            progress: 0,
+                            dependencies: [5],
+                            assignee: "Sarah Chen",
+                            priority: "Critical"
+                        }
+                    ]
+                }];
+            }
+
+            setupProjectSelector();
+            updateUI();
+        }
+
+        // Setup project selector
+        function setupProjectSelector() {
+            const selector = document.getElementById('projectSelector');
+            selector.innerHTML = '<option value="all">All Projects</option>';
+            
+            projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.name;
+                selector.appendChild(option);
+            });
+        }
+
+        // Update UI
+        function updateUI() {
+            updateStatistics();
+            
+            switch(currentView) {
+                case 'gantt':
+                    renderGanttChart();
+                    break;
+                case 'timeline':
+                    renderTimelineView();
+                    break;
+                case 'calendar':
+                    renderCalendarView();
+                    break;
+            }
+            
+            renderCriticalPathAnalysis();
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const allTasks = currentProject === 'all' ? 
+                projects.flatMap(p => p.tasks || []) : 
+                (projects.find(p => p.id === parseInt(currentProject))?.tasks || []);
+            
+            const completedTasks = allTasks.filter(t => t.progress === 100).length;
+            const inProgressTasks = allTasks.filter(t => t.progress > 0 && t.progress < 100).length;
+            const overdueTasks = allTasks.filter(t => {
+                const endDate = moment(t.endDate);
+                return endDate.isBefore(moment()) && t.progress < 100;
+            }).length;
+            
+            // Calculate critical path
+            const criticalPath = calculateCriticalPath(allTasks);
+            
+            // Calculate project duration
+            const projectDuration = currentProject === 'all' ?
+                Math.max(...projects.map(p => moment(p.endDate).diff(moment(p.startDate), 'days'))) :
+                moment(projects.find(p => p.id === parseInt(currentProject))?.endDate).diff(
+                    moment(projects.find(p => p.id === parseInt(currentProject))?.startDate), 'days'
+                );
+            
+            document.getElementById('totalTasks').textContent = allTasks.length;
+            document.getElementById('criticalPathTasks').textContent = criticalPath.length;
+            document.getElementById('projectDuration').textContent = projectDuration + 'd';
+            document.getElementById('overdueTasks').textContent = overdueTasks;
+        }
+
+        // Calculate critical path
+        function calculateCriticalPath(tasks) {
+            // Simplified critical path calculation
+            // In a real implementation, this would use CPM (Critical Path Method)
+            return tasks.filter(task => task.priority === 'Critical' || task.priority === 'High');
+        }
+
+        // Render Gantt Chart
+        function renderGanttChart() {
+            const container = document.getElementById('ganttChart');
+            const tasks = currentProject === 'all' ? 
+                projects.flatMap(p => p.tasks || []) : 
+                (projects.find(p => p.id === parseInt(currentProject))?.tasks || []);
+            
+            if (tasks.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">No tasks to display</p>';
+                return;
+            }
+            
+            // Calculate date range
+            const startDate = moment(Math.min(...tasks.map(t => moment(t.startDate))));
+            const endDate = moment(Math.max(...tasks.map(t => moment(t.endDate))));
+            const totalDays = endDate.diff(startDate, 'days');
+            
+            // Generate Gantt chart HTML
+            let html = `
+                <div class="gantt-header">
+                    <div class="flex border-b-2 border-gray-300">
+                        <div class="w-64 p-2 font-semibold text-sm bg-gray-50">Task</div>
+                        <div class="flex-1 flex">
+            `;
+            
+            // Generate date headers
+            for (let i = 0; i <= totalDays; i += Math.max(1, Math.floor(totalDays / 30))) {
+                const date = moment(startDate).add(i, 'days');
+                html += `<div class="flex-1 min-w-20 p-2 text-center text-xs border-l border-gray-200">${date.format('MMM DD')}</div>`;
+            }
+            
+            html += `
+                        </div>
+                    </div>
+                </div>
+                <div class="gantt-body">
+            `;
+            
+            // Generate task rows
+            tasks.forEach(task => {
+                const taskStart = moment(task.startDate);
+                const taskEnd = moment(task.endDate);
+                const startOffset = taskStart.diff(startDate, 'days');
+                const duration = taskEnd.diff(taskStart, 'days');
+                
+                const leftPercent = (startOffset / totalDays) * 100;
+                const widthPercent = (duration / totalDays) * 100;
+                
+                const taskColor = task.progress === 100 ? 'bg-green-500' :
+                                 task.progress > 0 ? 'bg-blue-500' : 'bg-gray-400';
+                
+                const statusClass = task.priority === 'Critical' ? 'critical-path' :
+                                  task.progress === 100 ? 'on-track' :
+                                  moment(task.endDate).isBefore(moment()) ? 'overdue' : 'at-risk';
+                
+                html += `
+                    <div class="gantt-row ${statusClass}">
+                        <div class="w-64 p-2 text-sm">
+                            <div class="font-medium">${task.name}</div>
+                            <div class="text-xs text-gray-500">${task.assignee || 'Unassigned'}</div>
+                        </div>
+                        <div class="flex-1 relative" style="min-height: 40px;">
+                            <div class="gantt-task ${taskColor}" 
+                                 style="left: ${leftPercent}%; width: ${widthPercent}%;"
+                                 onclick="showTaskDetails(${task.id})"
+                                 onmouseover="showTooltip(event, ${task.id})"
+                                 onmouseout="hideTooltip()">
+                                <span class="truncate">${task.name}</span>
+                                <span class="ml-2">${task.progress}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add dependency lines (simplified)
+                if (task.dependencies && task.dependencies.length > 0) {
+                    // In a real implementation, this would draw SVG lines connecting tasks
+                }
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Render Timeline View
+        function renderTimelineView() {
+            const container = document.getElementById('timelineChart');
+            const tasks = currentProject === 'all' ? 
+                projects.flatMap(p => p.tasks || []) : 
+                (projects.find(p => p.id === parseInt(currentProject))?.tasks || []);
+            
+            // Sort tasks by start date
+            const sortedTasks = tasks.sort((a, b) => moment(a.startDate).diff(moment(b.startDate)));
+            
+            let html = '';
+            sortedTasks.forEach(task => {
+                const taskColor = task.progress === 100 ? 'bg-green-500' :
+                                 task.progress > 0 ? 'bg-blue-500' : 'bg-gray-400';
+                
+                html += `
+                    <div class="task-card bg-gray-50 rounded-lg p-4 border-l-4 ${task.priority === 'Critical' ? 'border-red-500' : 'border-blue-500'}">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-800">${task.name}</h4>
+                                <p class="text-sm text-gray-600 mb-2">
+                                    <i class="fas fa-calendar mr-1"></i>
+                                    ${moment(task.startDate).format('MMM DD')} - ${moment(task.endDate).format('MMM DD, YYYY')}
+                                </p>
+                                <p class="text-sm text-gray-600">
+                                    <i class="fas fa-user mr-1"></i>
+                                    ${task.assignee || 'Unassigned'}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <span class="inline-block px-3 py-1 ${taskColor} text-white text-sm rounded-full mb-2">
+                                    ${task.progress}% Complete
+                                </span>
+                                <p class="text-xs text-gray-500">
+                                    ${moment(task.endDate).fromNow()}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="${taskColor} h-2 rounded-full transition-all duration-300" style="width: ${task.progress}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<p class="text-center text-gray-500 py-8">No tasks to display</p>';
+        }
+
+        // Render Calendar View
+        function renderCalendarView() {
+            const container = document.getElementById('calendarChart');
+            const tasks = currentProject === 'all' ? 
+                projects.flatMap(p => p.tasks || []) : 
+                (projects.find(p => p.id === parseInt(currentProject))?.tasks || []);
+            
+            // Create a simple calendar grid
+            const today = moment();
+            const startOfMonth = today.clone().startOf('month');
+            const endOfMonth = today.clone().endOf('month');
+            
+            let html = `
+                <div class="grid grid-cols-7 gap-1 text-center text-sm font-medium text-gray-700 mb-2">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+                <div class="grid grid-cols-7 gap-1">
+            `;
+            
+            // Add empty cells for days before month starts
+            for (let i = 0; i < startOfMonth.day(); i++) {
+                html += '<div class="p-2"></div>';
+            }
+            
+            // Add days of the month
+            for (let day = 0; day < endOfMonth.date(); day++) {
+                const currentDay = startOfMonth.clone().add(day, 'days');
+                const dayTasks = tasks.filter(task => {
+                    const taskStart = moment(task.startDate);
+                    const taskEnd = moment(task.endDate);
+                    return currentDay.isBetween(taskStart, taskEnd, 'day', '[]');
+                });
+                
+                const isToday = currentDay.isSame(today, 'day');
+                const bgClass = isToday ? 'bg-blue-100' : 'bg-gray-50';
+                const borderClass = dayTasks.length > 0 ? 'border-2 border-blue-500' : 'border border-gray-200';
+                
+                html += `
+                    <div class="${bgClass} ${borderClass} rounded p-2 min-h-16">
+                        <div class="font-medium text-sm ${isToday ? 'text-blue-600' : 'text-gray-800'}">
+                            ${currentDay.date()}
+                        </div>
+                        ${dayTasks.length > 0 ? `
+                            <div class="text-xs text-gray-600 mt-1">
+                                ${dayTasks.length} task${dayTasks.length > 1 ? 's' : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Render Critical Path Analysis
+        function renderCriticalPathAnalysis() {
+            const container = document.getElementById('criticalPathAnalysis');
+            const tasks = currentProject === 'all' ? 
+                projects.flatMap(p => p.tasks || []) : 
+                (projects.find(p => p.id === parseInt(currentProject))?.tasks || []);
+            
+            const criticalPath = calculateCriticalPath(tasks);
+            
+            let html = '';
+            criticalPath.forEach(task => {
+                const riskLevel = moment(task.endDate).isBefore(moment()) && task.progress < 100 ? 'High' :
+                                 task.priority === 'Critical' ? 'High' :
+                                 task.progress < 50 ? 'Medium' : 'Low';
+                
+                const riskColor = riskLevel === 'High' ? 'text-red-600' :
+                                riskLevel === 'Medium' ? 'text-amber-600' : 'text-green-600';
+                
+                html += `
+                    <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-800">${task.name}</div>
+                            <div class="text-sm text-gray-600">
+                                ${moment(task.startDate).format('MMM DD')} - ${moment(task.endDate).format('MMM DD')}
+                                • ${task.assignee || 'Unassigned'}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-medium ${riskColor}">${riskLevel} Risk</div>
+                            <div class="text-xs text-gray-500">${task.progress}% complete</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<p class="text-center text-gray-500 py-4">No critical path items identified</p>';
+        }
+
+        // View change functions
+        function changeProject() {
+            currentProject = document.getElementById('projectSelector').value;
+            updateUI();
+        }
+
+        function changeView() {
+            currentView = document.getElementById('viewSelector').value;
+            
+            // Hide all views
+            document.getElementById('ganttView').classList.add('hidden');
+            document.getElementById('timelineView').classList.add('hidden');
+            document.getElementById('calendarView').classList.add('hidden');
+            
+            // Show selected view
+            document.getElementById(currentView + 'View').classList.remove('hidden');
+            
+            updateUI();
+        }
+
+        function changeTimeRange() {
+            currentTimeRange = document.getElementById('timeRangeSelector').value;
+            updateUI();
+        }
+
+        // Zoom functions
+        function zoomIn() {
+            zoomLevel = Math.min(zoomLevel * 1.2, 3);
+            updateUI();
+        }
+
+        function zoomOut() {
+            zoomLevel = Math.max(zoomLevel / 1.2, 0.5);
+            updateUI();
+        }
+
+        function resetZoom() {
+            zoomLevel = 1;
+            updateUI();
+        }
+
+        // Task details functions
+        function showTaskDetails(taskId) {
+            const allTasks = currentProject === 'all' ? 
+                projects.flatMap(p => p.tasks || []) : 
+                (projects.find(p => p.id === parseInt(currentProject))?.tasks || []);
+            
+            const task = allTasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const content = document.getElementById('taskDetailsContent');
+            content.innerHTML = `
+                <div class="space-y-3">
+                    <div>
+                        <h4 class="font-semibold text-gray-800">${task.name}</h4>
+                        <p class="text-sm text-gray-600">${task.assignee || 'Unassigned'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Duration</p>
+                        <p class="font-medium">${moment(task.startDate).format('MMM DD')} - ${moment(task.endDate).format('MMM DD, YYYY')}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Progress</p>
+                        <div class="flex items-center space-x-2">
+                            <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: ${task.progress}%"></div>
+                            </div>
+                            <span class="text-sm font-medium">${task.progress}%</span>
+                        </div>
+                    </div>
+                    ${task.dependencies && task.dependencies.length > 0 ? `
+                        <div>
+                            <p class="text-sm text-gray-600">Dependencies</p>
+                            <p class="font-medium">${task.dependencies.join(', ')}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            document.getElementById('taskDetailsModal').classList.remove('hidden');
+        }
+
+        function closeTaskDetails() {
+            document.getElementById('taskDetailsModal').classList.add('hidden');
+        }
+
+        // Tooltip functions
+        function showTooltip(event, taskId) {
+            const allTasks = currentProject === 'all' ? 
+                projects.flatMap(p => p.tasks || []) : 
+                (projects.find(p => p.id === parseInt(currentProject))?.tasks || []);
+            
+            const task = allTasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const tooltip = document.getElementById('tooltip');
+            tooltip.innerHTML = `
+                <div class="font-semibold">${task.name}</div>
+                <div>${task.assignee || 'Unassigned'}</div>
+                <div>${task.progress}% complete</div>
+                <div>${moment(task.startDate).format('MMM DD')} - ${moment(task.endDate).format('MMM DD')}</div>
+            `;
+            
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY - 40 + 'px';
+            tooltip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').classList.remove('show');
+        }
+
+        // Export function
+        function exportTimeline() {
+            // In a real implementation, this would export to PDF, Excel, or image
+            alert('Export functionality would be implemented here');
+        }
+
+        // Navigation
+        function goToDashboard() {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeData();
+        });
+    </script>
+</body>
+</html>

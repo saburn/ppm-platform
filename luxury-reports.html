@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Studio - AI PPM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            --danger-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            --dark-surface: #0f172a;
+            --card-surface: #1e293b;
+            --border-subtle: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-glow: rgba(102, 126, 234, 0.3);
+            --success-glow: rgba(52, 211, 153, 0.3);
+            --warning-glow: rgba(251, 191, 36, 0.3);
+            --danger-glow: rgba(248, 113, 113, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-surface);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Navigation System */
+        .luxury-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--card-surface) 0%, rgba(30, 41, 59, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-subtle);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            position: relative;
+            padding: 14px 24px;
+            margin: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.3);
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .luxury-btn {
+            position: relative;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .luxury-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .luxury-btn:hover::before {
+            left: 100%;
+        }
+
+        .luxury-btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .luxury-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Report Templates */
+        .report-template {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .report-template::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .report-template:hover::before {
+            transform: scaleX(1);
+        }
+
+        .report-template:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.2);
+        }
+
+        .report-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .report-template:hover .report-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Chart Containers */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin: 20px 0;
+        }
+
+        .chart-container.small {
+            height: 250px;
+        }
+
+        .chart-container.large {
+            height: 450px;
+        }
+
+        /* KPI Cards */
+        .kpi-card {
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-value {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 12px 0;
+        }
+
+        .kpi-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .kpi-change {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .kpi-change.positive {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .kpi-change.negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        /* Report Builder */
+        .report-builder {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .component-library {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .component-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .component-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .component-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        /* Report Preview */
+        .report-preview {
+            min-height: 500px;
+            background: white;
+            color: #333;
+            border-radius: 12px;
+            padding: 40px;
+            position: relative;
+        }
+
+        .report-preview-header {
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .report-preview-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .report-preview-subtitle {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        /* Schedule Reports */
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .schedule-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .schedule-toggle {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: var(--border-subtle);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .schedule-toggle.active {
+            background: var(--success-gradient);
+        }
+
+        .schedule-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .schedule-toggle.active::after {
+            transform: translateX(24px);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-surface);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        /* Tabs */
+        .tab-navigation {
+            display: flex;
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Export Options */
+        .export-options {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .export-btn {
+            flex: 1;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .export-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .export-btn i {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .luxury-nav {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .component-library {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+
+        /* Loading Animation */
+        .loading-skeleton {
+            background: linear-gradient(90deg, var(--card-surface) 25%, rgba(102, 126, 234, 0.1) 50%, var(--card-surface) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Fade in animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="luxury-nav">
+        <div class="p-6">
+            <div class="flex items-center mb-8">
+                <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mr-4">
+                    <i class="fas fa-rocket text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white">AI PPM Pro</h1>
+                    <p class="text-xs text-gray-400">Enterprise Intelligence</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="px-4">
+            <div class="nav-item" onclick="navigateTo('dashboard')">
+                <i class="fas fa-th-large"></i>
+                <span>Command Center</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('projects')">
+                <i class="fas fa-project-diagram"></i>
+                <span>Project Intelligence</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('gantt')">
+                <i class="fas fa-chart-gantt"></i>
+                <span>Timeline Mastery</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('resources')">
+                <i class="fas fa-users-cog"></i>
+                <span>Resource AI</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('risks')">
+                <i class="fas fa-shield-alt"></i>
+                <span>Risk Intelligence</span>
+            </div>
+            <div class="nav-item active" onclick="navigateTo('reports')">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics Studio</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('ai')">
+                <i class="fas fa-brain"></i>
+                <span>AI Lab</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-bold mb-2">Analytics Studio</h1>
+                <p class="text-gray-400">AI-powered reporting with real-time insights and automated executive briefings</p>
+            </div>
+            <div class="flex gap-4">
+                <button class="luxury-btn luxury-btn-primary" onclick="generateAIReport()">
+                    <i class="fas fa-brain mr-2"></i>
+                    AI Generate Report
+                </button>
+                <button class="luxury-btn glass-card" onclick="openReportBuilder()">
+                    <i class="fas fa-plus mr-2"></i>
+                    Build Report
+                </button>
+            </div>
+        </div>
+
+        <!-- KPI Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="glass-card kpi-card p-6">
+                <div class="text-2xl text-blue-400 mb-2">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="kpi-value">142</div>
+                <div class="kpi-label">Reports Generated</div>
+                <div class="kpi-change positive">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    +24 this month
+                </div>
+            </div>
+            
+            <div class="glass-card kpi-card p-6">
+                <div class="text-2xl text-green-400 mb-2">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="kpi-value">38</div>
+                <div class="kpi-label">Executive Readers</div>
+                <div class="kpi-change positive">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    +8 this week
+                </div>
+            </div>
+            
+            <div class="glass-card kpi-card p-6">
+                <div class="text-2xl text-purple-400 mb-2">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="kpi-value">92%</div>
+                <div class="kpi-label">Time Saved</div>
+                <div class="kpi-change positive">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    12hrs avg
+                </div>
+            </div>
+            
+            <div class="glass-card kpi-card p-6">
+                <div class="text-2xl text-orange-400 mb-2">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="kpi-value">4.8</div>
+                <div class="kpi-label">Report Quality</div>
+                <div class="kpi-change positive">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    +0.3 rating
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="glass-card p-6">
+            <div class="tab-navigation">
+                <button class="tab-btn active" onclick="switchTab('templates')">Report Templates</button>
+                <button class="tab-btn" onclick="switchTab('builder')">Report Builder</button>
+                <button class="tab-btn" onclick="switchTab('scheduled')">Scheduled Reports</button>
+                <button class="tab-btn" onclick="switchTab('analytics')">Usage Analytics</button>
+            </div>
+
+            <!-- Templates Tab -->
+            <div id="templatesTab" class="tab-content active">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Report Templates</h3>
+                    <div class="flex gap-2">
+                        <input type="text" placeholder="Search templates..." class="form-input w-64" onkeyup="searchTemplates(this.value)">
+                        <select class="form-input w-40" onchange="filterTemplates(this.value)">
+                            <option value="all">All Types</option>
+                            <option value="executive">Executive</option>
+                            <option value="project">Project</option>
+                            <option value="financial">Financial</option>
+                            <option value="resource">Resource</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="glass-card report-template p-6" onclick="generateReport('executive-dashboard')">
+                        <div class="report-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-2">Executive Dashboard</h4>
+                        <p class="text-sm text-gray-400 mb-4">C-suite ready overview with KPIs, trends, and AI insights</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-blue-400">Executive</span>
+                            <span class="text-xs text-gray-400">5 min</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card report-template p-6" onclick="generateReport('project-performance')">
+                        <div class="report-icon">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-2">Project Performance</h4>
+                        <p class="text-sm text-gray-400 mb-4">Detailed project analysis with timelines, budgets, and risks</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-green-400">Project</span>
+                            <span class="text-xs text-gray-400">8 min</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card report-template p-6" onclick="generateReport('financial-analysis')">
+                        <div class="report-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-2">Financial Analysis</h4>
+                        <p class="text-sm text-gray-400 mb-4">Budget vs actual, ROI, cost optimization opportunities</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-yellow-400">Financial</span>
+                            <span class="text-xs text-gray-400">6 min</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card report-template p-6" onclick="generateReport('resource-utilization')">
+                        <div class="report-icon">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-2">Resource Utilization</h4>
+                        <p class="text-sm text-gray-400 mb-4">Team performance, capacity planning, optimization insights</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-purple-400">Resource</span>
+                            <span class="text-xs text-gray-400">7 min</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card report-template p-6" onclick="generateReport('risk-assessment')">
+                        <div class="report-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-2">Risk Assessment</h4>
+                        <p class="text-sm text-gray-400 mb-4">Risk matrix, mitigation status, predictive analytics</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-red-400">Risk</span>
+                            <span class="text-xs text-gray-400">5 min</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card report-template p-6" onclick="generateReport('portfolio-summary')">
+                        <div class="report-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-2">Portfolio Summary</h4>
+                        <p class="text-sm text-gray-400 mb-4">Complete portfolio overview with strategic insights</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-indigo-400">Executive</span>
+                            <span class="text-xs text-gray-400">10 min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Builder Tab -->
+            <div id="builderTab" class="tab-content">
+                <div class="report-builder">
+                    <h3 class="text-xl font-bold mb-4">Custom Report Builder</h3>
+                    <p class="text-gray-400 mb-6">Drag and drop components to build your perfect report</p>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-semibold mb-3">Components</h4>
+                            <div class="component-library">
+                                <div class="component-item" draggable="true" ondragstart="dragComponent(event, 'kpi-summary')">
+                                    <i class="fas fa-chart-pie text-2xl mb-2"></i>
+                                    <div class="text-sm font-medium">KPI Summary</div>
+                                </div>
+                                <div class="component-item" draggable="true" ondragstart="dragComponent(event, 'trend-analysis')">
+                                    <i class="fas fa-chart-line text-2xl mb-2"></i>
+                                    <div class="text-sm font-medium">Trend Analysis</div>
+                                </div>
+                                <div class="component-item" draggable="true" ondragstart="dragComponent(event, 'project-status')">
+                                    <i class="fas fa-tasks text-2xl mb-2"></i>
+                                    <div class="text-sm font-medium">Project Status</div>
+                                </div>
+                                <div class="component-item" draggable="true" ondragstart="dragComponent(event, 'budget-forecast')">
+                                    <i class="fas fa-dollar-sign text-2xl mb-2"></i>
+                                    <div class="text-sm font-medium">Budget Forecast</div>
+                                </div>
+                                <div class="component-item" draggable="true" ondragstart="dragComponent(event, 'risk-matrix')">
+                                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                                    <div class="text-sm font-medium">Risk Matrix</div>
+                                </div>
+                                <div class="component-item" draggable="true" ondragstart="dragComponent(event, 'ai-insights')">
+                                    <i class="fas fa-brain text-2xl mb-2"></i>
+                                    <div class="text-sm font-medium">AI Insights</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-semibold mb-3">Report Preview</h4>
+                            <div class="report-preview" ondrop="dropComponent(event)" ondragover="allowDrop(event)">
+                                <div class="report-preview-header">
+                                    <h1 class="report-preview-title">Custom Report</h1>
+                                    <p class="report-preview-subtitle">Generated on <span id="reportDate"></span></p>
+                                </div>
+                                <div id="reportComponents">
+                                    <p class="text-gray-500">Drag components here to build your report</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-4 mt-4">
+                                <button class="luxury-btn luxury-btn-primary" onclick="generateCustomReport()">
+                                    <i class="fas fa-magic mr-2"></i>
+                                    Generate Report
+                                </button>
+                                <button class="luxury-btn glass-card" onclick="clearReportBuilder()">
+                                    <i class="fas fa-trash mr-2"></i>
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduled Reports Tab -->
+            <div id="scheduledTab" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Scheduled Reports</h3>
+                    <button class="luxury-btn luxury-btn-primary" onclick="scheduleNewReport()">
+                        <i class="fas fa-plus mr-2"></i>
+                        Schedule Report
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="schedule-item">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold">Executive Dashboard</h4>
+                                <div class="schedule-toggle active" onclick="toggleSchedule(this)"></div>
+                            </div>
+                            <p class="text-sm text-gray-400">Every Monday at 8:00 AM • Sent to 12 executives</p>
+                        </div>
+                    </div>
+
+                    <div class="schedule-item">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold">Project Performance Review</h4>
+                                <div class="schedule-toggle active" onclick="toggleSchedule(this)"></div>
+                            </div>
+                            <p class="text-sm text-gray-400">Every Friday at 4:00 PM • Sent to project managers</p>
+                        </div>
+                    </div>
+
+                    <div class="schedule-item">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold">Monthly Financial Report</h4>
+                                <div class="schedule-toggle" onclick="toggleSchedule(this)"></div>
+                            </div>
+                            <p class="text-sm text-gray-400">1st of month at 9:00 AM • Sent to finance team</p>
+                        </div>
+                    </div>
+
+                    <div class="schedule-item">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold">Risk Assessment Summary</h4>
+                                <div class="schedule-toggle active" onclick="toggleSchedule(this)"></div>
+                            </div>
+                            <p class="text-sm text-gray-400">Every Wednesday at 2:00 PM • Sent to risk committee</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analyticsTab" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Report Usage Trends</h3>
+                        <div class="chart-container">
+                            <canvas id="usageTrendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Popular Report Types</h3>
+                        <div class="chart-container">
+                            <canvas id="popularReportsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">User Engagement</h3>
+                        <div class="chart-container">
+                            <canvas id="engagementChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">AI Performance Metrics</h3>
+                        <div class="chart-container">
+                            <canvas id="aiPerformanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Generation Modal -->
+    <div class="modal" id="reportModal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">Report Generation</h3>
+                <button onclick="closeReportModal()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <h4 class="font-semibold mb-3">Report Details</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Report Name</label>
+                            <input type="text" class="form-input" id="reportName" placeholder="Enter report name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Date Range</label>
+                            <select class="form-input">
+                                <option value="last-7">Last 7 Days</option>
+                                <option value="last-30">Last 30 Days</option>
+                                <option value="last-90">Last 90 Days</option>
+                                <option value="ytd">Year to Date</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-3">AI Enhancement Options</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" checked class="mr-2">
+                            <span>Generate predictive insights</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" checked class="mr-2">
+                            <span>Include AI recommendations</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" checked class="mr-2">
+                            <span>Executive summary generation</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2">
+                            <span>Comparative analysis with historical data</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-3">Export Options</h4>
+                    <div class="export-options">
+                        <div class="export-btn" onclick="exportReport('pdf')">
+                            <i class="fas fa-file-pdf text-red-400"></i>
+                            <span>PDF</span>
+                        </div>
+                        <div class="export-btn" onclick="exportReport('excel')">
+                            <i class="fas fa-file-excel text-green-400"></i>
+                            <span>Excel</span>
+                        </div>
+                        <div class="export-btn" onclick="exportReport('powerpoint')">
+                            <i class="fas fa-file-powerpoint text-orange-400"></i>
+                            <span>PowerPoint</span>
+                        </div>
+                        <div class="export-btn" onclick="exportReport('csv')">
+                            <i class="fas fa-file-csv text-blue-400"></i>
+                            <span>CSV</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-4 mt-6">
+                <button class="luxury-btn glass-card" onclick="closeReportModal()">
+                    Cancel
+                </button>
+                <button class="luxury-btn luxury-btn-primary" onclick="generateReportWithAI()">
+                    <i class="fas fa-magic mr-2"></i>
+                    Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeReports();
+            initializeCharts();
+            animateElements();
+            updateReportDate();
+        });
+
+        function initializeReports() {
+            // Load report data from localStorage
+            const reports = JSON.parse(localStorage.getItem('reports') || '[]');
+            if (reports.length === 0) {
+                // Initialize with sample reports
+                const sampleReports = [
+                    { id: 1, name: 'Executive Dashboard', type: 'executive', generated: new Date() },
+                    { id: 2, name: 'Project Performance', type: 'project', generated: new Date() },
+                    { id: 3, name: 'Financial Analysis', type: 'financial', generated: new Date() }
+                ];
+                localStorage.setItem('reports', JSON.stringify(sampleReports));
+            }
+        }
+
+        function initializeCharts() {
+            // Usage Trend Chart
+            const usageCtx = document.getElementById('usageTrendChart').getContext('2d');
+            new Chart(usageCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Reports Generated',
+                        data: [18, 25, 32, 28, 35, 42],
+                        borderColor: 'rgb(102, 126, 234)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Popular Reports Chart
+            const popularCtx = document.getElementById('popularReportsChart').getContext('2d');
+            new Chart(popularCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Executive', 'Project', 'Financial', 'Resource', 'Risk'],
+                    datasets: [{
+                        data: [35, 25, 20, 12, 8],
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(139, 92, 246, 0.8)',
+                            'rgba(239, 68, 68, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Engagement Chart
+            const engagementCtx = document.getElementById('engagementChart').getContext('2d');
+            new Chart(engagementCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Executives', 'Managers', 'Team Leads', 'Analysts', 'Others'],
+                    datasets: [{
+                        label: 'Active Users',
+                        data: [38, 45, 32, 28, 15],
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // AI Performance Chart
+            const aiCtx = document.getElementById('aiPerformanceChart').getContext('2d');
+            new Chart(aiCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Accuracy', 'Speed', 'Insights', 'Relevance', 'Completeness'],
+                    datasets: [{
+                        label: 'Current Performance',
+                        data: [92, 88, 95, 90, 87],
+                        borderColor: 'rgb(102, 126, 234)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)'
+                    }, {
+                        label: 'Target Performance',
+                        data: [95, 95, 98, 95, 95],
+                        borderColor: 'rgb(16, 185, 129)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function animateElements() {
+            // Animate KPI cards
+            gsap.from('.kpi-card', {
+                duration: 0.8,
+                y: 30,
+                opacity: 0,
+                stagger: 0.1,
+                ease: 'power3.out'
+            });
+
+            // Animate report templates
+            gsap.from('.report-template', {
+                duration: 0.8,
+                scale: 0.9,
+                opacity: 0,
+                stagger: 0.1,
+                ease: 'back.out(1.7)',
+                delay: 0.2
+            });
+        }
+
+        function updateReportDate() {
+            const today = new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('reportDate').textContent = today;
+        }
+
+        // Tab Functions
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // Report Generation Functions
+        function generateAIReport() {
+            showNotification('AI analyzing data patterns and generating insights...', 'info');
+            
+            setTimeout(() => {
+                showNotification('AI report generation complete! Executive summary ready', 'success');
+                document.getElementById('reportModal').classList.add('active');
+            }, 3000);
+        }
+
+        function generateReport(templateType) {
+            showNotification(`Generating ${templateType} report...`, 'info');
+            
+            setTimeout(() => {
+                showNotification('Report generated successfully!', 'success');
+                document.getElementById('reportModal').classList.add('active');
+                
+                // Set report name based on template
+                const reportNames = {
+                    'executive-dashboard': 'Executive Dashboard',
+                    'project-performance': 'Project Performance Analysis',
+                    'financial-analysis': 'Financial Analysis Report',
+                    'resource-utilization': 'Resource Utilization Report',
+                    'risk-assessment': 'Risk Assessment Summary',
+                    'portfolio-summary': 'Portfolio Summary Report'
+                };
+                
+                document.getElementById('reportName').value = reportNames[templateType] || 'Custom Report';
+            }, 2000);
+        }
+
+        function generateReportWithAI() {
+            const reportName = document.getElementById('reportName').value;
+            
+            if (!reportName) {
+                showNotification('Please enter a report name', 'error');
+                return;
+            }
+            
+            showNotification('AI generating enhanced report with insights and recommendations...', 'info');
+            
+            setTimeout(() => {
+                showNotification(`${reportName} generated successfully with AI enhancements!`, 'success');
+                closeReportModal();
+                
+                // Add to report history
+                addToReportHistory(reportName);
+            }, 3000);
+        }
+
+        function addToReportHistory(reportName) {
+            const reports = JSON.parse(localStorage.getItem('reports') || '[]');
+            const newReport = {
+                id: Date.now(),
+                name: reportName,
+                type: 'custom',
+                generated: new Date(),
+                aiEnhanced: true
+            };
+            reports.push(newReport);
+            localStorage.setItem('reports', JSON.stringify(reports));
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.remove('active');
+        }
+
+        function exportReport(format) {
+            showNotification(`Exporting report as ${format.toUpperCase()}...`, 'info');
+            
+            setTimeout(() => {
+                showNotification(`Report exported successfully as ${format.toUpperCase()}!`, 'success');
+            }, 1500);
+        }
+
+        // Report Builder Functions
+        function openReportBuilder() {
+            document.querySelector('[onclick="switchTab(\'builder\')"]').click();
+        }
+
+        function dragComponent(event, componentType) {
+            event.dataTransfer.setData('component', componentType);
+            event.target.classList.add('dragging');
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function dropComponent(event) {
+            event.preventDefault();
+            const component = event.dataTransfer.getData('component');
+            const componentsContainer = document.getElementById('reportComponents');
+            
+            // Remove placeholder text if it exists
+            if (componentsContainer.querySelector('p')) {
+                componentsContainer.innerHTML = '';
+            }
+            
+            // Add component to preview
+            const componentElement = createComponentPreview(component);
+            componentsContainer.appendChild(componentElement);
+            
+            // Remove dragging class
+            document.querySelectorAll('.dragging').forEach(el => {
+                el.classList.remove('dragging');
+            });
+        }
+
+        function createComponentPreview(componentType) {
+            const component = document.createElement('div');
+            component.className = 'mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200';
+            
+            const components = {
+                'kpi-summary': {
+                    icon: 'fa-chart-pie',
+                    title: 'KPI Summary',
+                    content: 'Key Performance Indicators including project completion rates, budget adherence, and team productivity.'
+                },
+                'trend-analysis': {
+                    icon: 'fa-chart-line',
+                    title: 'Trend Analysis',
+                    content: 'Historical trends and predictive analytics for project performance and resource allocation.'
+                },
+                'project-status': {
+                    icon: 'fa-tasks',
+                    title: 'Project Status',
+                    content: 'Current status of all projects including timeline, budget, and risk assessment.'
+                },
+                'budget-forecast': {
+                    icon: 'fa-dollar-sign',
+                    title: 'Budget Forecast',
+                    content: 'Budget vs actual analysis with forecasting and cost optimization recommendations.'
+                },
+                'risk-matrix': {
+                    icon: 'fa-exclamation-triangle',
+                    title: 'Risk Matrix',
+                    content: 'Risk assessment matrix with probability, impact, and mitigation strategies.'
+                },
+                'ai-insights': {
+                    icon: 'fa-brain',
+                    title: 'AI Insights',
+                    content: 'AI-generated insights, recommendations, and predictive analytics.'
+                }
+            };
+            
+            const componentData = components[componentType];
+            
+            component.innerHTML = `
+                <div class="flex items-center mb-2">
+                    <i class="fas ${componentData.icon} text-blue-600 mr-2"></i>
+                    <h5 class="font-semibold">${componentData.title}</h5>
+                    <button onclick="removeComponent(this)" class="ml-auto text-red-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <p class="text-sm text-gray-600">${componentData.content}</p>
+            `;
+            
+            return component;
+        }
+
+        function removeComponent(button) {
+            button.closest('.mb-6').remove();
+            
+            const componentsContainer = document.getElementById('reportComponents');
+            if (componentsContainer.children.length === 0) {
+                componentsContainer.innerHTML = '<p class="text-gray-500">Drag components here to build your report</p>';
+            }
+        }
+
+        function generateCustomReport() {
+            const components = document.getElementById('reportComponents').children;
+            
+            if (components.length === 1 && components[0].tagName === 'P') {
+                showNotification('Please add at least one component to your report', 'error');
+                return;
+            }
+            
+            showNotification('Generating custom report with selected components...', 'info');
+            
+            setTimeout(() => {
+                showNotification('Custom report generated successfully!', 'success');
+                document.getElementById('reportModal').classList.add('active');
+                document.getElementById('reportName').value = 'Custom Report';
+            }, 2000);
+        }
+
+        function clearReportBuilder() {
+            const componentsContainer = document.getElementById('reportComponents');
+            componentsContainer.innerHTML = '<p class="text-gray-500">Drag components here to build your report</p>';
+            showNotification('Report builder cleared', 'info');
+        }
+
+        // Schedule Functions
+        function scheduleNewReport() {
+            showNotification('Opening report scheduler...', 'info');
+        }
+
+        function toggleSchedule(toggle) {
+            toggle.classList.toggle('active');
+            const isActive = toggle.classList.contains('active');
+            showNotification(`Report ${isActive ? 'enabled' : 'disabled'}`, 'success');
+        }
+
+        // Utility Functions
+        function searchTemplates(query) {
+            if (query.length > 2) {
+                showNotification(`Searching templates: ${query}`, 'info');
+            }
+        }
+
+        function filterTemplates(type) {
+            showNotification(`Filtering templates: ${type}`, 'info');
+        }
+
+        function navigateTo(section) {
+            showNotification(`Navigating to ${section}...`, 'info');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 fade-in ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                type === 'warning' ? 'bg-yellow-500' :
+                'bg-blue-500'
+            } text-white`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' :
+                        type === 'error' ? 'fa-exclamation-circle' :
+                        type === 'warning' ? 'fa-exclamation-triangle' :
+                        'fa-info-circle'
+                    } mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                openReportBuilder();
+            }
+            
+            if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
+                e.preventDefault();
+                generateAIReport();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise PPM - Portfolio Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .ai-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .programme-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="text-white">
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-card mx-4 mt-4 px-6 py-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-rocket text-3xl text-purple-400"></i>
+                <div>
+                    <h1 class="text-2xl font-bold gradient-text">Enterprise PPM</h1>
+                    <p class="text-xs text-gray-400">Portfolio Command Center</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-2 bg-green-500/20 px-4 py-2 rounded-full">
+                    <div class="w-2 h-2 bg-green-400 rounded-full ai-pulse"></div>
+                    <span class="text-sm font-semibold text-green-400">94.7% AI Active</span>
+                </div>
+                <div class="relative">
+                    <i class="fas fa-bell text-xl text-gray-400 hover:text-white cursor-pointer"></i>
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-xs w-5 h-5 rounded-full flex items-center justify-center">7</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=667eea&color=fff" class="w-10 h-10 rounded-full" alt="User">
+                    <div>
+                        <p class="text-sm font-semibold">Admin User</p>
+                        <p class="text-xs text-gray-400">Portfolio Manager</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-24 px-4 pb-8">
+        <div class="flex gap-6">
+            <!-- Sidebar -->
+            <div class="w-64 flex-shrink-0">
+                <div class="glass-card p-6 sticky top-28">
+                    <h3 class="text-lg font-bold mb-4 text-purple-400">Navigation</h3>
+                    <div class="space-y-2">
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-lg bg-purple-500/20 border-l-4 border-purple-500">
+                            <i class="fas fa-th-large text-purple-400"></i>
+                            <span>Portfolio Overview</span>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/5 border-l-4 border-transparent hover:border-blue-500">
+                            <i class="fas fa-project-diagram text-gray-400"></i>
+                            <span>Programmes</span>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/5 border-l-4 border-transparent hover:border-green-500">
+                            <i class="fas fa-tasks text-gray-400"></i>
+                            <span>Projects</span>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/5 border-l-4 border-transparent hover:border-yellow-500">
+                            <i class="fas fa-brain text-gray-400"></i>
+                            <span>AI Analytics</span>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/5 border-l-4 border-transparent hover:border-red-500">
+                            <i class="fas fa-exclamation-triangle text-gray-400"></i>
+                            <span>RAID Intelligence</span>
+                        </a>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-white/10">
+                        <h4 class="text-sm font-semibold mb-3 text-gray-400">Quick Stats</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-400">Total Value</span>
+                                <span class="font-bold text-green-400">$8.4M</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-400">Active Projects</span>
+                                <span class="font-bold text-blue-400">42</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-400">Team Members</span>
+                                <span class="font-bold text-purple-400">156</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard -->
+            <div class="flex-1 space-y-6">
+                <!-- Header -->
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 class="text-3xl font-bold gradient-text mb-2">Portfolio Executive Dashboard</h2>
+                            <p class="text-gray-400">Strategic oversight and AI-powered intelligence for your $8.4M portfolio</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold">
+                                <i class="fas fa-sync-alt mr-2"></i>Refresh AI
+                            </button>
+                            <button class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 px-6 py-3 rounded-lg font-semibold">
+                                <i class="fas fa-download mr-2"></i>Export Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="glass-card p-6 hover:scale-105 transition-all">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-project-diagram text-2xl text-blue-400"></i>
+                            </div>
+                            <span class="text-green-400 text-sm font-semibold">+12.5%</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-1">42</h3>
+                        <p class="text-gray-400 text-sm">Active Projects</p>
+                        <div class="mt-3 bg-gray-700/50 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style="width: 85%"></div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">85% on track</p>
+                    </div>
+
+                    <div class="glass-card p-6 hover:scale-105 transition-all">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-dollar-sign text-2xl text-green-400"></i>
+                            </div>
+                            <span class="text-green-400 text-sm font-semibold">+8.3%</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-1">$8.4M</h3>
+                        <p class="text-gray-400 text-sm">Portfolio Value</p>
+                        <div class="mt-3 bg-gray-700/50 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" style="width: 68%"></div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">68% utilized</p>
+                    </div>
+
+                    <div class="glass-card p-6 hover:scale-105 transition-all">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-2xl text-purple-400"></i>
+                            </div>
+                            <span class="text-yellow-400 text-sm font-semibold">-2.1%</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-1">156</h3>
+                        <p class="text-gray-400 text-sm">Team Members</p>
+                        <div class="mt-3 bg-gray-700/50 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style="width: 87%"></div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">87% utilization</p>
+                    </div>
+
+                    <div class="glass-card p-6 hover:scale-105 transition-all">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-2xl text-yellow-400"></i>
+                            </div>
+                            <span class="text-red-400 text-sm font-semibold">+3</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-1">7</h3>
+                        <p class="text-gray-400 text-sm">Critical Risks</p>
+                        <div class="mt-3 bg-gray-700/50 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-yellow-500 to-red-500 h-2 rounded-full" style="width: 15%"></div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">15% risk level</p>
+                    </div>
+                </div>
+
+                <!-- AI Intelligence Section -->
+                <div class="grid grid-cols-3 gap-6">
+                    <!-- Health Score -->
+                    <div class="glass-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-purple-400">Portfolio Health Score</h3>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-brain text-cyan-400 ai-pulse"></i>
+                                <span class="text-xs text-cyan-400">AI Powered</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-center my-6">
+                            <div class="relative">
+                                <svg class="w-48 h-48 transform -rotate-90">
+                                    <circle cx="96" cy="96" r="88" stroke="#1a1a2e" stroke-width="12" fill="none"/>
+                                    <circle cx="96" cy="96" r="88" stroke="url(#gradient1)" stroke-width="12" fill="none" 
+                                            stroke-dasharray="553" stroke-dashoffset="83" stroke-linecap="round"/>
+                                    <defs>
+                                        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#667eea"/>
+                                            <stop offset="100%" style="stop-color:#764ba2"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span class="text-5xl font-bold gradient-text">85</span>
+                                    <span class="text-sm text-gray-400">/ 100</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <div class="bg-green-500/10 p-3 rounded-lg border border-green-500/20">
+                                <p class="text-xs text-gray-400">Excellent</p>
+                                <p class="text-lg font-bold text-green-400">28</p>
+                            </div>
+                            <div class="bg-blue-500/10 p-3 rounded-lg border border-blue-500/20">
+                                <p class="text-xs text-gray-400">Good</p>
+                                <p class="text-lg font-bold text-blue-400">10</p>
+                            </div>
+                            <div class="bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20">
+                                <p class="text-xs text-gray-400">Warning</p>
+                                <p class="text-lg font-bold text-yellow-400">3</p>
+                            </div>
+                            <div class="bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                                <p class="text-xs text-gray-400">Critical</p>
+                                <p class="text-lg font-bold text-red-400">1</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Recommendations -->
+                    <div class="glass-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-cyan-400">AI Recommendations</h3>
+                            <span class="text-xs bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-full">5 Active</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-red-500/10 border-l-4 border-red-500 p-3 rounded-r-lg">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <p class="font-semibold text-sm">Resource Conflict Detected</p>
+                                        <p class="text-xs text-gray-400 mt-1">3 resources overallocated in Digital Transformation programme</p>
+                                    </div>
+                                    <span class="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">Urgent</span>
+                                </div>
+                            </div>
+                            <div class="bg-yellow-500/10 border-l-4 border-yellow-500 p-3 rounded-r-lg">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <p class="font-semibold text-sm">Budget Variance Alert</p>
+                                        <p class="text-xs text-gray-400 mt-1">Cloud Migration project 15% over budget with 60% complete</p>
+                                    </div>
+                                    <span class="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">High</span>
+                                </div>
+                            </div>
+                            <div class="bg-blue-500/10 border-l-4 border-blue-500 p-3 rounded-r-lg">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <p class="font-semibold text-sm">Optimization Opportunity</p>
+                                        <p class="text-xs text-gray-400 mt-1">Portfolio rebalancing could improve ROI by 12%</p>
+                                    </div>
+                                    <span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">Medium</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RAID Preview -->
+                    <div class="glass-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-red-400">RAID Intelligence</h3>
+                            <button class="text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full hover:bg-red-500/30">
+                                View Full 3D Map <i class="fas fa-external-link-alt ml-1"></i>
+                            </button>
+                        </div>
+                        <div id="raid-mini-chart" style="height: 280px;"></div>
+                        <div class="grid grid-cols-3 gap-2 mt-4">
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-red-400">7</p>
+                                <p class="text-xs text-gray-400">Critical</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-yellow-400">14</p>
+                                <p class="text-xs text-gray-400">High</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-green-400">21</p>
+                                <p class="text-xs text-gray-400">Medium</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategic Programmes -->
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-2xl font-bold gradient-text">Strategic Programmes</h3>
+                            <p class="text-gray-400">6 programmes managing 42 projects across the portfolio</p>
+                        </div>
+                        <button onclick="window.location.href='programme-hybrid.html'" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold">
+                            View All Programmes <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <!-- Programme 1 -->
+                        <div class="programme-card bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-xl p-5 cursor-pointer" onclick="window.location.href='programme-hybrid.html?programme=digital-transformation'">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-purple-500/30 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-digital-tachograph text-2xl text-purple-400"></i>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">On Track</span>
+                                </div>
+                            </div>
+                            <h4 class="text-lg font-bold mb-2">Digital Transformation</h4>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-400">Projects</span>
+                                    <span class="font-semibold">15</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-400">Investment</span>
+                                    <span class="font-semibold">$3.2M</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-400">ROI</span>
+                                    <span class="font-semibold text-green-400">156%</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-700/50 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full" style="width: 78%"></div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">78% complete • 4.2 months remaining</p>
+                        </div>
+
+                        <!-- Programme 2 -->
+                        <div class="programme-card bg-gradient-to-br from-green-600/20 to-cyan-600/20 border border-green-500/30 rounded-xl p-5 cursor-pointer" onclick="window.location.href='programme-hybrid.html?programme=customer-experience'">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-green-500/30 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-users text-2xl text-green-400"></i>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">On Track</span>
+                                </div>
+                            </div>
+                            <h4 class="text-lg font-bold mb-2">Customer Experience</h4>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-400">Projects</span>
+                                    <span class="font-semibold">12</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-400">Investment</span>
+                                    <span class="font-semibold">$2.1M</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-400">ROI</span>
+                                    <span class="font-semibold text-green-400">142%</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-700/50 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-green-500 to-cyan-500 h-2 rounded-full" style="width: 65%"></div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">65% complete • 5.8 months remaining</p>
+                        </div>
+
+                        <!-- Programme 3 -->
+                        <div class="programme-card bg-gradient-to-br from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-xl p-5 cursor-pointer" onclick="window.location.href='programme-hybrid.html?programme=infrastructure'">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-yellow-500/30 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-server text-2xl text-yellow-400"></i>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full">At Risk</span>
+                                </div>
+                            </div>
+                            <h4 class="text-lg font-bold mb-2">Infrastructure</h4>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-400">Projects</span>
+                                    <span class="font-semibold">8</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-400">Investment</span>
+                                    <span class="font-semibold">$1.5M</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-400">ROI</span>
+                                    <span class="font-semibold text-green-400">89%</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-700/50 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full" style="width: 45%"></div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">45% complete • 7.2 months remaining</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button onclick="window.location.href='programme-hybrid.html'" class="text-purple-400 hover:text-purple-300 font-semibold">
+                            View All 6 Programmes <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Predictive Analytics -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="glass-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-cyan-400">Portfolio Performance Trends</h3>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-chart-line text-cyan-400 ai-pulse"></i>
+                                <span class="text-xs text-cyan-400">AI Prediction</span>
+                            </div>
+                        </div>
+                        <canvas id="performanceChart" height="200"></canvas>
+                    </div>
+
+                    <div class="glass-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-green-400">Investment Optimization</h3>
+                            <span class="text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full">AI Optimized</span>
+                        </div>
+                        <canvas id="investmentChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass-card mx-4 mb-4 px-6 py-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-400">Last Updated: <span class="text-white font-semibold">Just now</span></span>
+                <span class="text-sm text-gray-400">|</span>
+                <span class="text-sm text-gray-400">AI Version: <span class="text-cyan-400 font-semibold">4.7.2</span></span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-green-400 rounded-full ai-pulse"></div>
+                    <span class="text-sm text-gray-400">All Systems Operational</span>
+                </div>
+                <button class="text-gray-400 hover:text-white">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // RAID Mini Chart
+            const raidData = [
+                { x: 'Critical', y: 7, z: 12, color: '#ef4444' },
+                { x: 'High', y: 14, z: 18, color: '#f59e0b' },
+                { x: 'Medium', y: 21, z: 24, color: '#10b981' },
+                { x: 'Low', y: 18, z: 15, color: '#3b82f6' }
+            ];
+
+            const raidLayout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { t: 10, b: 30, l: 10, r: 10 },
+                xaxis: { showgrid: false, color: '#9ca3af' },
+                yaxis: { showgrid: false, color: '#9ca3af' },
+                showlegend: false
+            };
+
+            const raidConfig = { responsive: true, displayModeBar: false };
+
+            Plotly.newPlot('raid-mini-chart', [{
+                type: 'scatter',
+                mode: 'markers',
+                x: raidData.map(d => d.x),
+                y: raidData.map(d => d.y),
+                marker: {
+                    size: raidData.map(d => d.z * 1.5),
+                    color: raidData.map(d => d.color),
+                    opacity: 0.7,
+                    line: { color: raidData.map(d => d.color), width: 2 }
+                },
+                text: raidData.map(d => `${d.y} risks`),
+                textposition: 'top center',
+                textfont: { color: '#fff', size: 12 }
+            }], raidLayout, raidConfig);
+
+            // Performance Chart
+            const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+            new Chart(performanceCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Actual Performance',
+                        data: [78, 82, 80, 85, 87, 84, 89, 91, 88, 92, 90, 85],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'AI Prediction',
+                        data: [null, null, null, null, null, null, null, null, null, 92, 94, 96],
+                        borderColor: '#06b6d4',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#9ca3af' } } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' }, min: 70, max: 100 }
+                    }
+                }
+            });
+
+            // Investment Chart
+            const investmentCtx = document.getElementById('investmentChart').getContext('2d');
+            new Chart(investmentCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Digital Transformation', 'Customer Experience', 'Infrastructure', 'Innovation Lab', 'Operational Excellence', 'Market Expansion'],
+                    datasets: [{
+                        label: 'Current ROI',
+                        data: [156, 142, 89, 178, 134, 167],
+                        backgroundColor: ['rgba(102, 126, 234, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)', 'rgba(239, 68, 68, 0.8)', 'rgba(59, 130, 246, 0.8)', 'rgba(168, 85, 247, 0.8)'],
+                        borderRadius: 8
+                    }, {
+                        label: 'AI Optimized ROI',
+                        data: [172, 158, 105, 195, 151, 184],
+                        backgroundColor: ['rgba(102, 126, 234, 0.4)', 'rgba(16, 185, 129, 0.4)', 'rgba(245, 158, 11, 0.4)', 'rgba(239, 68, 68, 0.4)', 'rgba(59, 130, 246, 0.4)', 'rgba(168, 85, 247, 0.4)'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#9ca3af' } } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#9ca3af', maxRotation: 45, minRotation: 45 } },
+                        y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

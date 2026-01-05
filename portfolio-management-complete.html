@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Management - Complete Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .project-card {
+            transition: all 0.3s ease;
+        }
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .health-excellent { background: #d1fae5; color: #065f46; }
+        .health-good { background: #dbeafe; color: #1e40af; }
+        .health-warning { background: #fef3c7; color: #92400e; }
+        .health-critical { background: #fee2e2; color: #991b1b; }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="gradient-bg text-white p-6 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">📊 Portfolio Management</h1>
+                    <p class="text-purple-100">Complete portfolio suite with optimization and scenario planning</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="addProject()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-plus mr-2"></i>Add Project
+                    </button>
+                    <button onclick="optimizePortfolio()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-magic mr-2"></i>Optimize
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex gap-2">
+                <button onclick="switchTab('portfolio')" class="tab-button active px-6 py-3 rounded-lg font-semibold text-white hover:bg-white hover:bg-opacity-20 transition">
+                    <i class="fas fa-th-large mr-2"></i>Portfolio
+                </button>
+                <button onclick="switchTab('optimization')" class="tab-button px-6 py-3 rounded-lg font-semibold text-white hover:bg-white hover:bg-opacity-20 transition">
+                    <i class="fas fa-brain mr-2"></i>Optimization
+                </button>
+                <button onclick="switchTab('scenarios')" class="tab-button px-6 py-3 rounded-lg font-semibold text-white hover:bg-white hover:bg-opacity-20 transition">
+                    <i class="fas fa-layer-group mr-2"></i>Scenarios
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Portfolio Tab -->
+        <div id="portfolio-tab" class="tab-content active">
+            <!-- Portfolio Health Dashboard -->
+            <div class="grid grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">Active</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Total Projects</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">42</p>
+                    <div class="flex items-center text-sm">
+                        <span class="text-green-600 font-semibold">35 On Track</span>
+                        <span class="text-gray-400 mx-2">•</span>
+                        <span class="text-yellow-600 font-semibold">7 At Risk</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Budget</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Portfolio Value</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">$8.4M</p>
+                    <div class="flex items-center text-sm">
+                        <i class="fas fa-arrow-up text-green-600 mr-1"></i>
+                        <span class="text-green-600 font-semibold">$2.1M invested</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">ROI</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Expected ROI</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">287%</p>
+                    <div class="flex items-center text-sm">
+                        <span class="text-purple-600 font-semibold">$6.3M projected return</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-heartbeat text-yellow-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">Health</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Portfolio Health</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">83%</p>
+                    <div class="flex items-center text-sm">
+                        <span class="text-green-600 font-semibold">Good</span>
+                        <span class="text-gray-400 mx-2">•</span>
+                        <span class="text-gray-600">7 issues</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">📊 Portfolio Distribution</h2>
+                    <canvas id="distributionChart" height="250"></canvas>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">💰 Budget Allocation</h2>
+                    <canvas id="budgetChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Project Cards -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">📁 Active Projects</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <!-- Project 1 -->
+                    <div class="project-card border-2 border-green-200 bg-gradient-to-br from-green-50 to-white rounded-lg p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <h3 class="font-bold text-gray-800">Project Alpha</h3>
+                                    <span class="status-badge health-excellent">Excellent</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Mobile App Development</p>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-600">Progress</span>
+                                <span class="font-bold text-gray-800">87%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 87%"></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-gray-500">Budget</p>
+                                <p class="font-bold text-gray-800">$450K</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">ROI</p>
+                                <p class="font-bold text-green-600">342%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 2 -->
+                    <div class="project-card border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white rounded-lg p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <h3 class="font-bold text-gray-800">Project Beta</h3>
+                                    <span class="status-badge health-good">Good</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Website Redesign</p>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-600">Progress</span>
+                                <span class="font-bold text-gray-800">72%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 72%"></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-gray-500">Budget</p>
+                                <p class="font-bold text-gray-800">$320K</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">ROI</p>
+                                <p class="font-bold text-green-600">245%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 3 -->
+                    <div class="project-card border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-white rounded-lg p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <h3 class="font-bold text-gray-800">Project Gamma</h3>
+                                    <span class="status-badge health-warning">At Risk</span>
+                                </div>
+                                <p class="text-sm text-gray-600">API Integration</p>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-600">Progress</span>
+                                <span class="font-bold text-gray-800">58%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 58%"></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-gray-500">Budget</p>
+                                <p class="font-bold text-gray-800">$280K</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">ROI</p>
+                                <p class="font-bold text-green-600">198%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Optimization Tab -->
+        <div id="optimization-tab" class="tab-content">
+            <!-- AI Banner -->
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-brain text-3xl mr-3"></i>
+                            <h2 class="text-2xl font-bold">AI Portfolio Optimizer</h2>
+                        </div>
+                        <p class="text-purple-100 mb-4">Analyzed 42 projects, 156 resources, and $8.4M budget allocation</p>
+                        <div class="grid grid-cols-4 gap-4">
+                            <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                                <p class="text-sm text-purple-100">Optimization Score</p>
+                                <p class="text-2xl font-bold">83%</p>
+                            </div>
+                            <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                                <p class="text-sm text-purple-100">Recommendations</p>
+                                <p class="text-2xl font-bold">12</p>
+                            </div>
+                            <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                                <p class="text-sm text-purple-100">Potential Savings</p>
+                                <p class="text-2xl font-bold">$1.2M</p>
+                            </div>
+                            <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                                <p class="text-sm text-purple-100">ROI Improvement</p>
+                                <p class="text-2xl font-bold">+42%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optimization Charts -->
+            <div class="grid grid-cols-3 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Current vs Optimized</h3>
+                    <canvas id="comparisonChart" height="200"></canvas>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">💰 Budget Efficiency</h3>
+                    <canvas id="efficiencyChart" height="200"></canvas>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">👥 Resource Utilization</h3>
+                    <canvas id="utilizationChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">🔥 Top Recommendations</h2>
+                <div class="space-y-4">
+                    <div class="p-4 bg-gradient-to-r from-red-50 to-transparent border-l-4 border-red-500 rounded-lg">
+                        <h3 class="font-bold text-gray-800 mb-2">Reallocate Resources from Project Zeta</h3>
+                        <p class="text-sm text-gray-600 mb-3">Project is 68% behind schedule. Recommend reallocating 4 developers.</p>
+                        <div class="flex gap-4 text-sm">
+                            <div><span class="text-gray-500">Savings:</span> <span class="font-bold text-green-600">$340K</span></div>
+                            <div><span class="text-gray-500">ROI:</span> <span class="font-bold text-green-600">+28%</span></div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gradient-to-r from-orange-50 to-transparent border-l-4 border-orange-500 rounded-lg">
+                        <h3 class="font-bold text-gray-800 mb-2">Increase Budget for Project Delta</h3>
+                        <p class="text-sm text-gray-600 mb-3">Shows 425% ROI potential. Recommend $300K budget increase.</p>
+                        <div class="flex gap-4 text-sm">
+                            <div><span class="text-gray-500">Additional ROI:</span> <span class="font-bold text-green-600">$1.28M</span></div>
+                            <div><span class="text-gray-500">Time Saved:</span> <span class="font-bold text-green-600">3 months</span></div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gradient-to-r from-yellow-50 to-transparent border-l-4 border-yellow-500 rounded-lg">
+                        <h3 class="font-bold text-gray-800 mb-2">Merge Projects Gamma and Epsilon</h3>
+                        <p class="text-sm text-gray-600 mb-3">60% shared requirements. Merging reduces costs by 35%.</p>
+                        <div class="flex gap-4 text-sm">
+                            <div><span class="text-gray-500">Cost Savings:</span> <span class="font-bold text-green-600">$420K</span></div>
+                            <div><span class="text-gray-500">Time Saved:</span> <span class="font-bold text-green-600">2 months</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scenarios Tab -->
+        <div id="scenarios-tab" class="tab-content">
+            <!-- Scenario Stats -->
+            <div class="grid grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-layer-group text-blue-600 text-xl"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Total Scenarios</p>
+                    <p class="text-3xl font-bold text-gray-800">8</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Best ROI</p>
+                    <p class="text-3xl font-bold text-gray-800">425%</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-shield-alt text-purple-600 text-xl"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Lowest Risk</p>
+                    <p class="text-3xl font-bold text-gray-800">12%</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-star text-yellow-600 text-xl"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Active Scenario</p>
+                    <p class="text-3xl font-bold text-gray-800">287%</p>
+                </div>
+            </div>
+
+            <!-- Scenario Comparison Chart -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">📊 Scenario Comparison</h2>
+                <canvas id="scenarioChart" height="100"></canvas>
+            </div>
+
+            <!-- Scenario Cards -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">📁 Available Scenarios</h2>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="border-2 border-purple-500 rounded-lg p-6 bg-gradient-to-r from-purple-50 to-transparent">
+                        <div class="flex items-center gap-3 mb-3">
+                            <h3 class="text-xl font-bold text-gray-800">Baseline Scenario</h3>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">CURRENT</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div class="p-3 bg-white rounded-lg">
+                                <p class="text-xs text-gray-500">Projects</p>
+                                <p class="text-lg font-bold text-gray-800">42</p>
+                            </div>
+                            <div class="p-3 bg-white rounded-lg">
+                                <p class="text-xs text-gray-500">Budget</p>
+                                <p class="text-lg font-bold text-gray-800">$8.4M</p>
+                            </div>
+                            <div class="p-3 bg-white rounded-lg">
+                                <p class="text-xs text-gray-500">ROI</p>
+                                <p class="text-lg font-bold text-green-600">287%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-2 border-gray-200 rounded-lg p-6 hover:border-purple-300">
+                        <div class="flex items-center gap-3 mb-3">
+                            <h3 class="text-xl font-bold text-gray-800">Aggressive Growth</h3>
+                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">BEST ROI</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <p class="text-xs text-gray-500">Projects</p>
+                                <p class="text-lg font-bold text-gray-800">38</p>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <p class="text-xs text-gray-500">Budget</p>
+                                <p class="text-lg font-bold text-gray-800">$11.2M</p>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <p class="text-xs text-gray-500">ROI</p>
+                                <p class="text-lg font-bold text-green-600">425%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.closest('.tab-button').classList.add('active');
+            
+            setTimeout(() => initCharts(), 100);
+        }
+
+        // Initialize Charts
+        function initCharts() {
+            // Distribution Chart
+            const ctx1 = document.getElementById('distributionChart');
+            if (ctx1 && ctx1.offsetParent !== null) {
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['On Track', 'At Risk', 'Delayed', 'Completed'],
+                        datasets: [{
+                            data: [35, 5, 2, 15],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#3b82f6']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            // Budget Chart
+            const ctx2 = document.getElementById('budgetChart');
+            if (ctx2 && ctx2.offsetParent !== null) {
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Revenue Growth', 'Cost Reduction', 'Innovation', 'Customer Exp.'],
+                        datasets: [{
+                            label: 'Budget ($M)',
+                            data: [3.2, 2.1, 2.4, 0.7],
+                            backgroundColor: ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            // Comparison Chart
+            const ctx3 = document.getElementById('comparisonChart');
+            if (ctx3 && ctx3.offsetParent !== null) {
+                new Chart(ctx3, {
+                    type: 'bar',
+                    data: {
+                        labels: ['ROI', 'Efficiency', 'Utilization'],
+                        datasets: [{
+                            label: 'Current',
+                            data: [287, 73, 73],
+                            backgroundColor: '#93c5fd'
+                        }, {
+                            label: 'Optimized',
+                            data: [408, 89, 85],
+                            backgroundColor: '#8b5cf6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            // Efficiency Chart
+            const ctx4 = document.getElementById('efficiencyChart');
+            if (ctx4 && ctx4.offsetParent !== null) {
+                new Chart(ctx4, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Optimized', 'Waste'],
+                        datasets: [{
+                            data: [89, 11],
+                            backgroundColor: ['#10b981', '#ef4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            // Utilization Chart
+            const ctx5 = document.getElementById('utilizationChart');
+            if (ctx5 && ctx5.offsetParent !== null) {
+                new Chart(ctx5, {
+                    type: 'line',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [{
+                            label: 'Current',
+                            data: [71, 73, 72, 73],
+                            borderColor: '#93c5fd',
+                            tension: 0.4
+                        }, {
+                            label: 'Projected',
+                            data: [73, 78, 82, 85],
+                            borderColor: '#8b5cf6',
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            // Scenario Chart
+            const ctx6 = document.getElementById('scenarioChart');
+            if (ctx6 && ctx6.offsetParent !== null) {
+                new Chart(ctx6, {
+                    type: 'radar',
+                    data: {
+                        labels: ['ROI', 'Risk', 'Completion', 'Budget', 'Timeline', 'Team Size'],
+                        datasets: [{
+                            label: 'Baseline',
+                            data: [287, 45, 83, 84, 75, 78],
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)'
+                        }, {
+                            label: 'Aggressive',
+                            data: [425, 72, 68, 112, 100, 91],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+        });
+
+        // Actions
+        function addProject() {
+            showToast('Opening new project form...');
+        }
+
+        function optimizePortfolio() {
+            showToast('Running portfolio optimization...');
+            setTimeout(() => {
+                showToast('Portfolio optimized! 12 recommendations generated.');
+            }, 2000);
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

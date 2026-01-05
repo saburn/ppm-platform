@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Executive Recommendations - Strategic Intelligence Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .executive-card {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%);
+            border: 1px solid rgba(236, 72, 153, 0.2);
+            transition: all 0.3s ease;
+        }
+        .executive-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(236, 72, 153, 0.3);
+        }
+        .strategic-glow {
+            box-shadow: 0 0 30px rgba(236, 72, 153, 0.4),
+                        0 0 60px rgba(236, 72, 153, 0.2),
+                        0 0 90px rgba(236, 72, 153, 0.1);
+        }
+        .priority-critical { 
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.3));
+            border-left: 4px solid #ef4444;
+        }
+        .priority-high { 
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3));
+            border-left: 4px solid #f59e0b;
+        }
+        .priority-medium { 
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.3));
+            border-left: 4px solid #3b82f6;
+        }
+        .priority-strategic { 
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(124, 58, 237, 0.3));
+            border-left: 4px solid #8b5cf6;
+        }
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .board-ready {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1));
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-pink-900 to-red-900 text-white min-h-screen">
+    
+    <!-- Header -->
+    <header class="glass-morphism border-b border-white/10 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="strategic-glow rounded-lg p-2 bg-pink-600/20">
+                        <i class="fas fa-chess text-2xl text-pink-400"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
+                            AI Executive Recommendations
+                        </h1>
+                        <p class="text-sm text-pink-300">Strategic Intelligence & Decision Support</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 bg-green-500/20 px-3 py-1 rounded-full">
+                        <div class="w-2 h-2 bg-green-500 rounded-full pulse-animation"></div>
+                        <span class="text-sm text-green-400">AI Advisory Active</span>
+                    </div>
+                    <button onclick="generateBoardReport()" class="bg-gradient-to-r from-pink-600 to-red-600 px-6 py-2 rounded-lg hover:from-pink-700 hover:to-red-700 transition-all transform hover:scale-105">
+                        <i class="fas fa-file-alt mr-2"></i>Board Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- Executive Intelligence Overview -->
+        <section class="mb-8">
+            <div class="glass-morphism rounded-2xl p-8 strategic-glow">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-pink-400">87.3%</div>
+                        <div class="text-sm text-gray-400">Strategic Alignment</div>
+                        <div class="text-xs text-green-400 mt-1">↑ 12% this quarter</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-red-400">$4.7M</div>
+                        <div class="text-sm text-gray-400">Value Created</div>
+                        <div class="text-xs text-red-400 mt-1">↑ $1.2M YTD</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-orange-400">23</div>
+                        <div class="text-sm text-gray-400">Critical Decisions</div>
+                        <div class="text-xs text-orange-400 mt-1">5 awaiting approval</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-purple-400">94.2%</div>
+                        <div class="text-sm text-gray-400">Prediction Accuracy</div>
+                        <div class="text-xs text-purple-400 mt-1">Industry leading</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-400">18</div>
+                        <div class="text-sm text-gray-400">Days to Impact</div>
+                        <div class="text-xs text-green-400 mt-1">↓ 5 days average</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Critical Action Items -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
+                <i class="fas fa-exclamation-triangle mr-3"></i>Critical Action Items - Board Level
+            </h2>
+            <div class="space-y-4">
+                
+                <!-- Critical Priority Item -->
+                <div class="priority-critical rounded-xl p-6 executive-card">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-red-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-fire text-red-400 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-red-300 mb-2">Portfolio Restructuring Required</h3>
+                                <p class="text-sm text-gray-300 mb-3">
+                                    AI analysis reveals 3 underperforming programmes costing $2.1M annually with 23% ROI vs. portfolio average of 142%. Immediate restructuring could save $1.8M and reallocate resources to high-growth initiatives.
+                                </p>
+                                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-3">
+                                    <div class="bg-white/5 p-3 rounded-lg">
+                                        <div class="text-xs text-gray-400">Financial Impact</div>
+                                        <div class="text-lg font-bold text-red-400">$1.8M savings</div>
+                                    </div>
+                                    <div class="bg-white/5 p-3 rounded-lg">
+                                        <div class="text-xs text-gray-400">Time Critical</div>
+                                        <div class="text-lg font-bold text-orange-400">14 days</div>
+                                    </div>
+                                    <div class="bg-white/5 p-3 rounded-lg">
+                                        <div class="text-xs text-gray-400">Risk Level</div>
+                                        <div class="text-lg font-bold text-red-400">High</div>
+                                    </div>
+                                    <div class="bg-white/5 p-3 rounded-lg">
+                                        <div class="text-xs text-gray-400">AI Confidence</div>
+                                        <div class="text-lg font-bold text-purple-400">96%</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <button onclick="takeAction('restructure')" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-all">
+                                        <i class="fas fa-gavel mr-2"></i>Take Action
+                                    </button>
+                                    <button onclick="viewDetails('restructure')" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all">
+                                        <i class="fas fa-chart-line mr-2"></i>View Analysis
+                                    </button>
+                                    <span class="text-xs text-red-400">Requires Board Approval</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- High Priority Item -->
+                <div class="priority-high rounded-xl p-6 executive-card">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-orange-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-chart-line text-orange-400 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-orange-300 mb-2">Market Opportunity Acquisition</h3>
+                                <p class="text-sm text-gray-300 mb-3">
+                                    AI competitive analysis identifies $12M market opportunity in adjacent sector. Strategic acquisition of target company would provide 3-year head start and 340% ROI. Window of opportunity closing in 45 days.
+                                </p>
+                                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-3">
+                                    <div class="bg-white/5 p-3 rounded-lg">
+                                        <div class="text-xs text-gray-400">Investment Required</div>
+                                        <div class="text-lg font-bold text-orange-400">$8.5M</div>
+                                    </div>
+                                    <div class="bg-white/5 p-3 rounded-lg">
+                                        <div class="text-xs text-gray-400">Expected ROI</div>
+                                        <div class="text-lg font-bold text-green-400">340%</div>
+                                    </div>
+                                    <div class="bg-white/5 p-3 rounded-lg">
+                                        <div class="text-xs text-gray-400">Competitors</div>
+                                        <div class="text-lg font-bold text-red-400">3 active</div>
+                                    </div>
+                                    <div class="bg-white/5 p-3 rounded-lg">
+                                        <div class="text-xs text-gray-400">Time Window</div>
+                                        <div class="text-lg font-bold text-orange-400">45 days</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <button onclick="initiateDueDiligence()" class="bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-lg transition-all">
+                                        <i class="fas fa-search mr-2"></i>Start Due Diligence
+                                    </button>
+                                    <button onclick="viewDetails('acquisition')" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all">
+                                        <i class="fas fa-file-invoice mr-2"></i>Financial Model
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategic Priority Item -->
+                <div class="priority-strategic rounded-xl p-6 executive-card">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-rocket text-purple-400 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-purple-300 mb-2">AI Transformation Initiative</h3>
+                                <p class="text-sm text-gray-300 mb-3">
+                                    Comprehensive AI adoption across enterprise could generate $24M value over 3 years. Requires $4.2M investment in technology, training, and talent. Competitive analysis shows 18-month first-mover advantage.
+                                </p>
+                                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-3">
+                                    <div class="bg-white/5 p-3 rounded-lg">
+                                        <div class="text-xs text-gray-400">3-Year Value</div>
+                                        <div class="text-lg font-bold text-purple-400">$24M</div>
+                                    </div>
+                                    <div class="bg-white/5 p-3 rounded-lg">
+                                        <div class="text-xs text-gray-400">Investment</div>
+                                        <div class="text-lg font-bold text-blue-400">$4.2M</div>
+                                    </div>
+                                    <div class="bg-white/5 p-3 rounded-lg">
+                                        <div class="text-xs text-gray-400">ROI</div>
+                                        <div class="text-lg font-bold text-green-400">571%</div>
+                                    </div>
+                                    <div class="bg-white/5 p-3 rounded-lg">
+                                        <div class="text-xs text-gray-400">Time to Value</div>
+                                        <div class="text-lg font-bold text-purple-400">18 months</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <button onclick="approveTransformation()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-all">
+                                        <i class="fas fa-check-circle mr-2"></i>Approve Initiative
+                                    </button>
+                                    <button onclick="viewDetails('transformation')" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all">
+                                        <i class="fas fa-roadmap mr-2"></i>Implementation Plan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Strategic Insights -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
+                <i class="fas fa-brain mr-3"></i>AI Strategic Insights
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Market Intelligence -->
+                <div class="executive-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-pink-300">Market Intelligence</h3>
+                        <i class="fas fa-globe text-pink-400"></i>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-300">Market Position</span>
+                                <span class="text-sm font-bold text-green-400">#2 → #1</span>
+                            </div>
+                            <div class="text-xs text-gray-400">AI predicts 87% probability of market leadership within 18 months with current strategy</div>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-300">Competitive Threat</span>
+                                <span class="text-sm font-bold text-orange-400">High</span>
+                            </div>
+                            <div class="text-xs text-gray-400">3 new entrants with $50M+ funding identified. Defensive actions recommended</div>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-300">Growth Opportunity</span>
+                                <span class="text-sm font-bold text-green-400">$47M</span>
+                            </div>
+                            <div class="text-xs text-gray-400">Adjacent market expansion identified with 4.2x growth potential</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Intelligence -->
+                <div class="executive-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-red-300">Financial Intelligence</h3>
+                        <i class="fas fa-chart-pie text-red-400"></i>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-300">Cash Flow Forecast</span>
+                                <span class="text-sm font-bold text-green-400">Strong</span>
+                            </div>
+                            <div class="text-xs text-gray-400">18-month runway with current burn rate. Opportunity for aggressive investment</div>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-300">Valuation Projection</span>
+                                <span class="text-sm font-bold text-purple-400">$850M</span>
+                            </div>
+                            <div class="text-xs text-gray-400">24-month valuation target with current growth trajectory</div>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-300">Cost Optimization</span>
+                                <span class="text-sm font-bold text-orange-400">$3.2M</span>
+                            </div>
+                            <div class="text-xs text-gray-400">Annual savings identified through AI-driven operational efficiency</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operational Intelligence -->
+                <div class="executive-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-purple-300">Operational Intelligence</h3>
+                        <i class="fas fa-cogs text-purple-400"></i>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-300">Team Performance</span>
+                                <span class="text-sm font-bold text-green-400">Excellent</span>
+                            </div>
+                            <div class="text-xs text-gray-400">94% of teams meeting/exceeding targets. Top quartile performance industry-wide</div>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-300">Innovation Pipeline</span>
+                                <span class="text-sm font-bold text-blue-400">47 items</span>
+                            </div>
+                            <div class="text-xs text-gray-400">Strong innovation velocity with 12 patents filed this quarter</div>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-300">Risk Profile</span>
+                                <span class="text-sm font-bold text-yellow-400">Moderate</span>
+                            </div>
+                            <div class="text-xs text-gray-400">5 high-priority risks identified with mitigation strategies in place</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Predictive Analytics Dashboard -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
+                <i class="fas fa-chart-area mr-3"></i>Predictive Analytics Dashboard
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Revenue Forecast -->
+                <div class="glass-morphism rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-pink-300 mb-4">Revenue Forecast with AI Confidence</h3>
+                    <div class="h-64" id="revenueForecastChart"></div>
+                </div>
+
+                <!-- Market Share Prediction -->
+                <div class="glass-morphism rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-red-300 mb-4">Market Share Prediction Scenarios</h3>
+                    <div class="h-64" id="marketShareChart"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Board-Ready Recommendations -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
+                <i class="fas fa-users-tie mr-3"></i>Board-Ready Recommendations
+            </h2>
+            <div class="board-ready rounded-xl p-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    
+                    <!-- Quarter 1 Recommendations -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-green-300 mb-4">
+                            <i class="fas fa-calendar-quarter mr-2"></i>Q1 2024 Immediate Actions
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-green-300">Approve Portfolio Restructuring</div>
+                                    <div class="text-sm text-gray-400">Save $1.8M, reallocate to growth initiatives</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-green-300">Initiate Market Acquisition Due Diligence</div>
+                                    <div class="text-sm text-gray-400">$12M opportunity, 45-day window</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-green-300">Launch AI Transformation Initiative</div>
+                                    <div class="text-sm text-gray-400">$4.2M investment, $24M 3-year value</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Annual Strategic Priorities -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-blue-300 mb-4">
+                            <i class="fas fa-chess-rook mr-2"></i>2024 Strategic Priorities
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span class="text-white text-xs font-bold">1</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-blue-300">Achieve Market Leadership</div>
+                                    <div class="text-sm text-gray-400">Target #1 position within 18 months</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span class="text-white text-xs font-bold">2</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-blue-300">Scale AI Capabilities</div>
+                                    <div class="text-sm text-gray-400">Enterprise-wide transformation and automation</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span class="text-white text-xs font-bold">3</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-blue-300">Expand to Adjacent Markets</div>
+                                    <div class="text-sm text-gray-400">$47M growth opportunity identified</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Executive Summary -->
+                <div class="mt-8 p-6 bg-gradient-to-r from-pink-600/10 to-red-600/10 rounded-lg border border-pink-500/20">
+                    <h3 class="text-lg font-semibold text-pink-300 mb-3">
+                        <i class="fas fa-crown mr-2"></i>Executive Summary
+                    </h3>
+                    <p class="text-sm text-gray-300 leading-relaxed">
+                        AI analysis indicates a <span class="text-green-400 font-semibold">87% probability of achieving market leadership</span> within 18 months through strategic initiatives outlined above. 
+                        The recommended actions represent <span class="text-purple-400 font-semibold">$24M in potential value creation</span> with 
+                        <span class="text-orange-400 font-semibold">moderate risk profile</span>. Immediate portfolio restructuring and market acquisition opportunities provide 
+                        <span class="text-blue-400 font-semibold">short-term wins</span> while AI transformation ensures 
+                        <span class="text-pink-400 font-semibold">long-term competitive advantage</span>. 
+                        Board approval recommended within 14 days to maintain strategic timing advantage.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-morphism border-t border-white/10 mt-12">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-chess text-pink-400"></i>
+                        <span class="text-sm text-pink-300">AI Executive Advisory v2.0</span>
+                    </div>
+                    <div class="text-sm text-gray-400">23 critical insights • 94.2% accuracy • Board ready</div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="scheduleBoardMeeting()" class="text-sm bg-pink-600/20 hover:bg-pink-600/30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-calendar mr-2"></i>Schedule Board Meeting
+                    </button>
+                    <button onclick="exportExecutiveReport()" class="text-sm bg-red-600/20 hover:bg-red-600/30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-download mr-2"></i>Executive Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize the Executive Recommendations Engine
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            initializeAIEngine();
+        });
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Revenue Forecast Chart
+            const revenueCtx = document.getElementById('revenueForecastChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4', 'Q1 2025', 'Q2 2025'],
+                    datasets: [
+                        {
+                            label: 'Best Case',
+                            data: [4.2, 5.8, 7.4, 9.2, 11.5, 14.2],
+                            borderColor: 'rgb(34, 197, 94)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Expected',
+                            data: [3.8, 5.2, 6.7, 8.4, 10.2, 12.5],
+                            borderColor: 'rgb(236, 72, 153)',
+                            backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Worst Case',
+                            data: [3.4, 4.6, 5.8, 7.2, 8.5, 10.1],
+                            borderColor: 'rgb(239, 68, 68)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'rgba(255, 255, 255, 0.7)' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Revenue ($M)', color: 'rgba(255, 255, 255, 0.7)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        }
+                    }
+                }
+            });
+
+            // Market Share Prediction Chart
+            const marketShareData = [{
+                x: ['Current', '6 months', '12 months', '18 months', '24 months'],
+                y: [15, 22, 28, 34, 38],
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Our Company',
+                line: { color: 'rgb(236, 72, 153)', width: 3 },
+                marker: { size: 8, color: 'rgb(236, 72, 153)' }
+            }, {
+                x: ['Current', '6 months', '12 months', '18 months', '24 months'],
+                y: [25, 26, 27, 26, 25],
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Competitor A',
+                line: { color: 'rgb(59, 130, 246)', width: 2, dash: 'dash' },
+                marker: { size: 6, color: 'rgb(59, 130, 246)' }
+            }, {
+                x: ['Current', '6 months', '12 months', '18 months', '24 months'],
+                y: [20, 19, 18, 17, 16],
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Competitor B',
+                line: { color: 'rgb(139, 92, 246)', width: 2, dash: 'dash' },
+                marker: { size: 6, color: 'rgb(139, 92, 246)' }
+            }];
+
+            const marketShareLayout = {
+                title: 'Market Share Evolution Prediction',
+                xaxis: { title: 'Timeline' },
+                yaxis: { title: 'Market Share (%)' },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: 'white' },
+                showlegend: true
+            };
+
+            Plotly.newPlot('marketShareChart', marketShareData, marketShareLayout, {displayModeBar: false});
+        }
+
+        // AI Engine Initialization
+        function initializeAIEngine() {
+            console.log('👔 AI Executive Advisory System initialized');
+            console.log('📊 Analyzing 1,247 data points for strategic insights');
+            console.log('🎯 94.2% prediction accuracy achieved');
+        }
+
+        // Interactive Functions
+        function generateBoardReport() {
+            showNotification('📄 Generating comprehensive board-ready report with all strategic recommendations...', 'info');
+            setTimeout(() => {
+                showNotification('✅ Board report ready! Includes 23 critical insights and 87% confidence ratings', 'success');
+            }, 2000);
+        }
+
+        function takeAction(action) {
+            showNotification(`⚡ Initiating ${action} action plan with board approval workflow...`, 'info');
+        }
+
+        function viewDetails(topic) {
+            showNotification(`📊 Loading detailed analysis for ${topic} with comprehensive data visualization...`, 'info');
+        }
+
+        function initiateDueDiligence() {
+            showNotification('🔍 Launching comprehensive due diligence process with AI-powered risk assessment...', 'info');
+        }
+
+        function approveTransformation() {
+            showNotification('✅ AI Transformation Initiative approved! Implementation planning starting immediately', 'success');
+        }
+
+        function scheduleBoardMeeting() {
+            showNotification('📅 Board meeting scheduler opened with AI-recommended agenda and timing...', 'info');
+        }
+
+        function exportExecutiveReport() {
+            showNotification('📊 Exporting executive summary with all recommendations and financial projections...', 'info');
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-500 ${
+                type === 'success' ? 'bg-green-600' :
+                type === 'warning' ? 'bg-yellow-600' :
+                type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' :
+                        type === 'warning' ? 'fa-exclamation-triangle' :
+                        type === 'error' ? 'fa-times-circle' : 'fa-info-circle'
+                    }"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

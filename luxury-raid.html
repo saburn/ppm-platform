@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Intelligence - AI PPM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            --danger-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            --dark-surface: #0f172a;
+            --card-surface: #1e293b;
+            --border-subtle: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-glow: rgba(102, 126, 234, 0.3);
+            --success-glow: rgba(52, 211, 153, 0.3);
+            --warning-glow: rgba(251, 191, 36, 0.3);
+            --danger-glow: rgba(248, 113, 113, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-surface);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Navigation System */
+        .luxury-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--card-surface) 0%, rgba(30, 41, 59, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-subtle);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            position: relative;
+            padding: 14px 24px;
+            margin: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.3);
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .luxury-btn {
+            position: relative;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .luxury-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .luxury-btn:hover::before {
+            left: 100%;
+        }
+
+        .luxury-btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .luxury-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Risk Matrix */
+        .risk-matrix {
+            display: grid;
+            grid-template-columns: 80px repeat(5, 1fr);
+            gap: 2px;
+            background: var(--border-subtle);
+            padding: 2px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .matrix-header {
+            background: var(--card-surface);
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .matrix-label {
+            background: var(--card-surface);
+            padding: 12px 16px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+        }
+
+        .matrix-cell {
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .matrix-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .matrix-cell.very-low {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .matrix-cell.low {
+            background: linear-gradient(135deg, #34d399, #10b981);
+        }
+
+        .matrix-cell.medium {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+
+        .matrix-cell.high {
+            background: linear-gradient(135deg, #fb923c, #f97316);
+        }
+
+        .matrix-cell.very-high {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .matrix-cell.extreme {
+            background: linear-gradient(135deg, #991b1b, #7f1d1d);
+            animation: pulse-extreme 2s infinite;
+        }
+
+        @keyframes pulse-extreme {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+
+        /* RAID Items */
+        .raid-item {
+            border-left: 4px solid;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-radius: 0 12px 12px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .raid-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .raid-item:hover::before {
+            transform: translateX(100%);
+        }
+
+        .raid-item:hover {
+            transform: translateX(8px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .raid-item.risk {
+            border-left-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .raid-item.assumption {
+            border-left-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .raid-item.issue {
+            border-left-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .raid-item.dependency {
+            border-left-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.05);
+        }
+
+        /* Severity Indicators */
+        .severity-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .severity-critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .severity-high {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .severity-medium {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .severity-low {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        /* AI Analysis Cards */
+        .ai-analysis {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-analysis::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-gradient);
+        }
+
+        .ai-confidence {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #a5b4fc;
+            margin-top: 8px;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 12px 0;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .stat-change {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .stat-change.positive {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .stat-change.negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        /* Progress Bars */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-gradient);
+            border-radius: 4px;
+            transition: width 0.6s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-surface);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        /* Tabs */
+        .tab-navigation {
+            display: flex;
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .luxury-nav {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .risk-matrix {
+                grid-template-columns: 60px repeat(5, 1fr);
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading-skeleton {
+            background: linear-gradient(90deg, var(--card-surface) 25%, rgba(102, 126, 234, 0.1) 50%, var(--card-surface) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Fade in animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="luxury-nav">
+        <div class="p-6">
+            <div class="flex items-center mb-8">
+                <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mr-4">
+                    <i class="fas fa-rocket text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white">AI PPM Pro</h1>
+                    <p class="text-xs text-gray-400">Enterprise Intelligence</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="px-4">
+            <div class="nav-item" onclick="navigateTo('dashboard')">
+                <i class="fas fa-th-large"></i>
+                <span>Command Center</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('projects')">
+                <i class="fas fa-project-diagram"></i>
+                <span>Project Intelligence</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('gantt')">
+                <i class="fas fa-chart-gantt"></i>
+                <span>Timeline Mastery</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('resources')">
+                <i class="fas fa-users-cog"></i>
+                <span>Resource AI</span>
+            </div>
+            <div class="nav-item active" onclick="navigateTo('risks')">
+                <i class="fas fa-shield-alt"></i>
+                <span>Risk Intelligence</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('reports')">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics Studio</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('ai')">
+                <i class="fas fa-brain"></i>
+                <span>AI Lab</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-bold mb-2">Risk Intelligence</h1>
+                <p class="text-gray-400">AI-powered risk assessment with predictive analytics and automated mitigation</p>
+            </div>
+            <div class="flex gap-4">
+                <button class="luxury-btn luxury-btn-primary" onclick="runAIRiskAnalysis()">
+                    <i class="fas fa-brain mr-2"></i>
+                    AI Risk Analysis
+                </button>
+                <button class="luxury-btn glass-card" onclick="addRAIDItem()">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add RAID Item
+                </button>
+            </div>
+        </div>
+
+        <!-- Risk Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="glass-card stat-card p-6">
+                <div class="text-2xl text-red-400 mb-2">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-value">24</div>
+                <div class="stat-label">Active Risks</div>
+                <div class="stat-change negative">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    +3 this week
+                </div>
+            </div>
+            
+            <div class="glass-card stat-card p-6">
+                <div class="text-2xl text-orange-400 mb-2">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div class="stat-value">7</div>
+                <div class="stat-label">Critical Risks</div>
+                <div class="stat-change negative">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    +2 urgent
+                </div>
+            </div>
+            
+            <div class="glass-card stat-card p-6">
+                <div class="text-2xl text-green-400 mb-2">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="stat-value">89%</div>
+                <div class="stat-label">Mitigated</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    +12% success
+                </div>
+            </div>
+            
+            <div class="glass-card stat-card p-6">
+                <div class="text-2xl text-purple-400 mb-2">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-value">68</div>
+                <div class="stat-label">Risk Score</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-down mr-1"></i>
+                    -5 points
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Risk Analysis Panel -->
+        <div class="glass-card p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">AI Risk Intelligence</h2>
+                <button class="luxury-btn luxury-btn-primary" onclick="refreshAIAnalysis()">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Refresh Analysis
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="ai-analysis">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-semibold text-red-400">Critical Risk Detected</h3>
+                        <span class="text-xs text-gray-400">Just now</span>
+                    </div>
+                    <p class="text-sm text-gray-300 mb-3">API Integration failure probability increased to 87% due to external vendor service degradation.</p>
+                    <div class="ai-confidence">
+                        <i class="fas fa-brain mr-1"></i>
+                        94% confidence
+                    </div>
+                    <button class="text-xs text-blue-400 hover:text-blue-300 mt-3">View Mitigation Plan →</button>
+                </div>
+
+                <div class="ai-analysis">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-semibold text-yellow-400">Risk Pattern Emerging</h3>
+                        <span class="text-xs text-gray-400">5 min ago</span>
+                    </div>
+                    <p class="text-sm text-gray-300 mb-3">3 similar timeline risks detected across projects. AI recommends resource reallocation.</p>
+                    <div class="ai-confidence">
+                        <i class="fas fa-brain mr-1"></i>
+                        87% confidence
+                    </div>
+                    <button class="text-xs text-blue-400 hover:text-blue-300 mt-3">Apply AI Solution →</button>
+                </div>
+
+                <div class="ai-analysis">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-semibold text-green-400">Opportunity Identified</h3>
+                        <span class="text-xs text-gray-400">12 min ago</span>
+                    </div>
+                    <p class="text-sm text-gray-300 mb-3">Risk reduction opportunity: Early testing can reduce defects by 45% and save $120K.</p>
+                    <div class="ai-confidence">
+                        <i class="fas fa-brain mr-1"></i>
+                        91% confidence
+                    </div>
+                    <button class="text-xs text-blue-400 hover:text-blue-300 mt-3">Implement Strategy →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="glass-card p-6">
+            <div class="tab-navigation">
+                <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+                <button class="tab-btn" onclick="switchTab('matrix')">Risk Matrix</button>
+                <button class="tab-btn" onclick="switchTab('raid-items')">RAID Items</button>
+                <button class="tab-btn" onclick="switchTab('mitigation')">Mitigation Plan</button>
+            </div>
+
+            <!-- Overview Tab -->
+            <div id="overviewTab" class="tab-content active">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Risk Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="riskDistributionChart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Risk Trend Analysis</h3>
+                        <div class="chart-container">
+                            <canvas id="riskTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-4">High-Priority Risks</h3>
+                    <div class="space-y-4">
+                        <div class="raid-item risk">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-semibold">API Integration Failure</h4>
+                                    <p class="text-sm text-gray-400">External payment gateway service reliability issues</p>
+                                </div>
+                                <span class="severity-indicator severity-critical">Critical</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-400">Probability:</span>
+                                    <span class="ml-2 font-semibold">87%</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400">Impact:</span>
+                                    <span class="ml-2 font-semibold">High</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400">Project:</span>
+                                    <span class="ml-2">E-Commerce Platform</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400">Owner:</span>
+                                    <span class="ml-2">Sarah Johnson</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="progress-bar flex-1 mr-4">
+                                    <div class="progress-fill" style="width: 87%; background: var(--danger-gradient);"></div>
+                                </div>
+                                <button class="luxury-btn luxury-btn-primary text-sm" onclick="openMitigationPlan(1)">
+                                    <i class="fas fa-shield-alt mr-1"></i>
+                                    Mitigate
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="raid-item risk">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-semibold">Timeline Delays</h4>
+                                    <p class="text-sm text-gray-400">Multiple critical path dependencies causing schedule compression</p>
+                                </div>
+                                <span class="severity-indicator severity-high">High</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-400">Probability:</span>
+                                    <span class="ml-2 font-semibold">72%</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400">Impact:</span>
+                                    <span class="ml-2 font-semibold">Medium</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400">Project:</span>
+                                    <span class="ml-2">Mobile Banking App</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400">Owner:</span>
+                                    <span class="ml-2">Mike Chen</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="progress-bar flex-1 mr-4">
+                                    <div class="progress-fill" style="width: 72%; background: var(--warning-gradient);"></div>
+                                </div>
+                                <button class="luxury-btn luxury-btn-primary text-sm" onclick="openMitigationPlan(2)">
+                                    <i class="fas fa-shield-alt mr-1"></i>
+                                    Mitigate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Matrix Tab -->
+            <div id="matrixTab" class="tab-content">
+                <h3 class="text-lg font-semibold mb-4">Interactive Risk Assessment Matrix</h3>
+                <p class="text-sm text-gray-400 mb-6">Click any cell to see detailed risk analysis. Hover for risk count.</p>
+                
+                <div class="risk-matrix">
+                    <div class="matrix-header"></div>
+                    <div class="matrix-header">Very Low</div>
+                    <div class="matrix-header">Low</div>
+                    <div class="matrix-header">Medium</div>
+                    <div class="matrix-header">High</div>
+                    <div class="matrix-header">Very High</div>
+
+                    <div class="matrix-label">Very High</div>
+                    <div class="matrix-cell medium" onclick="showMatrixDetails('Very High', 'Very Low', 2)">2</div>
+                    <div class="matrix-cell high" onclick="showMatrixDetails('Very High', 'Low', 4)">4</div>
+                    <div class="matrix-cell high" onclick="showMatrixDetails('Very High', 'Medium', 6)">6</div>
+                    <div class="matrix-cell very-high" onclick="showMatrixDetails('Very High', 'High', 8)">8</div>
+                    <div class="matrix-cell extreme" onclick="showMatrixDetails('Very High', 'Very High', 10)">10</div>
+
+                    <div class="matrix-label">High</div>
+                    <div class="matrix-cell low" onclick="showMatrixDetails('High', 'Very Low', 1)">1</div>
+                    <div class="matrix-cell medium" onclick="showMatrixDetails('High', 'Low', 3)">3</div>
+                    <div class="matrix-cell high" onclick="showMatrixDetails('High', 'Medium', 5)">5</div>
+                    <div class="matrix-cell high" onclick="showMatrixDetails('High', 'High', 7)">7</div>
+                    <div class="matrix-cell very-high" onclick="showMatrixDetails('High', 'Very High', 9)">9</div>
+
+                    <div class="matrix-label">Medium</div>
+                    <div class="matrix-cell very-low" onclick="showMatrixDetails('Medium', 'Very Low', 1)">1</div>
+                    <div class="matrix-cell low" onclick="showMatrixDetails('Medium', 'Low', 2)">2</div>
+                    <div class="matrix-cell medium" onclick="showMatrixDetails('Medium', 'Medium', 4)">4</div>
+                    <div class="matrix-cell high" onclick="showMatrixDetails('Medium', 'High', 6)">6</div>
+                    <div class="matrix-cell high" onclick="showMatrixDetails('Medium', 'Very High', 8)">8</div>
+
+                    <div class="matrix-label">Low</div>
+                    <div class="matrix-cell very-low" onclick="showMatrixDetails('Low', 'Very Low', 1)">1</div>
+                    <div class="matrix-cell very-low" onclick="showMatrixDetails('Low', 'Low', 1)">1</div>
+                    <div class="matrix-cell low" onclick="showMatrixDetails('Low', 'Medium', 2)">2</div>
+                    <div class="matrix-cell medium" onclick="showMatrixDetails('Low', 'High', 4)">4</div>
+                    <div class="matrix-cell high" onclick="showMatrixDetails('Low', 'Very High', 6)">6</div>
+
+                    <div class="matrix-label">Very Low</div>
+                    <div class="matrix-cell very-low" onclick="showMatrixDetails('Very Low', 'Very Low', 1)">1</div>
+                    <div class="matrix-cell very-low" onclick="showMatrixDetails('Very Low', 'Low', 1)">1</div>
+                    <div class="matrix-cell very-low" onclick="showMatrixDetails('Very Low', 'Medium', 2)">2</div>
+                    <div class="matrix-cell low" onclick="showMatrixDetails('Very Low', 'High', 3)">3</div>
+                    <div class="matrix-cell medium" onclick="showMatrixDetails('Very Low', 'Very High', 5)">5</div>
+                </div>
+
+                <div class="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                    <h4 class="font-semibold text-blue-400 mb-2">AI Matrix Analysis</h4>
+                    <p class="text-sm text-gray-300">Risk concentration detected in High-Impact zones. AI recommends immediate mitigation for 8 risks scoring 7+. Historical data shows these risks have 78% probability of materializing without intervention.</p>
+                </div>
+            </div>
+
+            <!-- RAID Items Tab -->
+            <div id="raid-itemsTab" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold">All RAID Items</h3>
+                    <div class="flex gap-2">
+                        <select class="form-input w-32" onchange="filterRAIDItems(this.value)">
+                            <option value="all">All Types</option>
+                            <option value="risk">Risks</option>
+                            <option value="assumption">Assumptions</option>
+                            <option value="issue">Issues</option>
+                            <option value="dependency">Dependencies</option>
+                        </select>
+                        <select class="form-input w-32" onchange="filterBySeverity(this.value)">
+                            <option value="all">All Severity</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Risks -->
+                    <div class="raid-item risk">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <i class="fas fa-exclamation-triangle text-red-400"></i>
+                                    <h4 class="font-semibold">Third-Party API Failure</h4>
+                                    <span class="text-xs text-gray-400">#R001</span>
+                                </div>
+                                <p class="text-sm text-gray-400">Payment gateway service reliability at risk due to vendor financial instability</p>
+                            </div>
+                            <span class="severity-indicator severity-critical">Critical</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-400">Probability:</span>
+                                <span class="ml-2 font-semibold">85%</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Impact:</span>
+                                <span class="ml-2 font-semibold">$250K</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Detected:</span>
+                                <span class="ml-2">2 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assumptions -->
+                    <div class="raid-item assumption">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <i class="fas fa-lightbulb text-yellow-400"></i>
+                                    <h4 class="font-semibold">Market Adoption Rate</h4>
+                                    <span class="text-xs text-gray-400">#A012</span>
+                                </div>
+                                <p class="text-sm text-gray-400">Assuming 15% market adoption in first quarter based on competitor analysis</p>
+                            </div>
+                            <span class="severity-indicator severity-medium">Medium</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-400">Confidence:</span>
+                                <span class="ml-2 font-semibold">72%</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Impact:</span>
+                                <span class="ml-2 font-semibold">$120K</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Review:</span>
+                                <span class="ml-2">Weekly</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Issues -->
+                    <div class="raid-item issue">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <i class="fas fa-exclamation-circle text-purple-400"></i>
+                                    <h4 class="font-semibold">Database Performance Degradation</h4>
+                                    <span class="text-xs text-gray-400">#I007</span>
+                                </div>
+                                <p class="text-sm text-gray-400">Query response times increased by 40% affecting user experience</p>
+                            </div>
+                            <span class="severity-indicator severity-high">High</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-400">Status:</span>
+                                <span class="ml-2 font-semibold">In Progress</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Priority:</span>
+                                <span class="ml-2 font-semibold">P1</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">ETA:</span>
+                                <span class="ml-2">3 days</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dependencies -->
+                    <div class="raid-item dependency">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <i class="fas fa-link text-cyan-400"></i>
+                                    <h4 class="font-semibold">Security Certification</h4>
+                                    <span class="text-xs text-gray-400">#D003</span>
+                                </div>
+                                <p class="text-sm text-gray-400">Launch dependent on SOC 2 Type II certification completion</p>
+                            </div>
+                            <span class="severity-indicator severity-high">High</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-400">Dependent:</span>
+                                <span class="ml-2 font-semibold">Production Launch</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Target:</span>
+                                <span class="ml-2 font-semibold">Apr 15</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Risk:</span>
+                                <span class="ml-2 font-semibold">2 weeks</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mitigation Plan Tab -->
+            <div id="mitigationTab" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Active Mitigation Strategies</h3>
+                        <div class="space-y-4">
+                            <div class="glass-card p-4">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 class="font-semibold">API Failure Mitigation</h4>
+                                        <p class="text-sm text-gray-400">Multi-provider fallback strategy</p>
+                                    </div>
+                                    <span class="text-xs text-green-400 bg-green-500/20 px-2 py-1 rounded">Active</span>
+                                </div>
+                                
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex items-center text-sm">
+                                        <i class="fas fa-check-circle text-green-400 mr-2"></i>
+                                        <span>Secondary payment provider integrated</span>
+                                    </div>
+                                    <div class="flex items-center text-sm">
+                                        <i class="fas fa-check-circle text-green-400 mr-2"></i>
+                                        <span>Circuit breaker pattern implemented</span>
+                                    </div>
+                                    <div class="flex items-center text-sm">
+                                        <i class="fas fa-clock text-yellow-400 mr-2"></i>
+                                        <span>Load testing in progress</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm">
+                                        <span class="text-gray-400">Progress:</span>
+                                        <span class="ml-2 font-semibold">75%</span>
+                                    </div>
+                                    <button class="luxury-btn luxury-btn-primary text-sm" onclick="updateMitigationProgress(1)">
+                                        Update Progress
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-4">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 class="font-semibold">Timeline Risk Reduction</h4>
+                                        <p class="text-sm text-gray-400">Resource allocation optimization</p>
+                                    </div>
+                                    <span class="text-xs text-yellow-400 bg-yellow-500/20 px-2 py-1 rounded">Planning</span>
+                                </div>
+                                
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex items-center text-sm">
+                                        <i class="fas fa-clock text-yellow-400 mr-2"></i>
+                                        <span>Additional developers allocated</span>
+                                    </div>
+                                    <div class="flex items-center text-sm">
+                                        <i class="fas fa-clock text-yellow-400 mr-2"></i>
+                                        <span>Parallel task execution planned</span>
+                                    </div>
+                                    <div class="flex items-center text-sm">
+                                        <i class="fas fa-times-circle text-gray-400 mr-2"></i>
+                                        <span>Budget approval pending</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm">
+                                        <span class="text-gray-400">Progress:</span>
+                                        <span class="ml-2 font-semibold">30%</span>
+                                    </div>
+                                    <button class="luxury-btn luxury-btn-primary text-sm" onclick="updateMitigationProgress(2)">
+                                        Update Progress
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">AI-Generated Mitigation Plans</h3>
+                        <div class="space-y-4">
+                            <div class="ai-analysis">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h4 class="font-semibold text-blue-400">Automated Risk Monitoring</h4>
+                                    <span class="ai-confidence">
+                                        <i class="fas fa-brain mr-1"></i>
+                                        92% confidence
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-300 mb-3">AI recommends implementing automated risk monitoring that can detect early warning signs 48 hours before materialization.</p>
+                                <button class="luxury-btn luxury-btn-primary text-sm" onclick="implementAIMitigation(1)">
+                                    Implement AI Solution
+                                </button>
+                            </div>
+
+                            <div class="ai-analysis">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h4 class="font-semibold text-purple-400">Predictive Resource Scaling</h4>
+                                    <span class="ai-confidence">
+                                        <i class="fas fa-brain mr-1"></i>
+                                        88% confidence
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-300 mb-3">AI can predict resource bottlenecks 2 weeks in advance and automatically trigger resource reallocation.</p>
+                                <button class="luxury-btn luxury-btn-primary text-sm" onclick="implementAIMitigation(2)">
+                                    Implement AI Solution
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                            <h4 class="font-semibold text-green-400 mb-2">Mitigation Success Metrics</h4>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-400">Risks Mitigated:</span>
+                                    <span class="ml-2 font-semibold">18/24 (75%)</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400">Cost Saved:</span>
+                                    <span class="ml-2 font-semibold">$450K</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400">Timeline Saved:</span>
+                                    <span class="ml-2 font-semibold">6 weeks</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400">Success Rate:</span>
+                                    <span class="ml-2 font-semibold text-green-400">89%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RAID Item Modal -->
+    <div class="modal" id="raidModal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">Add RAID Item</h3>
+                <button onclick="closeRAIDModal()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form onsubmit="submitRAIDItem(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Type</label>
+                        <select class="form-input" required>
+                            <option value="">Select type</option>
+                            <option value="risk">Risk</option>
+                            <option value="assumption">Assumption</option>
+                            <option value="issue">Issue</option>
+                            <option value="dependency">Dependency</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Title</label>
+                        <input type="text" class="form-input" placeholder="Enter RAID item title" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Description</label>
+                        <textarea class="form-input form-textarea" placeholder="Describe the RAID item in detail" required></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Probability</label>
+                            <select class="form-input" required>
+                                <option value="">Select probability</option>
+                                <option value="very-low">Very Low (0-20%)</option>
+                                <option value="low">Low (21-40%)</option>
+                                <option value="medium">Medium (41-60%)</option>
+                                <option value="high">High (61-80%)</option>
+                                <option value="very-high">Very High (81-100%)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Impact</label>
+                            <select class="form-input" required>
+                                <option value="">Select impact</option>
+                                <option value="very-low">Very Low</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="very-high">Very High</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Project</label>
+                            <select class="form-input" required>
+                                <option value="">Select project</option>
+                                <option value="ecommerce">E-Commerce Platform</option>
+                                <option value="mobile">Mobile Banking App</option>
+                                <option value="crm">CRM System Upgrade</option>
+                                <option value="analytics">Data Analytics Dashboard</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Owner</label>
+                            <input type="text" class="form-input" placeholder="Assign owner" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Mitigation Strategy</label>
+                        <textarea class="form-input form-textarea" placeholder="Describe mitigation approach" required></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4 mt-6">
+                    <button type="button" class="luxury-btn glass-card" onclick="closeRAIDModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="luxury-btn luxury-btn-primary">
+                        Add RAID Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeRAID();
+            initializeCharts();
+            animateElements();
+        });
+
+        function initializeRAID() {
+            // Load RAID data from localStorage
+            const raidItems = JSON.parse(localStorage.getItem('raidItems') || '[]');
+            if (raidItems.length === 0) {
+                // Initialize with sample RAID items
+                const sampleItems = [
+                    { id: 1, type: 'risk', title: 'API Integration Failure', severity: 'critical', probability: 85 },
+                    { id: 2, type: 'assumption', title: 'Market Adoption Rate', severity: 'medium', confidence: 72 },
+                    { id: 3, type: 'issue', title: 'Database Performance', severity: 'high', status: 'in-progress' },
+                    { id: 4, type: 'dependency', title: 'Security Certification', severity: 'high', dependent: 'Launch' }
+                ];
+                localStorage.setItem('raidItems', JSON.stringify(sampleItems));
+            }
+        }
+
+        function initializeCharts() {
+            // Risk Distribution Chart
+            const distributionCtx = document.getElementById('riskDistributionChart').getContext('2d');
+            new Chart(distributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Critical', 'High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [7, 9, 5, 3],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Risk Trend Chart
+            const trendCtx = document.getElementById('riskTrendChart').getContext('2d');
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Total Risks',
+                        data: [18, 22, 20, 24, 21, 24],
+                        borderColor: 'rgb(239, 68, 68)',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Mitigated',
+                        data: [12, 15, 14, 18, 16, 18],
+                        borderColor: 'rgb(16, 185, 129)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function animateElements() {
+            // Animate stat cards
+            gsap.from('.stat-card', {
+                duration: 0.8,
+                y: 30,
+                opacity: 0,
+                stagger: 0.1,
+                ease: 'power3.out'
+            });
+
+            // Animate RAID items
+            gsap.from('.raid-item', {
+                duration: 0.8,
+                x: -30,
+                opacity: 0,
+                stagger: 0.1,
+                ease: 'power3.out',
+                delay: 0.2
+            });
+
+            // Animate matrix cells
+            gsap.from('.matrix-cell', {
+                duration: 0.6,
+                scale: 0,
+                opacity: 0,
+                stagger: 0.02,
+                ease: 'back.out(1.7)',
+                delay: 0.4
+            });
+        }
+
+        // Tab Functions
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // AI Functions
+        function runAIRiskAnalysis() {
+            showNotification('AI analyzing risk patterns across all projects...', 'info');
+            
+            setTimeout(() => {
+                showNotification('AI analysis complete! 3 new risks identified, 2 mitigation opportunities found', 'success');
+                
+                // Highlight critical risks
+                const criticalRisks = document.querySelectorAll('.severity-critical');
+                criticalRisks.forEach((risk, index) => {
+                    setTimeout(() => {
+                        risk.style.transform = 'scale(1.1)';
+                        risk.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.6)';
+                        setTimeout(() => {
+                            risk.style.transform = '';
+                            risk.style.boxShadow = '';
+                        }, 1000);
+                    }, index * 200);
+                });
+            }, 2000);
+        }
+
+        function refreshAIAnalysis() {
+            showNotification('Refreshing AI risk intelligence...', 'info');
+            
+            setTimeout(() => {
+                showNotification('AI insights updated with latest project data and risk patterns', 'success');
+                
+                // Refresh animation
+                gsap.from('.ai-analysis', {
+                    duration: 0.5,
+                    y: 20,
+                    opacity: 0,
+                    stagger: 0.1,
+                    ease: 'power3.out'
+                });
+            }, 1500);
+        }
+
+        // Matrix Functions
+        function showMatrixDetails(impact, probability, score) {
+            const details = {
+                'Very High, Very High': '1 critical risk: API system failure could cause complete service outage',
+                'Very High, High': '2 high risks: Database corruption and security breach',
+                'High, Very High': '2 high risks: Timeline delay and budget overrun',
+                'Medium, Medium': '4 medium risks: Resource conflicts and technical debt'
+            };
+            
+            const key = `${impact}, ${probability}`;
+            const detail = details[key] || `${score} risk(s) in this category with varying impact levels`;
+            
+            showNotification(`${impact} Impact, ${probability} Probability: ${detail}`, 'info');
+        }
+
+        // RAID Management Functions
+        function addRAIDItem() {
+            document.getElementById('raidModal').classList.add('active');
+        }
+
+        function closeRAIDModal() {
+            document.getElementById('raidModal').classList.remove('active');
+        }
+
+        function submitRAIDItem(event) {
+            event.preventDefault();
+            
+            showNotification('Adding RAID item...', 'info');
+            
+            setTimeout(() => {
+                showNotification('RAID item added successfully!', 'success');
+                closeRAIDModal();
+                
+                // Add new item to the list
+                addNewRAIDItemToList();
+            }, 1500);
+        }
+
+        function addNewRAIDItemToList() {
+            // This would add the new RAID item to the UI
+            console.log('New RAID item added to list');
+        }
+
+        function filterRAIDItems(type) {
+            showNotification(`Filtering RAID items: ${type}`, 'info');
+            // Implement filtering logic
+        }
+
+        function filterBySeverity(severity) {
+            showNotification(`Filtering by severity: ${severity}`, 'info');
+            // Implement filtering logic
+        }
+
+        function openMitigationPlan(riskId) {
+            showNotification(`Opening mitigation plan for risk ID: ${riskId}`, 'info');
+        }
+
+        function updateMitigationProgress(planId) {
+            showNotification('Updating mitigation progress...', 'info');
+            
+            setTimeout(() => {
+                showNotification('Progress updated successfully!', 'success');
+            }, 1000);
+        }
+
+        function implementAIMitigation(planId) {
+            showNotification('Implementing AI-generated mitigation...', 'info');
+            
+            setTimeout(() => {
+                showNotification('AI mitigation strategy implemented successfully!', 'success');
+            }, 2000);
+        }
+
+        // Navigation
+        function navigateTo(section) {
+            showNotification(`Navigating to ${section}...`, 'info');
+        }
+
+        // Utility Functions
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 fade-in ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                type === 'warning' ? 'bg-yellow-500' :
+                'bg-blue-500'
+            } text-white`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' :
+                        type === 'error' ? 'fa-exclamation-circle' :
+                        type === 'warning' ? 'fa-exclamation-triangle' :
+                        'fa-info-circle'
+                    } mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                addRAIDItem();
+            }
+            
+            if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+                e.preventDefault();
+                runAIRiskAnalysis();
+            }
+        });
+    </script>
+</body>
+</html>

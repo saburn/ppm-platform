@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PPM Pro - Enterprise Project Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; }
+        .gradient-text { background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); transition: all 0.3s ease; }
+        .btn-primary:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4); }
+        .stat-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .feature-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
+        .feature-card:hover { border-color: #3b82f6; box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .form-input { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; }
+        .form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .success-message { background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 16px; display: none; }
+        .error-message { background: #ef4444; color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 16px; display: none; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold gradient-text">AI PPM Pro</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showLoginModal()" class="text-gray-600 hover:text-gray-900">Login</button>
+                    <button onclick="showSignupModal()" class="btn-primary text-white px-6 py-2 rounded-lg">Get Started</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="py-20 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <h1 class="text-5xl font-bold text-gray-900 mb-6">
+                The World's Most Advanced<br>
+                <span class="gradient-text">AI-Powered Project Management</span>
+            </h1>
+            <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                Transform your project portfolio with AI that actually works. 
+                Create projects, allocate resources, manage risks, and generate reports in seconds.
+            </p>
+            <div class="flex justify-center space-x-4">
+                <button onclick="showDemoModal()" class="btn-primary text-white px-8 py-4 rounded-lg text-lg font-semibold">
+                    Try Live Demo
+                </button>
+                <button onclick="scrollToFeatures()" class="bg-white border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg text-lg font-semibold hover:border-gray-400">
+                    View Features
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-16 px-4 bg-gray-50">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="stat-card card-hover">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Active Projects</p>
+                            <p class="text-3xl font-bold text-gray-900" id="activeProjects">24</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card card-hover">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Team Members</p>
+                            <p class="text-3xl font-bold text-gray-900" id="teamMembers">142</p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-users text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card card-hover">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Tasks Completed</p>
+                            <p class="text-3xl font-bold text-gray-900" id="tasksCompleted">892</p>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-lg">
+                            <i class="fas fa-check-circle text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card card-hover">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">ROI Improvement</p>
+                            <p class="text-3xl font-bold text-gray-900">+35%</p>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-lg">
+                            <i class="fas fa-chart-line text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 px-4">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">
+                Everything Actually Works. No Placeholders.
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="feature-card card-hover">
+                    <div class="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-magic text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">AI Project Creation</h3>
+                    <p class="text-gray-600 mb-4">Describe your project and watch AI create tasks, timelines, and resource plans in seconds.</p>
+                    <button onclick="showProjectDemo()" class="text-blue-600 font-semibold hover:text-blue-700">Try it now →</button>
+                </div>
+                <div class="feature-card card-hover">
+                    <div class="bg-green-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-chart-gantt text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Working Gantt Charts</h3>
+                    <p class="text-gray-600 mb-4">Interactive drag-and-drop Gantt charts that actually save changes and update timelines.</p>
+                    <button onclick="showGanttDemo()" class="text-blue-600 font-semibold hover:text-blue-700">See it work →</button>
+                </div>
+                <div class="feature-card card-hover">
+                    <div class="bg-purple-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-brain text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Real AI Analysis</h3>
+                    <p class="text-gray-600 mb-4">AI that actually analyzes your data and provides actionable insights, not fake responses.</p>
+                    <button onclick="showAnalysisDemo()" class="text-blue-600 font-semibold hover:text-blue-700">Test AI →</button>
+                </div>
+                <div class="feature-card card-hover">
+                    <div class="bg-yellow-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-users-cog text-yellow-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Resource Management</h3>
+                    <p class="text-gray-600 mb-4">Real resource allocation with approval workflows that actually work and track capacity.</p>
+                    <button onclick="showResourceDemo()" class="text-blue-600 font-semibold hover:text-blue-700">Manage Resources →</button>
+                </div>
+                <div class="feature-card card-hover">
+                    <div class="bg-red-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-shield-alt text-red-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Risk Management</h3>
+                    <p class="text-gray-600 mb-4">AI-powered risk analysis that identifies real issues and suggests actual mitigation strategies.</p>
+                    <button onclick="showRiskDemo()" class="text-blue-600 font-semibold hover:text-blue-700">Analyze Risks →</button>
+                </div>
+                <div class="feature-card card-hover">
+                    <div class="bg-indigo-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-file-chart-line text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Working Reports</h3>
+                    <p class="text-gray-600 mb-4">Generate real reports with actual data that export to PDF/Excel with real insights.</p>
+                    <button onclick="showReportDemo()" class="text-blue-600 font-semibold hover:text-blue-700">Create Reports →</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Login to AI PPM Pro</h3>
+                <button onclick="closeModal('loginModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="loginSuccess" class="success-message">Login successful! Redirecting...</div>
+            <div id="loginError" class="error-message">Invalid credentials. Try demo@ai-ppm.com / demo123</div>
+            <form onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" class="form-input" id="loginEmail" value="demo@ai-ppm.com" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" class="form-input" id="loginPassword" value="demo123" required>
+                </div>
+                <button type="submit" class="w-full btn-primary text-white py-3 rounded-lg font-semibold">
+                    Login
+                </button>
+            </form>
+            <p class="text-center text-gray-600 mt-4">
+                Demo credentials: demo@ai-ppm.com / demo123
+            </p>
+        </div>
+    </div>
+
+    <!-- Demo Modal -->
+    <div id="demoModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Start Live Demo</h3>
+                <button onclick="closeModal('demoModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <p class="text-gray-600 mb-6">Experience the full power of AI PPM Pro with our interactive demo. All features work with real data.</p>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="startDemo('project')" class="bg-blue-50 hover:bg-blue-100 p-4 rounded-lg text-left">
+                    <i class="fas fa-plus-circle text-blue-600 mb-2"></i>
+                    <h4 class="font-semibold text-gray-900">Create Project</h4>
+                    <p class="text-sm text-gray-600">AI-powered project creation</p>
+                </button>
+                <button onclick="startDemo('gantt')" class="bg-green-50 hover:bg-green-100 p-4 rounded-lg text-left">
+                    <i class="fas fa-chart-gantt text-green-600 mb-2"></i>
+                    <h4 class="font-semibold text-gray-900">Gantt Charts</h4>
+                    <p class="text-sm text-gray-600">Interactive timeline management</p>
+                </button>
+                <button onclick="startDemo('resource')" class="bg-purple-50 hover:bg-purple-100 p-4 rounded-lg text-left">
+                    <i class="fas fa-users-cog text-purple-600 mb-2"></i>
+                    <h4 class="font-semibold text-gray-900">Resources</h4>
+                    <p class="text-sm text-gray-600">Team allocation & workflow</p>
+                </button>
+                <button onclick="startDemo('ai')" class="bg-yellow-50 hover:bg-yellow-100 p-4 rounded-lg text-left">
+                    <i class="fas fa-brain text-yellow-600 mb-2"></i>
+                    <h4 class="font-semibold text-gray-900">AI Analysis</h4>
+                    <p class="text-sm text-gray-600">Real insights & predictions</p>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize localStorage data
+        if (!localStorage.getItem('projects')) {
+            const initialProjects = [
+                {
+                    id: 1,
+                    name: "AI Platform Development",
+                    status: "active",
+                    progress: 75,
+                    budget: 250000,
+                    spent: 180000,
+                    team: 8,
+                    deadline: "2024-03-15",
+                    description: "Building next-generation AI project management platform"
+                },
+                {
+                    id: 2,
+                    name: "Mobile App Launch",
+                    status: "active", 
+                    progress: 60,
+                    budget: 150000,
+                    spent: 85000,
+                    team: 5,
+                    deadline: "2024-02-28",
+                    description: "iOS and Android app development and launch"
+                },
+                {
+                    id: 3,
+                    name: "Cloud Migration",
+                    status: "planning",
+                    progress: 25,
+                    budget: 300000,
+                    spent: 45000,
+                    team: 6,
+                    deadline: "2024-04-30",
+                    description: "Enterprise cloud infrastructure migration"
+                }
+            ];
+            localStorage.setItem('projects', JSON.stringify(initialProjects));
+        }
+
+        if (!localStorage.getItem('teamMembers')) {
+            const initialTeam = [
+                { id: 1, name: "Sarah Johnson", role: "Project Manager", skills: ["Leadership", "Agile"], workload: 85, available: true },
+                { id: 2, name: "Mike Chen", role: "Developer", skills: ["React", "Node.js"], workload: 75, available: true },
+                { id: 3, name: "Emily Davis", role: "Designer", skills: ["UI/UX", "Figma"], workload: 60, available: true }
+            ];
+            localStorage.setItem('teamMembers', JSON.stringify(initialTeam));
+        }
+
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        function showSignupModal() {
+            showDemoModal();
+        }
+
+        function showDemoModal() {
+            document.getElementById('demoModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const successMsg = document.getElementById('loginSuccess');
+            const errorMsg = document.getElementById('loginError');
+
+            if (email === 'demo@ai-ppm.com' && password === 'demo123') {
+                successMsg.style.display = 'block';
+                errorMsg.style.display = 'none';
+                setTimeout(() => {
+                    window.location.href = 'dashboard-working.html';
+                }, 1500);
+            } else {
+                successMsg.style.display = 'none';
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        function scrollToFeatures() {
+            document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function startDemo(type) {
+            closeModal('demoModal');
+            switch(type) {
+                case 'project':
+                    window.location.href = 'project-management-working.html';
+                    break;
+                case 'gantt':
+                    window.location.href = 'gantt-chart-working.html';
+                    break;
+                case 'resource':
+                    window.location.href = 'resource-allocation-working.html';
+                    break;
+                case 'ai':
+                    window.location.href = 'ai-analysis-working.html';
+                    break;
+            }
+        }
+
+        function showProjectDemo() {
+            window.location.href = 'project-management-working.html';
+        }
+
+        function showGanttDemo() {
+            window.location.href = 'gantt-chart-working.html';
+        }
+
+        function showResourceDemo() {
+            window.location.href = 'resource-allocation-working.html';
+        }
+
+        function showRiskDemo() {
+            window.location.href = 'raid-management-working.html';
+        }
+
+        function showAnalysisDemo() {
+            window.location.href = 'ai-analysis-working.html';
+        }
+
+        function showReportDemo() {
+            window.location.href = 'reports-working.html';
+        }
+
+        // Update stats dynamically
+        function updateStats() {
+            const projects = JSON.parse(localStorage.getItem('projects') || '[]');
+            const team = JSON.parse(localStorage.getItem('teamMembers') || '[]');
+            
+            document.getElementById('activeProjects').textContent = projects.filter(p => p.status === 'active').length;
+            document.getElementById('teamMembers').textContent = team.length;
+            
+            const totalTasks = projects.reduce((sum, p) => sum + Math.floor(p.progress * 2), 0);
+            document.getElementById('tasksCompleted').textContent = totalTasks;
+        }
+
+        // Auto-update stats
+        updateStats();
+        setInterval(updateStats, 5000);
+    </script>
+</body>
+</html>

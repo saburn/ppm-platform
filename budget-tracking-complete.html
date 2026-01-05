@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracking - Complete Suite | PPM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .tab-button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+        }
+        .tab-button:not(.active) {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .tab-button:not(.active):hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-on-track { background: #10b981; color: white; }
+        .status-at-risk { background: #f59e0b; color: white; }
+        .status-over-budget { background: #ef4444; color: white; }
+        .status-pending { background: #fbbf24; color: white; }
+        .status-approved { background: #10b981; color: white; }
+        .status-rejected { background: #ef4444; color: white; }
+        .ai-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-dollar-sign text-3xl"></i>
+                    <div>
+                        <h1 class="text-3xl font-bold">Budget Tracking</h1>
+                        <p class="text-purple-200">Complete Financial Management Suite</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="ai-badge">
+                        <i class="fas fa-robot mr-2"></i>AI Powered
+                    </span>
+                    <button onclick="exportAll()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-download mr-2"></i>Export All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex space-x-2">
+                <button class="tab-button active" onclick="switchTab('overview')">
+                    <i class="fas fa-chart-pie mr-2"></i>Overview
+                </button>
+                <button class="tab-button" onclick="switchTab('forecasting')">
+                    <i class="fas fa-chart-line mr-2"></i>AI Forecasting
+                </button>
+                <button class="tab-button" onclick="switchTab('approvals')">
+                    <i class="fas fa-shield-alt mr-2"></i>Approvals
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content active">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i class="fas fa-wallet text-blue-600 text-2xl"></i>
+                        </div>
+                        <span class="text-green-600 text-sm font-semibold">
+                            <i class="fas fa-arrow-up mr-1"></i>2.3%
+                        </span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Total Budget</h3>
+                    <p class="text-3xl font-bold text-gray-900">$8.4M</p>
+                    <p class="text-sm text-gray-500 mt-2">Across 42 projects</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-chart-line text-green-600 text-2xl"></i>
+                        </div>
+                        <span class="text-green-600 text-sm font-semibold">68%</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Spent</h3>
+                    <p class="text-3xl font-bold text-gray-900">$5.7M</p>
+                    <p class="text-sm text-gray-500 mt-2">$2.7M remaining</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-orange-100 p-3 rounded-lg">
+                            <i class="fas fa-exclamation-triangle text-orange-600 text-2xl"></i>
+                        </div>
+                        <span class="text-orange-600 text-sm font-semibold">12</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">At Risk</h3>
+                    <p class="text-3xl font-bold text-gray-900">$1.2M</p>
+                    <p class="text-sm text-gray-500 mt-2">14% of total budget</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-purple-100 p-3 rounded-lg">
+                            <i class="fas fa-piggy-bank text-purple-600 text-2xl"></i>
+                        </div>
+                        <span class="text-green-600 text-sm font-semibold">
+                            <i class="fas fa-arrow-down mr-1"></i>$450K
+                        </span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Savings</h3>
+                    <p class="text-3xl font-bold text-gray-900">$850K</p>
+                    <p class="text-sm text-gray-500 mt-2">10.1% under budget</p>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Budget Overview</h2>
+                    <canvas id="budgetOverviewChart" style="max-height: 300px;"></canvas>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Variance Analysis</h2>
+                    <canvas id="varianceChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <!-- Project Budgets Table -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Project Budgets</h2>
+                    <div class="flex items-center space-x-4">
+                        <input type="text" placeholder="Search..." class="border border-gray-300 rounded-lg px-4 py-2 text-sm w-64">
+                        <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <option>All Status</option>
+                            <option>On Track</option>
+                            <option>At Risk</option>
+                            <option>Over Budget</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Project</th>
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Budget</th>
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Spent</th>
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Variance</th>
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Progress</th>
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="budgetTableBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Forecasting Tab -->
+        <div id="forecasting-tab" class="tab-content">
+            <!-- AI Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i class="fas fa-brain text-blue-600 text-2xl"></i>
+                        </div>
+                        <span class="text-blue-600 text-sm font-semibold">90% Accuracy</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">AI Confidence</h3>
+                    <p class="text-3xl font-bold text-gray-900">High</p>
+                    <p class="text-sm text-gray-500 mt-2">847 data points</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-purple-100 p-3 rounded-lg">
+                            <i class="fas fa-chart-area text-purple-600 text-2xl"></i>
+                        </div>
+                        <span class="text-green-600 text-sm font-semibold">
+                            <i class="fas fa-arrow-up mr-1"></i>12%
+                        </span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Projected Spend</h3>
+                    <p class="text-3xl font-bold text-gray-900">$9.4M</p>
+                    <p class="text-sm text-gray-500 mt-2">Next 6 months</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-lightbulb text-green-600 text-2xl"></i>
+                        </div>
+                        <span class="ai-badge">42 Insights</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">AI Insights</h3>
+                    <p class="text-3xl font-bold text-gray-900">Active</p>
+                    <p class="text-sm text-gray-500 mt-2">Real-time analysis</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-orange-100 p-3 rounded-lg">
+                            <i class="fas fa-magic text-orange-600 text-2xl"></i>
+                        </div>
+                        <span class="text-orange-600 text-sm font-semibold">$255K</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Savings Potential</h3>
+                    <p class="text-3xl font-bold text-gray-900">18</p>
+                    <p class="text-sm text-gray-500 mt-2">Recommendations</p>
+                </div>
+            </div>
+
+            <!-- Forecast Chart -->
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">6-Month Budget Forecast</h2>
+                    <button onclick="runForecast()" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Run Forecast
+                    </button>
+                </div>
+                <canvas id="forecastChart" style="max-height: 300px;"></canvas>
+            </div>
+
+            <!-- AI Recommendations -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">AI Recommendations</h2>
+                    <div class="space-y-4">
+                        <div class="p-4 border-l-4 border-purple-500 bg-purple-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-900">Reallocate Resources</h4>
+                                <span class="text-xs bg-purple-600 text-white px-2 py-1 rounded">High Impact</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Move 3 developers to prevent delays and cost overruns.</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-purple-600 font-semibold">Savings: $85K</span>
+                                <button onclick="applyRecommendation(1)" class="text-purple-600 hover:text-purple-700 text-sm font-semibold">
+                                    Apply <i class="fas fa-arrow-right ml-1"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="p-4 border-l-4 border-blue-500 bg-blue-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-900">Optimize Infrastructure</h4>
+                                <span class="text-xs bg-blue-600 text-white px-2 py-1 rounded">Medium Impact</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Switch to reserved instances for cost reduction.</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-blue-600 font-semibold">Savings: $125K/year</span>
+                                <button onclick="applyRecommendation(2)" class="text-blue-600 hover:text-blue-700 text-sm font-semibold">
+                                    Apply <i class="fas fa-arrow-right ml-1"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="p-4 border-l-4 border-green-500 bg-green-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-900">Consolidate Tools</h4>
+                                <span class="text-xs bg-green-600 text-white px-2 py-1 rounded">Quick Win</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Eliminate redundant software licenses.</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-green-600 font-semibold">Savings: $45K/year</span>
+                                <button onclick="applyRecommendation(3)" class="text-green-600 hover:text-green-700 text-sm font-semibold">
+                                    Apply <i class="fas fa-arrow-right ml-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Scenario Analysis</h2>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-semibold text-gray-900">Best Case</span>
+                                <span class="text-green-600 font-bold">-15%</span>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-900 mb-1">$7.1M</p>
+                            <p class="text-sm text-gray-600">$1.3M under budget</p>
+                        </div>
+
+                        <div class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-semibold text-gray-900">Expected</span>
+                                <span class="text-blue-600 font-bold">+2%</span>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-900 mb-1">$8.6M</p>
+                            <p class="text-sm text-gray-600">$200K over budget</p>
+                        </div>
+
+                        <div class="p-4 bg-red-50 rounded-lg border-l-4 border-red-500">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-semibold text-gray-900">Worst Case</span>
+                                <span class="text-red-600 font-bold">+18%</span>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-900 mb-1">$9.9M</p>
+                            <p class="text-sm text-gray-600">$1.5M over budget</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approvals Tab -->
+        <div id="approvals-tab" class="tab-content">
+            <!-- Approval Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-yellow-100 p-3 rounded-lg">
+                            <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+                        </div>
+                        <span class="text-yellow-600 text-sm font-semibold">24 Pending</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Awaiting Approval</h3>
+                    <p class="text-3xl font-bold text-gray-900">$245K</p>
+                    <p class="text-sm text-gray-500 mt-2">24 requests</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                        </div>
+                        <span class="text-green-600 text-sm font-semibold">156 This Month</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Approved</h3>
+                    <p class="text-3xl font-bold text-gray-900">$1.8M</p>
+                    <p class="text-sm text-gray-500 mt-2">98.2% rate</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-red-100 p-3 rounded-lg">
+                            <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+                        </div>
+                        <span class="text-red-600 text-sm font-semibold">3 This Month</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Rejected</h3>
+                    <p class="text-3xl font-bold text-gray-900">$42K</p>
+                    <p class="text-sm text-gray-500 mt-2">1.8% rate</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i class="fas fa-tachometer-alt text-blue-600 text-2xl"></i>
+                        </div>
+                        <span class="text-blue-600 text-sm font-semibold">
+                            <i class="fas fa-arrow-down mr-1"></i>15%
+                        </span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Avg. Time</h3>
+                    <p class="text-3xl font-bold text-gray-900">2.4h</p>
+                    <p class="text-sm text-gray-500 mt-2">Target: 4h</p>
+                </div>
+            </div>
+
+            <!-- Pending Approvals -->
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Pending Approvals</h2>
+                    <button onclick="bulkApprove()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition">
+                        <i class="fas fa-check mr-2"></i>Bulk Approve
+                    </button>
+                </div>
+                <div class="space-y-4" id="pendingApprovals">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Approval Workflow -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Approval Workflow</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-4">
+                            <div class="bg-green-100 p-3 rounded-lg">
+                                <i class="fas fa-user text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900 mb-1">Level 1: Team Lead</h4>
+                                <p class="text-sm text-gray-600">Up to $5,000 • Auto-approved in 1 hour</p>
+                                <div class="mt-2 flex items-center space-x-2">
+                                    <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+                                    </div>
+                                    <span class="text-xs text-gray-600">100%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-4">
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <i class="fas fa-user-tie text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900 mb-1">Level 2: Manager</h4>
+                                <p class="text-sm text-gray-600">$5K - $25K • Avg. 2.4 hours</p>
+                                <div class="mt-2 flex items-center space-x-2">
+                                    <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-blue-500 h-2 rounded-full" style="width: 85%"></div>
+                                    </div>
+                                    <span class="text-xs text-gray-600">85%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-4">
+                            <div class="bg-purple-100 p-3 rounded-lg">
+                                <i class="fas fa-crown text-purple-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900 mb-1">Level 3: Executive</h4>
+                                <p class="text-sm text-gray-600">Over $25K • Avg. 4.8 hours</p>
+                                <div class="mt-2 flex items-center space-x-2">
+                                    <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-purple-500 h-2 rounded-full" style="width: 72%"></div>
+                                    </div>
+                                    <span class="text-xs text-gray-600">72%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Monthly Expenses</h2>
+                    <canvas id="monthlyExpensesChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Sample data
+        const budgets = [
+            { project: 'Cloud Migration', budget: 450000, spent: 315000, variance: -15000, progress: 72, status: 'on-track' },
+            { project: 'Mobile App', budget: 280000, spent: 245000, variance: -35000, progress: 85, status: 'at-risk' },
+            { project: 'Data Analytics', budget: 520000, spent: 380000, variance: 25000, progress: 68, status: 'on-track' },
+            { project: 'Security', budget: 180000, spent: 195000, variance: -15000, progress: 95, status: 'over-budget' }
+        ];
+
+        const pendingApprovals = [
+            { description: 'Cloud Infrastructure Upgrade', amount: 45000, category: 'Infrastructure', submittedBy: 'John Smith' },
+            { description: 'Software Licenses', amount: 18500, category: 'Software', submittedBy: 'Sarah Johnson' },
+            { description: 'Contractor Services', amount: 32000, category: 'Personnel', submittedBy: 'Mike Chen' }
+        ];
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Render functions
+        function renderBudgetTable() {
+            const tbody = document.getElementById('budgetTableBody');
+            tbody.innerHTML = budgets.map(budget => {
+                const statusClass = budget.status === 'on-track' ? 'status-on-track' : 
+                                   budget.status === 'at-risk' ? 'status-at-risk' : 'status-over-budget';
+                const statusText = budget.status === 'on-track' ? 'On Track' : 
+                                  budget.status === 'at-risk' ? 'At Risk' : 'Over Budget';
+                
+                return `
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-4 px-4 font-semibold text-gray-900">${budget.project}</td>
+                        <td class="py-4 px-4 text-gray-900">$${(budget.budget / 1000).toFixed(0)}K</td>
+                        <td class="py-4 px-4 text-gray-900">$${(budget.spent / 1000).toFixed(0)}K</td>
+                        <td class="py-4 px-4">
+                            <span class="${budget.variance >= 0 ? 'text-green-600' : 'text-red-600'} font-semibold">
+                                ${budget.variance >= 0 ? '+' : ''}$${(budget.variance / 1000).toFixed(0)}K
+                            </span>
+                        </td>
+                        <td class="py-4 px-4">
+                            <div class="flex items-center space-x-2">
+                                <div class="progress-bar flex-1">
+                                    <div class="progress-fill bg-purple-600" style="width: ${budget.progress}%"></div>
+                                </div>
+                                <span class="text-sm text-gray-600">${budget.progress}%</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-4">
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderPendingApprovals() {
+            const container = document.getElementById('pendingApprovals');
+            container.innerHTML = pendingApprovals.map(approval => `
+                <div class="bg-white p-4 rounded-lg border border-gray-200">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 mb-2">${approval.description}</h4>
+                            <div class="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
+                                <div><i class="fas fa-tag mr-2"></i>${approval.category}</div>
+                                <div><i class="fas fa-user mr-2"></i>${approval.submittedBy}</div>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-900">$${approval.amount.toLocaleString()}</p>
+                        </div>
+                        <div class="flex flex-col space-y-2 ml-4">
+                            <button onclick="approveExpense()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700">
+                                <i class="fas fa-check mr-1"></i>Approve
+                            </button>
+                            <button onclick="rejectExpense()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700">
+                                <i class="fas fa-times mr-1"></i>Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Budget Overview
+            new Chart(document.getElementById('budgetOverviewChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Spent', 'Remaining', 'At Risk'],
+                    datasets: [{ data: [5700000, 1500000, 1200000], backgroundColor: ['#10b981', '#6366f1', '#f59e0b'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Variance Chart
+            new Chart(document.getElementById('varianceChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        { label: 'Positive', data: [45, 52, 38, 65, 48, 55], backgroundColor: '#10b981' },
+                        { label: 'Negative', data: [-25, -18, -32, -15, -28, -22], backgroundColor: '#ef4444' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Forecast Chart
+            new Chart(document.getElementById('forecastChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        { label: 'Actual', data: [1200, 1350, 1280, 1450, 1520, 1600], borderColor: '#6366f1', tension: 0.4 },
+                        { label: 'Forecast', data: [null, null, null, null, 1520, 1580, 1650], borderColor: '#8b5cf6', borderDash: [5, 5], tension: 0.4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Monthly Expenses
+            new Chart(document.getElementById('monthlyExpensesChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [
+                        { label: 'Personnel', data: [120, 135, 128, 142], backgroundColor: '#3b82f6' },
+                        { label: 'Infrastructure', data: [85, 92, 88, 95], backgroundColor: '#10b981' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        // Functions
+        function runForecast() { showToast('Running AI forecast...', 'info'); }
+        function applyRecommendation(id) { showToast('Applying recommendation...', 'success'); }
+        function approveExpense() { showToast('Expense approved!', 'success'); }
+        function rejectExpense() { showToast('Expense rejected', 'error'); }
+        function bulkApprove() { showToast('Bulk approval in progress...', 'info'); }
+        function exportAll() { showToast('Exporting all data...', 'success'); }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            toast.className = `toast ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3`;
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} text-xl"></i><span class="font-semibold">${message}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderBudgetTable();
+            renderPendingApprovals();
+            initCharts();
+        });
+    </script>
+</body>
+</html>

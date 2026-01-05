@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource AI - AI PPM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            --danger-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            --dark-surface: #0f172a;
+            --card-surface: #1e293b;
+            --border-subtle: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-glow: rgba(102, 126, 234, 0.3);
+            --success-glow: rgba(52, 211, 153, 0.3);
+            --warning-glow: rgba(251, 191, 36, 0.3);
+            --danger-glow: rgba(248, 113, 113, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-surface);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Navigation System */
+        .luxury-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--card-surface) 0%, rgba(30, 41, 59, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-subtle);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            position: relative;
+            padding: 14px 24px;
+            margin: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.3);
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .luxury-btn {
+            position: relative;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .luxury-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .luxury-btn:hover::before {
+            left: 100%;
+        }
+
+        .luxury-btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .luxury-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Resource Heatmap */
+        .resource-heatmap {
+            display: grid;
+            grid-template-columns: 120px repeat(7, 1fr);
+            gap: 2px;
+            background: var(--border-subtle);
+            padding: 2px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .heatmap-header {
+            background: var(--card-surface);
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .resource-name {
+            background: var(--card-surface);
+            padding: 12px 16px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            color: var(--text-primary);
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            background: var(--dark-surface);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .heatmap-cell.available {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .heatmap-cell.busy {
+            background: var(--warning-gradient);
+            color: white;
+        }
+
+        .heatmap-cell.overloaded {
+            background: var(--danger-gradient);
+            color: white;
+        }
+
+        .heatmap-cell.unavailable {
+            background: var(--border-subtle);
+            color: var(--text-secondary);
+        }
+
+        .heatmap-cell::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .heatmap-cell:hover::before {
+            opacity: 1;
+        }
+
+        /* Resource Cards */
+        .resource-card {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .resource-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .resource-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .resource-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.2);
+        }
+
+        .resource-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white;
+            position: relative;
+            margin-right: 20px;
+        }
+
+        .resource-status {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid var(--card-surface);
+        }
+
+        .resource-status.available { background: #10b981; }
+        .resource-status.busy { background: #f59e0b; }
+        .resource-status.overloaded { background: #ef4444; }
+        .resource-status.offline { background: #6b7280; }
+
+        /* Request Cards */
+        .request-card {
+            border-left: 4px solid var(--primary-gradient);
+            background: rgba(102, 126, 234, 0.05);
+            padding: 20px;
+            margin-bottom: 16px;
+            border-radius: 0 12px 12px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .request-card:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(4px);
+        }
+
+        .request-card.urgent {
+            border-left-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .request-card.urgent:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .request-card.approved {
+            border-left-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        /* Skills Tags */
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .skill-tag {
+            padding: 4px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #a5b4fc;
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* Progress Bars */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-gradient);
+            border-radius: 4px;
+            transition: width 0.6s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Approval Workflow */
+        .approval-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .approval-steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            right: 30px;
+            height: 2px;
+            background: var(--border-subtle);
+            z-index: 0;
+        }
+
+        .approval-step {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .approval-step-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--card-surface);
+            border: 2px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            transition: all 0.3s ease;
+        }
+
+        .approval-step.completed .approval-step-icon {
+            background: var(--success-gradient);
+            border-color: transparent;
+        }
+
+        .approval-step.current .approval-step-icon {
+            background: var(--primary-gradient);
+            border-color: transparent;
+            animation: pulse-current 2s infinite;
+        }
+
+        @keyframes pulse-current {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+        }
+
+        /* AI Recommendations */
+        .ai-recommendation {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-recommendation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-gradient);
+        }
+
+        .ai-recommendation.high-impact::before {
+            background: var(--success-gradient);
+        }
+
+        .ai-recommendation.urgent::before {
+            background: var(--warning-gradient);
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 12px 0;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .stat-change {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .stat-change.positive {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .stat-change.negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-surface);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .luxury-nav {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .resource-heatmap {
+                grid-template-columns: 100px repeat(7, 1fr);
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading-skeleton {
+            background: linear-gradient(90deg, var(--card-surface) 25%, rgba(102, 126, 234, 0.1) 50%, var(--card-surface) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Fade in animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="luxury-nav">
+        <div class="p-6">
+            <div class="flex items-center mb-8">
+                <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mr-4">
+                    <i class="fas fa-rocket text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white">AI PPM Pro</h1>
+                    <p class="text-xs text-gray-400">Enterprise Intelligence</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="px-4">
+            <div class="nav-item" onclick="navigateTo('dashboard')">
+                <i class="fas fa-th-large"></i>
+                <span>Command Center</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('projects')">
+                <i class="fas fa-project-diagram"></i>
+                <span>Project Intelligence</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('gantt')">
+                <i class="fas fa-chart-gantt"></i>
+                <span>Timeline Mastery</span>
+            </div>
+            <div class="nav-item active" onclick="navigateTo('resources')">
+                <i class="fas fa-users-cog"></i>
+                <span>Resource AI</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('risks')">
+                <i class="fas fa-shield-alt"></i>
+                <span>Risk Intelligence</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('reports')">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics Studio</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('ai')">
+                <i class="fas fa-brain"></i>
+                <span>AI Lab</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-bold mb-2">Resource AI</h1>
+                <p class="text-gray-400">Intelligent resource allocation with predictive optimization and AI-driven insights</p>
+            </div>
+            <div class="flex gap-4">
+                <button class="luxury-btn luxury-btn-primary" onclick="runAIOptimization()">
+                    <i class="fas fa-brain mr-2"></i>
+                    AI Optimize
+                </button>
+                <button class="luxury-btn glass-card" onclick="openResourceRequest()">
+                    <i class="fas fa-plus mr-2"></i>
+                    Request Resource
+                </button>
+            </div>
+        </div>
+
+        <!-- Resource Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="glass-card stat-card p-6">
+                <div class="text-2xl text-blue-400 mb-2">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value">142</div>
+                <div class="stat-label">Total Resources</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    +8 this month
+                </div>
+            </div>
+            
+            <div class="glass-card stat-card p-6">
+                <div class="text-2xl text-green-400 mb-2">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value">89%</div>
+                <div class="stat-label">Utilization Rate</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    +5% efficiency
+                </div>
+            </div>
+            
+            <div class="glass-card stat-card p-6">
+                <div class="text-2xl text-yellow-400 mb-2">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-value">24</div>
+                <div class="stat-label">Pending Requests</div>
+                <div class="stat-change negative">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    +6 new today
+                </div>
+            </div>
+            
+            <div class="glass-card stat-card p-6">
+                <div class="text-2xl text-purple-400 mb-2">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-value">$2.4M</div>
+                <div class="stat-label">Cost Optimized</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    $180K saved
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insights Panel -->
+        <div class="glass-card p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">AI Resource Intelligence</h2>
+                <button class="luxury-btn luxury-btn-primary" onclick="refreshAIInsights()">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Refresh Insights
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="ai-recommendation high-impact">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-semibold text-green-400">High-Impact Opportunity</h3>
+                        <span class="text-xs text-gray-400">5 min ago</span>
+                    </div>
+                    <p class="text-sm text-gray-300 mb-3">3 senior developers will be available next week. AI recommends starting the Mobile App project to save 2 weeks timeline.</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-green-400">92% confidence</span>
+                        <button class="text-xs text-blue-400 hover:text-blue-300">Apply Suggestion →</button>
+                    </div>
+                </div>
+
+                <div class="ai-recommendation urgent">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-semibold text-yellow-400">Resource Bottleneck</h3>
+                        <span class="text-xs text-gray-400">12 min ago</span>
+                    </div>
+                    <p class="text-sm text-gray-300 mb-3">QA team at 95% capacity for next 3 weeks. Consider adding 2 contractors to avoid delays.</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-yellow-400">87% confidence</span>
+                        <button class="text-xs text-blue-400 hover:text-blue-300">View Solution →</button>
+                    </div>
+                </div>
+
+                <div class="ai-recommendation">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-semibold text-blue-400">Cost Optimization</h3>
+                        <span class="text-xs text-gray-400">18 min ago</span>
+                    </div>
+                    <p class="text-sm text-gray-300 mb-3">Cloud resources underutilized by 40%. AI can save $45K/month through auto-scaling.</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-blue-400">94% confidence</span>
+                        <button class="text-xs text-blue-400 hover:text-blue-300">Implement Now →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resource Heatmap -->
+        <div class="glass-card p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Resource Capacity Heatmap</h2>
+                <div class="flex gap-4">
+                    <label class="flex items-center">
+                        <div class="w-4 h-4 bg-green-500 rounded mr-2"></div>
+                        <span class="text-sm">Available</span>
+                    </label>
+                    <label class="flex items-center">
+                        <div class="w-4 h-4 bg-yellow-500 rounded mr-2"></div>
+                        <span class="text-sm">Busy</span>
+                    </label>
+                    <label class="flex items-center">
+                        <div class="w-4 h-4 bg-red-500 rounded mr-2"></div>
+                        <span class="text-sm">Overloaded</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="resource-heatmap">
+                <div class="heatmap-header">Resource</div>
+                <div class="heatmap-header">Mon</div>
+                <div class="heatmap-header">Tue</div>
+                <div class="heatmap-header">Wed</div>
+                <div class="heatmap-header">Thu</div>
+                <div class="heatmap-header">Fri</div>
+                <div class="heatmap-header">Sat</div>
+                <div class="heatmap-header">Sun</div>
+
+                <!-- Developer Resources -->
+                <div class="resource-name">
+                    <i class="fas fa-code text-blue-400 mr-2"></i>
+                    Developers (12)
+                </div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('developers', 'mon')">85%</div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('developers', 'tue')">90%</div>
+                <div class="heatmap-cell overloaded" onclick="showResourceDetails('developers', 'wed')">95%</div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('developers', 'thu')">88%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('developers', 'fri')">70%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('developers', 'sat')">20%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('developers', 'sun')">15%</div>
+
+                <!-- Designer Resources -->
+                <div class="resource-name">
+                    <i class="fas fa-palette text-purple-400 mr-2"></i>
+                    Designers (4)
+                </div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('designers', 'mon')">75%</div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('designers', 'tue')">80%</div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('designers', 'wed')">85%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('designers', 'thu')">60%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('designers', 'fri')">50%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('designers', 'sat')">10%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('designers', 'sun')">5%</div>
+
+                <!-- QA Resources -->
+                <div class="resource-name">
+                    <i class="fas fa-bug text-green-400 mr-2"></i>
+                    QA Engineers (6)
+                </div>
+                <div class="heatmap-cell overloaded" onclick="showResourceDetails('qa', 'mon')">95%</div>
+                <div class="heatmap-cell overloaded" onclick="showResourceDetails('qa', 'tue')">98%</div>
+                <div class="heatmap-cell overloaded" onclick="showResourceDetails('qa', 'wed')">100%</div>
+                <div class="heatmap-cell overloaded" onclick="showResourceDetails('qa', 'thu')">95%</div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('qa', 'fri')">85%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('qa', 'sat')">25%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('qa', 'sun')">20%</div>
+
+                <!-- DevOps Resources -->
+                <div class="resource-name">
+                    <i class="fas fa-server text-orange-400 mr-2"></i>
+                    DevOps (3)
+                </div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('devops', 'mon')">70%</div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('devops', 'tue')">75%</div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('devops', 'wed')">80%</div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('devops', 'thu')">72%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('devops', 'fri')">60%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('devops', 'sat')">30%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('devops', 'sun')">25%</div>
+
+                <!-- PM Resources -->
+                <div class="resource-name">
+                    <i class="fas fa-tasks text-cyan-400 mr-2"></i>
+                    Project Managers (5)
+                </div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('pm', 'mon')">80%</div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('pm', 'tue')">85%</div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('pm', 'wed')">82%</div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('pm', 'thu')">78%</div>
+                <div class="heatmap-cell busy" onclick="showResourceDetails('pm', 'fri')">75%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('pm', 'sat')">40%</div>
+                <div class="heatmap-cell available" onclick="showResourceDetails('pm', 'sun')">35%</div>
+            </div>
+        </div>
+
+        <!-- Resource Requests & Team Management -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Resource Requests -->
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Resource Requests</h3>
+                    <span class="text-sm text-gray-400">24 pending</span>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="request-card urgent" onclick="openRequestDetails(1)">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h4 class="font-semibold">Senior Frontend Developer</h4>
+                                <p class="text-sm text-gray-400">E-Commerce Platform - Critical Phase</p>
+                            </div>
+                            <span class="text-xs text-red-400 bg-red-500/20 px-2 py-1 rounded">Urgent</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-400">Requested: 2 days ago</span>
+                            <span class="text-gray-400">Duration: 6 weeks</span>
+                        </div>
+                        
+                        <div class="approval-steps mt-4">
+                            <div class="approval-step completed">
+                                <div class="approval-step-icon">
+                                    <i class="fas fa-check text-white"></i>
+                                </div>
+                                <span class="text-xs">Submitted</span>
+                            </div>
+                            <div class="approval-step current">
+                                <div class="approval-step-icon">
+                                    <i class="fas fa-user-tie text-white"></i>
+                                </div>
+                                <span class="text-xs">Manager</span>
+                            </div>
+                            <div class="approval-step">
+                                <div class="approval-step-icon">
+                                    <i class="fas fa-user-shield text-gray-400"></i>
+                                </div>
+                                <span class="text-xs">Director</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="request-card" onclick="openRequestDetails(2)">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h4 class="font-semibold">UI/UX Designer</h4>
+                                <p class="text-sm text-gray-400">Mobile Banking App Design System</p>
+                            </div>
+                            <span class="text-xs text-yellow-400 bg-yellow-500/20 px-2 py-1 rounded">High</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-400">Requested: 1 day ago</span>
+                            <span class="text-gray-400">Duration: 4 weeks</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center mt-4">
+                            <button class="luxury-btn luxury-btn-primary text-sm" onclick="approveRequest(event, 2)">
+                                <i class="fas fa-check mr-1"></i>
+                                Approve
+                            </button>
+                            <button class="luxury-btn glass-card text-sm" onclick="rejectRequest(event, 2)">
+                                <i class="fas fa-times mr-1"></i>
+                                Reject
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="request-card approved" onclick="openRequestDetails(3)">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h4 class="font-semibold">QA Engineer</h4>
+                                <p class="text-sm text-gray-400">CRM System Testing Phase</p>
+                            </div>
+                            <span class="text-xs text-green-400 bg-green-500/20 px-2 py-1 rounded">Approved</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-400">Approved: 3 hours ago</span>
+                            <span class="text-gray-400">Starts: Monday</span>
+                        </div>
+                    </div>
+
+                    <div class="request-card" onclick="openRequestDetails(4)">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h4 class="font-semibold">DevOps Engineer</h4>
+                                <p class="text-sm text-gray-400">Cloud Infrastructure Migration</p>
+                            </div>
+                            <span class="text-xs text-blue-400 bg-blue-500/20 px-2 py-1 rounded">Normal</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-400">Requested: 4 hours ago</span>
+                            <span class="text-gray-400">Duration: 8 weeks</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center mt-4">
+                            <button class="luxury-btn luxury-btn-primary text-sm" onclick="approveRequest(event, 4)">
+                                <i class="fas fa-check mr-1"></i>
+                                Approve
+                            </button>
+                            <button class="luxury-btn glass-card text-sm" onclick="rejectRequest(event, 4)">
+                                <i class="fas fa-times mr-1"></i>
+                                Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Performance -->
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Team Performance</h3>
+                    <button class="luxury-btn luxury-btn-primary text-sm" onclick="addTeamMember()">
+                        <i class="fas fa-user-plus mr-1"></i>
+                        Add Member
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="resource-card glass-card p-4" onclick="openResourceDetails('sarah')">
+                        <div class="flex items-center">
+                            <div class="resource-avatar">
+                                SJ
+                                <div class="resource-status available"></div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-semibold">Sarah Johnson</h4>
+                                        <p class="text-sm text-gray-400">Senior Frontend Developer</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm font-semibold">92%</div>
+                                        <div class="text-xs text-green-400">Available</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 92%;"></div>
+                                </div>
+                                
+                                <div class="skills-container">
+                                    <span class="skill-tag">React</span>
+                                    <span class="skill-tag">TypeScript</span>
+                                    <span class="skill-tag">Node.js</span>
+                                    <span class="skill-tag">AWS</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="resource-card glass-card p-4" onclick="openResourceDetails('mike')">
+                        <div class="flex items-center">
+                            <div class="resource-avatar">
+                                MC
+                                <div class="resource-status busy"></div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-semibold">Mike Chen</h4>
+                                        <p class="text-sm text-gray-400">Lead Backend Developer</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm font-semibold">78%</div>
+                                        <div class="text-xs text-yellow-400">Busy</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 78%;"></div>
+                                </div>
+                                
+                                <div class="skills-container">
+                                    <span class="skill-tag">Python</span>
+                                    <span class="skill-tag">Django</span>
+                                    <span class="skill-tag">PostgreSQL</span>
+                                    <span class="skill-tag">Docker</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="resource-card glass-card p-4" onclick="openResourceDetails('emily')">
+                        <div class="flex items-center">
+                            <div class="resource-avatar">
+                                ED
+                                <div class="resource-status overloaded"></div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-semibold">Emily Davis</h4>
+                                        <p class="text-sm text-gray-400">UI/UX Designer</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm font-semibold">95%</div>
+                                        <div class="text-xs text-red-400">Overloaded</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 95%; background: var(--danger-gradient);"></div>
+                                </div>
+                                
+                                <div class="skills-container">
+                                    <span class="skill-tag">Figma</span>
+                                    <span class="skill-tag">Adobe XD</span>
+                                    <span class="skill-tag">Prototyping</span>
+                                    <span class="skill-tag">Design Systems</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="resource-card glass-card p-4" onclick="openResourceDetails('alex')">
+                        <div class="flex items-center">
+                            <div class="resource-avatar">
+                                AK
+                                <div class="resource-status available"></div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-semibold">Alex Kumar</h4>
+                                        <p class="text-sm text-gray-400">DevOps Engineer</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm font-semibold">65%</div>
+                                        <div class="text-xs text-green-400">Available</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 65%;"></div>
+                                </div>
+                                
+                                <div class="skills-container">
+                                    <span class="skill-tag">Kubernetes</span>
+                                    <span class="skill-tag">Terraform</span>
+                                    <span class="skill-tag">CI/CD</span>
+                                    <span class="skill-tag">Monitoring</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-bold mb-4">Resource Utilization Trends</h3>
+                <div class="chart-container">
+                    <canvas id="utilizationChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-bold mb-4">Skill Distribution</h3>
+                <div class="chart-container">
+                    <canvas id="skillsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Request Modal -->
+    <div class="modal" id="resourceRequestModal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">Resource Request</h3>
+                <button onclick="closeResourceRequestModal()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form onsubmit="submitResourceRequest(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Resource Type</label>
+                        <select class="form-input" required>
+                            <option value="">Select resource type</option>
+                            <option value="developer">Developer</option>
+                            <option value="designer">Designer</option>
+                            <option value="qa">QA Engineer</option>
+                            <option value="devops">DevOps Engineer</option>
+                            <option value="pm">Project Manager</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Seniority Level</label>
+                        <select class="form-input" required>
+                            <option value="">Select seniority</option>
+                            <option value="junior">Junior</option>
+                            <option value="mid">Mid-Level</option>
+                            <option value="senior">Senior</option>
+                            <option value="lead">Lead</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Project</label>
+                        <select class="form-input" required>
+                            <option value="">Select project</option>
+                            <option value="ecommerce">E-Commerce Platform</option>
+                            <option value="mobile">Mobile Banking App</option>
+                            <option value="crm">CRM System Upgrade</option>
+                            <option value="analytics">Data Analytics Dashboard</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Duration (weeks)</label>
+                        <input type="number" class="form-input" min="1" max="52" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Priority</label>
+                        <select class="form-input" required>
+                            <option value="">Select priority</option>
+                            <option value="low">Low</option>
+                            <option value="normal">Normal</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Justification</label>
+                        <textarea class="form-input form-textarea" placeholder="Explain why this resource is needed..." required></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Required Skills</label>
+                        <input type="text" class="form-input" placeholder="e.g., React, TypeScript, AWS">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4 mt-6">
+                    <button type="button" class="luxury-btn glass-card" onclick="closeResourceRequestModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="luxury-btn luxury-btn-primary">
+                        Submit Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeResources();
+            initializeCharts();
+            animateElements();
+        });
+
+        function initializeResources() {
+            // Load resource data from localStorage
+            const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+            if (resources.length === 0) {
+                // Initialize with sample resources
+                const sampleResources = [
+                    { id: 1, name: 'Sarah Johnson', type: 'developer', utilization: 92, status: 'available' },
+                    { id: 2, name: 'Mike Chen', type: 'developer', utilization: 78, status: 'busy' },
+                    { id: 3, name: 'Emily Davis', type: 'designer', utilization: 95, status: 'overloaded' },
+                    { id: 4, name: 'Alex Kumar', type: 'devops', utilization: 65, status: 'available' }
+                ];
+                localStorage.setItem('resources', JSON.stringify(sampleResources));
+            }
+        }
+
+        function initializeCharts() {
+            // Utilization Chart
+            const utilizationCtx = document.getElementById('utilizationChart').getContext('2d');
+            new Chart(utilizationCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                    datasets: [{
+                        label: 'Developers',
+                        data: [75, 82, 88, 85, 90, 89],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Designers',
+                        data: [60, 65, 70, 75, 72, 68],
+                        borderColor: 'rgb(139, 92, 246)',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'QA Engineers',
+                        data: [85, 88, 92, 95, 98, 95],
+                        borderColor: 'rgb(16, 185, 129)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Skills Distribution Chart
+            const skillsCtx = document.getElementById('skillsChart').getContext('2d');
+            new Chart(skillsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Frontend', 'Backend', 'DevOps', 'QA', 'Design', 'Management'],
+                    datasets: [{
+                        data: [25, 30, 15, 15, 10, 5],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(139, 92, 246, 0.8)',
+                            'rgba(236, 72, 153, 0.8)',
+                            'rgba(251, 146, 60, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function animateElements() {
+            // Animate stat cards
+            gsap.from('.stat-card', {
+                duration: 0.8,
+                y: 30,
+                opacity: 0,
+                stagger: 0.1,
+                ease: 'power3.out'
+            });
+
+            // Animate resource cards
+            gsap.from('.resource-card', {
+                duration: 0.8,
+                x: -30,
+                opacity: 0,
+                stagger: 0.1,
+                ease: 'power3.out',
+                delay: 0.2
+            });
+
+            // Animate heatmap
+            gsap.from('.heatmap-cell', {
+                duration: 0.6,
+                scale: 0,
+                opacity: 0,
+                stagger: 0.02,
+                ease: 'back.out(1.7)',
+                delay: 0.4
+            });
+        }
+
+        // AI Functions
+        function runAIOptimization() {
+            showNotification('AI analyzing resource allocation patterns...', 'info');
+            
+            setTimeout(() => {
+                showNotification('AI optimization complete! Found 3 opportunities to save $45K', 'success');
+                
+                // Highlight optimized cells
+                const optimizedCells = document.querySelectorAll('.heatmap-cell.busy');
+                optimizedCells.forEach((cell, index) => {
+                    setTimeout(() => {
+                        cell.style.transform = 'scale(1.2)';
+                        cell.style.boxShadow = '0 0 20px rgba(52, 211, 153, 0.6)';
+                        setTimeout(() => {
+                            cell.style.transform = '';
+                            cell.style.boxShadow = '';
+                        }, 1000);
+                    }, index * 100);
+                });
+            }, 2000);
+        }
+
+        function refreshAIInsights() {
+            showNotification('Refreshing AI insights...', 'info');
+            
+            setTimeout(() => {
+                showNotification('AI insights updated with latest resource data', 'success');
+                
+                // Refresh animation
+                gsap.from('.ai-recommendation', {
+                    duration: 0.5,
+                    y: 20,
+                    opacity: 0,
+                    stagger: 0.1,
+                    ease: 'power3.out'
+                });
+            }, 1500);
+        }
+
+        // Resource Management Functions
+        function showResourceDetails(resourceType, day) {
+            const details = {
+                developers: {
+                    mon: '12 developers working on 8 active projects',
+                    tue: '11 developers, 1 on training',
+                    wed: 'All 12 developers at full capacity',
+                    thu: '10 developers active, 2 in meetings',
+                    fri: '8 developers working, 4 planning next sprint'
+                },
+                designers: {
+                    mon: '3 designers on UI, 1 on research',
+                    tue: '2 on mobile, 2 on web',
+                    wed: 'All 4 designers working on deadlines',
+                    thu: '3 active, 1 in client meetings',
+                    fri: '2 finishing, 2 planning next week'
+                }
+            };
+            
+            const detail = details[resourceType]?.[day] || 'No detailed information available';
+            showNotification(`${resourceType.charAt(0).toUpperCase() + resourceType.slice(1)} - ${day}: ${detail}`, 'info');
+        }
+
+        function openResourceRequest() {
+            document.getElementById('resourceRequestModal').classList.add('active');
+        }
+
+        function closeResourceRequestModal() {
+            document.getElementById('resourceRequestModal').classList.remove('active');
+        }
+
+        function submitResourceRequest(event) {
+            event.preventDefault();
+            
+            showNotification('Submitting resource request...', 'info');
+            
+            setTimeout(() => {
+                showNotification('Resource request submitted successfully!', 'success');
+                closeResourceRequestModal();
+                
+                // Add new request to the list
+                addNewRequestToList();
+            }, 1500);
+        }
+
+        function addNewRequestToList() {
+            // This would add the new request to the UI
+            // For now, just show a success message
+            console.log('New request added to list');
+        }
+
+        function openRequestDetails(requestId) {
+            showNotification(`Opening request details for ID: ${requestId}`, 'info');
+        }
+
+        function approveRequest(event, requestId) {
+            event.stopPropagation();
+            
+            showNotification('Approving resource request...', 'info');
+            
+            setTimeout(() => {
+                showNotification('Request approved successfully!', 'success');
+                updateRequestStatus(requestId, 'approved');
+            }, 1000);
+        }
+
+        function rejectRequest(event, requestId) {
+            event.stopPropagation();
+            
+            showNotification('Rejecting resource request...', 'info');
+            
+            setTimeout(() => {
+                showNotification('Request rejected', 'warning');
+                updateRequestStatus(requestId, 'rejected');
+            }, 1000);
+        }
+
+        function updateRequestStatus(requestId, status) {
+            // Update the request card UI
+            const requestCards = document.querySelectorAll('.request-card');
+            requestCards.forEach(card => {
+                if (card.onclick && card.onclick.toString().includes(requestId)) {
+                    // Update the card appearance based on status
+                    if (status === 'approved') {
+                        card.classList.add('approved');
+                        card.classList.remove('urgent');
+                    }
+                }
+            });
+        }
+
+        function openResourceDetails(resourceId) {
+            showNotification(`Opening detailed resource profile for: ${resourceId}`, 'info');
+        }
+
+        function addTeamMember() {
+            showNotification('Opening team member invitation form...', 'info');
+        }
+
+        // Navigation
+        function navigateTo(section) {
+            showNotification(`Navigating to ${section}...`, 'info');
+        }
+
+        // Utility Functions
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 fade-in ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                type === 'warning' ? 'bg-yellow-500' :
+                'bg-blue-500'
+            } text-white`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' :
+                        type === 'error' ? 'fa-exclamation-circle' :
+                        type === 'warning' ? 'fa-exclamation-triangle' :
+                        'fa-info-circle'
+                    } mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                openResourceRequest();
+            }
+            
+            if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+                e.preventDefault();
+                runAIOptimization();
+            }
+        });
+    </script>
+</body>
+</html>

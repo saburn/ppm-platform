@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaboration - Activity Feed & Notifications</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .activity-item {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 40px;
+            bottom: -10px;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        .timeline-item:last-child::before {
+            display: none;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            border: 2px solid white;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold flex items-center">
+                        <i class="fas fa-bell mr-3"></i>
+                        Collaboration - Activity Feed & Notifications
+                    </h1>
+                    <p class="text-purple-100 mt-2">Real-time updates with instant notification delivery</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all relative">
+                        <i class="fas fa-bell mr-2"></i>Notifications
+                        <span class="notification-badge">24</span>
+                    </button>
+                    <button class="bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-chart-line text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">+18%</span>
+                </div>
+                <p class="text-blue-100 text-sm font-medium">Total Activities</p>
+                <p class="text-3xl font-bold mt-2">2,847</p>
+            </div>
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-comments text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">+24</span>
+                </div>
+                <p class="text-green-100 text-sm font-medium">New Comments</p>
+                <p class="text-3xl font-bold mt-2">156</p>
+            </div>
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-at text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">+12</span>
+                </div>
+                <p class="text-purple-100 text-sm font-medium">Mentions</p>
+                <p class="text-3xl font-bold mt-2">42</p>
+            </div>
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-bell text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">New</span>
+                </div>
+                <p class="text-orange-100 text-sm font-medium">Unread</p>
+                <p class="text-3xl font-bold mt-2">24</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-6">
+            <!-- Left Sidebar - Filters -->
+            <div class="col-span-3">
+                <div class="bg-white rounded-xl shadow-lg p-4 mb-4">
+                    <h3 class="font-bold text-gray-800 mb-4">Activity Filters</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <input type="checkbox" checked class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <span class="text-gray-700">All Activities</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <input type="checkbox" checked class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <span class="text-gray-700">Comments</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <input type="checkbox" checked class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <span class="text-gray-700">Mentions</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <input type="checkbox" checked class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <span class="text-gray-700">File Updates</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <input type="checkbox" checked class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <span class="text-gray-700">Task Changes</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <span class="text-gray-700">Project Updates</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-4">
+                    <h3 class="font-bold text-gray-800 mb-4">Team Members</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <img src="https://i.pravatar.cc/40?img=12" alt="User" class="w-10 h-10 rounded-full">
+                                <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">Sarah Johnson</div>
+                                <div class="text-xs text-gray-500">24 activities</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <img src="https://i.pravatar.cc/40?img=33" alt="User" class="w-10 h-10 rounded-full">
+                                <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">Michael Chen</div>
+                                <div class="text-xs text-gray-500">18 activities</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <img src="https://i.pravatar.cc/40?img=45" alt="User" class="w-10 h-10 rounded-full">
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">Emily Rodriguez</div>
+                                <div class="text-xs text-gray-500">15 activities</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Activity Feed -->
+            <div class="col-span-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">Activity Timeline</h3>
+                        <button class="text-purple-600 hover:text-purple-700 font-semibold">
+                            <i class="fas fa-sync-alt mr-1"></i>Refresh
+                        </button>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Activity 1 - Comment -->
+                        <div class="timeline-item activity-item">
+                            <div class="timeline-dot bg-blue-500">
+                                <i class="fas fa-comment text-white text-sm"></i>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <div class="flex items-start gap-3 mb-3">
+                                    <img src="https://i.pravatar.cc/40?img=12" alt="User" class="w-10 h-10 rounded-full">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="font-bold text-gray-800">Sarah Johnson</span>
+                                            <span class="text-xs text-gray-500">commented on</span>
+                                            <span class="text-purple-600 font-semibold">Website Redesign</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-2">The new dashboard looks fantastic! I love the color scheme and the layout is very intuitive. Great work team! 🎨</p>
+                                        <div class="flex items-center gap-4 text-xs text-gray-500">
+                                            <span><i class="far fa-clock mr-1"></i>2 minutes ago</span>
+                                            <button class="hover:text-purple-600"><i class="far fa-thumbs-up mr-1"></i>Like</button>
+                                            <button class="hover:text-purple-600"><i class="far fa-comment mr-1"></i>Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity 2 - File Upload -->
+                        <div class="timeline-item activity-item">
+                            <div class="timeline-dot bg-green-500">
+                                <i class="fas fa-file text-white text-sm"></i>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <div class="flex items-start gap-3 mb-3">
+                                    <img src="https://i.pravatar.cc/40?img=33" alt="User" class="w-10 h-10 rounded-full">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="font-bold text-gray-800">Michael Chen</span>
+                                            <span class="text-xs text-gray-500">uploaded a file to</span>
+                                            <span class="text-purple-600 font-semibold">Mobile App Development</span>
+                                        </div>
+                                        <div class="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3 mb-2">
+                                            <div class="bg-blue-100 text-blue-600 rounded-lg p-2">
+                                                <i class="fas fa-file-pdf text-xl"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="font-semibold text-gray-800">API_Documentation_v2.pdf</div>
+                                                <div class="text-sm text-gray-500">2.4 MB</div>
+                                            </div>
+                                            <button class="text-purple-600 hover:text-purple-700">
+                                                <i class="fas fa-download"></i>
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center gap-4 text-xs text-gray-500">
+                                            <span><i class="far fa-clock mr-1"></i>15 minutes ago</span>
+                                            <button class="hover:text-purple-600"><i class="far fa-thumbs-up mr-1"></i>Like</button>
+                                            <button class="hover:text-purple-600"><i class="far fa-comment mr-1"></i>Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity 3 - Mention -->
+                        <div class="timeline-item activity-item">
+                            <div class="timeline-dot bg-purple-500">
+                                <i class="fas fa-at text-white text-sm"></i>
+                            </div>
+                            <div class="bg-purple-50 rounded-lg p-4 border-l-4 border-purple-500">
+                                <div class="flex items-start gap-3 mb-3">
+                                    <img src="https://i.pravatar.cc/40?img=45" alt="User" class="w-10 h-10 rounded-full">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="font-bold text-gray-800">Emily Rodriguez</span>
+                                            <span class="text-xs text-gray-500">mentioned you in</span>
+                                            <span class="text-purple-600 font-semibold">Cloud Migration</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-2">Hey <span class="text-purple-600 font-semibold">@you</span>, can you review the migration timeline? We need your input on the database strategy.</p>
+                                        <div class="flex items-center gap-4 text-xs text-gray-500">
+                                            <span><i class="far fa-clock mr-1"></i>1 hour ago</span>
+                                            <button class="hover:text-purple-600"><i class="far fa-thumbs-up mr-1"></i>Like</button>
+                                            <button class="hover:text-purple-600"><i class="far fa-comment mr-1"></i>Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity 4 - Task Update -->
+                        <div class="timeline-item activity-item">
+                            <div class="timeline-dot bg-orange-500">
+                                <i class="fas fa-tasks text-white text-sm"></i>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <div class="flex items-start gap-3 mb-3">
+                                    <img src="https://i.pravatar.cc/40?img=8" alt="User" class="w-10 h-10 rounded-full">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="font-bold text-gray-800">David Kim</span>
+                                            <span class="text-xs text-gray-500">completed task</span>
+                                            <span class="text-purple-600 font-semibold">Frontend Development</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-2">Finished implementing the responsive navigation component with mobile menu.</p>
+                                        <div class="flex items-center gap-4 text-xs text-gray-500">
+                                            <span><i class="far fa-clock mr-1"></i>2 hours ago</span>
+                                            <button class="hover:text-purple-600"><i class="far fa-thumbs-up mr-1"></i>3 Likes</button>
+                                            <button class="hover:text-purple-600"><i class="far fa-comment mr-1"></i>Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity 5 - Project Update -->
+                        <div class="timeline-item activity-item">
+                            <div class="timeline-dot bg-yellow-500">
+                                <i class="fas fa-project-diagram text-white text-sm"></i>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <div class="flex items-start gap-3 mb-3">
+                                    <img src="https://i.pravatar.cc/40?img=25" alt="User" class="w-10 h-10 rounded-full">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="font-bold text-gray-800">Lisa Anderson</span>
+                                            <span class="text-xs text-gray-500">updated project status</span>
+                                            <span class="text-purple-600 font-semibold">Data Analytics Platform</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-2">Project moved to "In Progress" phase. All team members have been assigned their tasks.</p>
+                                        <div class="flex items-center gap-4 text-xs text-gray-500">
+                                            <span><i class="far fa-clock mr-1"></i>3 hours ago</span>
+                                            <button class="hover:text-purple-600"><i class="far fa-thumbs-up mr-1"></i>5 Likes</button>
+                                            <button class="hover:text-purple-600"><i class="far fa-comment mr-1"></i>2 Replies</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Load More -->
+                        <div class="text-center pt-4">
+                            <button class="text-purple-600 hover:text-purple-700 font-semibold">
+                                Load More Activities <i class="fas fa-chevron-down ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar - Analytics -->
+            <div class="col-span-3">
+                <!-- Activity Chart -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-4">
+                    <h3 class="font-bold text-gray-800 mb-4">Activity Trend</h3>
+                    <div class="chart-container">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top Contributors -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-4">
+                    <h3 class="font-bold text-gray-800 mb-4">Top Contributors</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <img src="https://i.pravatar.cc/40?img=12" alt="User" class="w-10 h-10 rounded-full">
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">Sarah Johnson</div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                    <div class="bg-purple-600 h-2 rounded-full" style="width: 95%"></div>
+                                </div>
+                            </div>
+                            <span class="text-sm font-bold text-gray-800">95</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <img src="https://i.pravatar.cc/40?img=33" alt="User" class="w-10 h-10 rounded-full">
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">Michael Chen</div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: 82%"></div>
+                                </div>
+                            </div>
+                            <span class="text-sm font-bold text-gray-800">82</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <img src="https://i.pravatar.cc/40?img=45" alt="User" class="w-10 h-10 rounded-full">
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">Emily Rodriguez</div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                    <div class="bg-green-600 h-2 rounded-full" style="width: 78%"></div>
+                                </div>
+                            </div>
+                            <span class="text-sm font-bold text-gray-800">78</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Types -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="font-bold text-gray-800 mb-4">Activity Breakdown</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                                <span class="text-sm text-gray-700">Comments</span>
+                            </div>
+                            <span class="text-sm font-bold text-gray-800">42%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-sm text-gray-700">File Updates</span>
+                            </div>
+                            <span class="text-sm font-bold text-gray-800">28%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+                                <span class="text-sm text-gray-700">Mentions</span>
+                            </div>
+                            <span class="text-sm font-bold text-gray-800">18%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                                <span class="text-sm text-gray-700">Task Changes</span>
+                            </div>
+                            <span class="text-sm font-bold text-gray-800">12%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toast notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-check-circle text-2xl"></i>
+                    <span class="font-semibold">${message}</span>
+                </div>
+            `;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Activity Chart
+        const activityCtx = document.getElementById('activityChart').getContext('2d');
+        new Chart(activityCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Activities',
+                    data: [45, 52, 48, 65, 58, 32, 28],
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showToast('Activity feed loaded successfully');
+        });
+    </script>
+</body>
+</html>

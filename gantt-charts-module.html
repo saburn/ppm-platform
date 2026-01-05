@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gantt Charts - Enterprise PPM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .gradient-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .gradient-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .gradient-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+        }
+
+        .gantt-container {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .gantt-header {
+            display: flex;
+            background: rgba(255, 255, 255, 0.15);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .gantt-task-column {
+            min-width: 250px;
+            padding: 1rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+            color: white;
+        }
+
+        .gantt-timeline-column {
+            display: flex;
+            flex: 1;
+            min-width: 1200px;
+        }
+
+        .gantt-date-cell {
+            flex: 1;
+            min-width: 40px;
+            padding: 0.5rem;
+            text-align: center;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.75rem;
+        }
+
+        .gantt-row {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 50px;
+            align-items: center;
+        }
+
+        .gantt-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .gantt-task-name {
+            min-width: 250px;
+            padding: 1rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .gantt-timeline {
+            display: flex;
+            flex: 1;
+            min-width: 1200px;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .gantt-bar {
+            position: absolute;
+            height: 30px;
+            border-radius: 8px;
+            cursor: move;
+            display: flex;
+            align-items: center;
+            padding: 0 0.5rem;
+            font-size: 0.75rem;
+            color: white;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .gantt-bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .gantt-bar.critical {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: 2px solid #ff4757;
+        }
+
+        .gantt-bar.on-track {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .gantt-bar.at-risk {
+            background: linear-gradient(135deg, #ffa502 0%, #ff6348 100%);
+        }
+
+        .gantt-bar.completed {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .gantt-progress {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 8px 0 0 8px;
+            transition: width 0.3s ease;
+        }
+
+        .gantt-milestone {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ffd700;
+            transform: rotate(45deg);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .gantt-dependency {
+            position: absolute;
+            stroke: rgba(255, 255, 255, 0.5);
+            stroke-width: 2;
+            fill: none;
+            pointer-events: none;
+        }
+
+        .today-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ff4757;
+            z-index: 5;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffa502 0%, #ff6348 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-critical {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .badge-high {
+            background: linear-gradient(135deg, #ffa502 0%, #ff6348 100%);
+            color: white;
+        }
+
+        .badge-medium {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .badge-low {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .ai-insight {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .ai-confidence {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem;
+            border-radius: 10px;
+        }
+
+        .view-toggle button {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-toggle button.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .zoom-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .zoom-controls button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .zoom-controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: white;
+            border-bottom-color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="max-w-[1800px] mx-auto">
+        <!-- Header -->
+        <div class="glass-card p-8 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-4xl font-bold text-white mb-2">
+                        <i class="fas fa-chart-gantt mr-3"></i>Gantt Charts & Timeline Management
+                    </h1>
+                    <p class="text-white text-opacity-80">Interactive project scheduling with AI-powered optimization</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="showCreateTaskModal()" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> New Task
+                    </button>
+                    <button onclick="showAIOptimization()" class="btn btn-success">
+                        <i class="fas fa-robot"></i> AI Optimize
+                    </button>
+                    <button onclick="exportGantt()" class="btn btn-secondary">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-4 gap-6">
+                <div class="stat-card glass-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="text-white text-opacity-80">Total Tasks</div>
+                        <i class="fas fa-tasks text-3xl text-white text-opacity-50"></i>
+                    </div>
+                    <div class="text-4xl font-bold text-white mb-2" id="totalTasks">24</div>
+                    <div class="text-sm text-white text-opacity-70">
+                        <span class="text-green-300">↑ 3</span> this week
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="text-white text-opacity-80">Critical Path</div>
+                        <i class="fas fa-route text-3xl text-white text-opacity-50"></i>
+                    </div>
+                    <div class="text-4xl font-bold text-white mb-2" id="criticalPathDays">45 days</div>
+                    <div class="text-sm text-white text-opacity-70">
+                        <span class="text-yellow-300">⚠</span> 3 critical tasks
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="text-white text-opacity-80">On Schedule</div>
+                        <i class="fas fa-clock text-3xl text-white text-opacity-50"></i>
+                    </div>
+                    <div class="text-4xl font-bold text-white mb-2" id="onSchedule">87%</div>
+                    <div class="text-sm text-white text-opacity-70">
+                        <span class="text-green-300">↑ 5%</span> vs last month
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="text-white text-opacity-80">Resource Load</div>
+                        <i class="fas fa-users text-3xl text-white text-opacity-50"></i>
+                    </div>
+                    <div class="text-4xl font-bold text-white mb-2" id="resourceLoad">78%</div>
+                    <div class="text-sm text-white text-opacity-70">
+                        <span class="text-blue-300">→</span> optimal range
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insights -->
+        <div class="glass-card p-8 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">
+                    <i class="fas fa-brain mr-2"></i>AI Schedule Intelligence
+                </h2>
+                <div class="ai-confidence">
+                    <i class="fas fa-robot"></i>
+                    <span>93% Confidence</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-6">
+                <div class="ai-insight">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-exclamation-triangle text-2xl text-yellow-500"></i>
+                        <div>
+                            <h3 class="font-bold text-gray-800 mb-2">Schedule Risk Detected</h3>
+                            <p class="text-gray-700 text-sm mb-3">Task "Backend API Development" is on critical path and at risk of 5-day delay due to resource constraints.</p>
+                            <button onclick="applyAIRecommendation('schedule-risk')" class="text-sm font-semibold text-purple-600 hover:text-purple-800">
+                                Apply AI Fix →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ai-insight">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-lightbulb text-2xl text-green-500"></i>
+                        <div>
+                            <h3 class="font-bold text-gray-800 mb-2">Optimization Opportunity</h3>
+                            <p class="text-gray-700 text-sm mb-3">Parallelize "Testing" and "Documentation" tasks to save 8 days on project timeline.</p>
+                            <button onclick="applyAIRecommendation('optimize')" class="text-sm font-semibold text-purple-600 hover:text-purple-800">
+                                Apply Optimization →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ai-insight">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-users text-2xl text-blue-500"></i>
+                        <div>
+                            <h3 class="font-bold text-gray-800 mb-2">Resource Reallocation</h3>
+                            <p class="text-gray-700 text-sm mb-3">Move 1 developer from "UI Polish" to "Backend API" to prevent critical path delay.</p>
+                            <button onclick="applyAIRecommendation('resource')" class="text-sm font-semibold text-purple-600 hover:text-purple-800">
+                                Reallocate Resources →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="glass-card p-8">
+            <div class="tab-container">
+                <button class="tab active" onclick="switchTab('gantt')">
+                    <i class="fas fa-chart-gantt mr-2"></i>Gantt View
+                </button>
+                <button class="tab" onclick="switchTab('timeline')">
+                    <i class="fas fa-stream mr-2"></i>Timeline View
+                </button>
+                <button class="tab" onclick="switchTab('critical')">
+                    <i class="fas fa-route mr-2"></i>Critical Path
+                </button>
+                <button class="tab" onclick="switchTab('resources')">
+                    <i class="fas fa-users mr-2"></i>Resource View
+                </button>
+                <button class="tab" onclick="switchTab('scenarios')">
+                    <i class="fas fa-flask mr-2"></i>Scenarios
+                </button>
+            </div>
+
+            <!-- Gantt View -->
+            <div id="gantt-tab" class="tab-content active">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="view-toggle">
+                        <button class="active" onclick="changeView('week')">Week</button>
+                        <button onclick="changeView('month')">Month</button>
+                        <button onclick="changeView('quarter')">Quarter</button>
+                        <button onclick="changeView('year')">Year</button>
+                    </div>
+
+                    <div class="zoom-controls">
+                        <button onclick="zoomOut()"><i class="fas fa-minus"></i></button>
+                        <span class="text-white px-4" id="zoomLevel">100%</span>
+                        <button onclick="zoomIn()"><i class="fas fa-plus"></i></button>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="toggleDependencies()" class="btn btn-secondary">
+                            <i class="fas fa-project-diagram"></i> Dependencies
+                        </button>
+                        <button onclick="toggleMilestones()" class="btn btn-secondary">
+                            <i class="fas fa-flag"></i> Milestones
+                        </button>
+                    </div>
+                </div>
+
+                <div class="gantt-container" id="ganttContainer">
+                    <!-- Gantt chart will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Timeline View -->
+            <div id="timeline-tab" class="tab-content">
+                <div class="space-y-6">
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold text-white mb-4">Project Timeline Overview</h3>
+                        <canvas id="timelineChart" height="100"></canvas>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="glass-card p-6">
+                            <h3 class="text-xl font-bold text-white mb-4">Phase Distribution</h3>
+                            <canvas id="phaseChart" height="200"></canvas>
+                        </div>
+                        <div class="glass-card p-6">
+                            <h3 class="text-xl font-bold text-white mb-4">Progress by Phase</h3>
+                            <canvas id="progressChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Critical Path View -->
+            <div id="critical-tab" class="tab-content">
+                <div class="space-y-6">
+                    <div class="glass-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-white">Critical Path Analysis</h3>
+                            <span class="badge badge-critical">3 Critical Tasks</span>
+                        </div>
+                        <p class="text-white text-opacity-80 mb-6">Tasks on the critical path directly impact project completion date. Any delay in these tasks will delay the entire project.</p>
+                        
+                        <div class="space-y-4" id="criticalPathList">
+                            <!-- Critical path tasks will be rendered here -->
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="glass-card p-6">
+                            <h3 class="text-xl font-bold text-white mb-4">Slack Time Analysis</h3>
+                            <canvas id="slackChart" height="200"></canvas>
+                        </div>
+                        <div class="glass-card p-6">
+                            <h3 class="text-xl font-bold text-white mb-4">Risk Impact</h3>
+                            <canvas id="riskImpactChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource View -->
+            <div id="resources-tab" class="tab-content">
+                <div class="space-y-6">
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold text-white mb-4">Resource Allocation Timeline</h3>
+                        <canvas id="resourceTimelineChart" height="100"></canvas>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="glass-card p-6">
+                            <h3 class="text-xl font-bold text-white mb-4">Workload Distribution</h3>
+                            <canvas id="workloadChart" height="200"></canvas>
+                        </div>
+                        <div class="glass-card p-6">
+                            <h3 class="text-xl font-bold text-white mb-4">Resource Utilization</h3>
+                            <canvas id="utilizationChart" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold text-white mb-4">Resource Conflicts</h3>
+                        <div class="space-y-3" id="resourceConflicts">
+                            <!-- Resource conflicts will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scenarios View -->
+            <div id="scenarios-tab" class="tab-content">
+                <div class="space-y-6">
+                    <div class="glass-card p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-white">Scenario Planning</h3>
+                            <button onclick="createScenario()" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> New Scenario
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-6 mb-6">
+                            <div class="glass-card p-6 cursor-pointer hover:bg-white hover:bg-opacity-10" onclick="loadScenario('baseline')">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="font-bold text-white">Baseline</h4>
+                                    <span class="badge badge-low">Active</span>
+                                </div>
+                                <p class="text-white text-opacity-70 text-sm mb-3">Current project schedule</p>
+                                <div class="text-2xl font-bold text-white">90 days</div>
+                            </div>
+
+                            <div class="glass-card p-6 cursor-pointer hover:bg-white hover:bg-opacity-10" onclick="loadScenario('optimistic')">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="font-bold text-white">Optimistic</h4>
+                                    <span class="badge badge-medium">Saved</span>
+                                </div>
+                                <p class="text-white text-opacity-70 text-sm mb-3">Best case scenario</p>
+                                <div class="text-2xl font-bold text-white">75 days</div>
+                            </div>
+
+                            <div class="glass-card p-6 cursor-pointer hover:bg-white hover:bg-opacity-10" onclick="loadScenario('pessimistic')">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="font-bold text-white">Pessimistic</h4>
+                                    <span class="badge badge-high">Saved</span>
+                                </div>
+                                <p class="text-white text-opacity-70 text-sm mb-3">Worst case scenario</p>
+                                <div class="text-2xl font-bold text-white">120 days</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <h4 class="font-bold text-white mb-4">Scenario Comparison</h4>
+                            <canvas id="scenarioChart" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Task Modal -->
+    <div id="createTaskModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Create New Task</h2>
+                <button onclick="closeModal('createTaskModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <form id="createTaskForm" onsubmit="createTask(event)">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Task Name</label>
+                        <input type="text" class="form-control" name="taskName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-control" name="startDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">End Date</label>
+                        <input type="date" class="form-control" name="endDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Duration (days)</label>
+                        <input type="number" class="form-control" name="duration" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Progress (%)</label>
+                        <input type="number" class="form-control" name="progress" min="0" max="100" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select class="form-control" name="priority">
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Assigned To</label>
+                        <select class="form-control" name="assignedTo">
+                            <option>John Smith</option>
+                            <option>Sarah Johnson</option>
+                            <option>Mike Chen</option>
+                            <option>Emily Davis</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Dependencies</label>
+                        <select class="form-control" name="dependencies" multiple>
+                            <option>Requirements Gathering</option>
+                            <option>Design Phase</option>
+                            <option>Development Setup</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeModal('createTaskModal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- AI Optimization Modal -->
+    <div id="aiOptimizationModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-robot mr-2"></i>AI Schedule Optimization
+                </h2>
+                <button onclick="closeModal('aiOptimizationModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="space-y-6">
+                <div class="ai-insight">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-800">Optimization Results</h3>
+                        <div class="ai-confidence">
+                            <i class="fas fa-robot"></i>
+                            <span>95% Confidence</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <div class="text-sm text-gray-600 mb-1">Time Saved</div>
+                            <div class="text-2xl font-bold text-green-600">12 days</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600 mb-1">Cost Reduction</div>
+                            <div class="text-2xl font-bold text-green-600">$45K</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600 mb-1">Risk Reduction</div>
+                            <div class="text-2xl font-bold text-green-600">23%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-4">Recommended Changes</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800 mb-1">Parallelize Testing & Documentation</div>
+                                <div class="text-sm text-gray-600">Save 8 days by running these tasks concurrently</div>
+                            </div>
+                            <span class="text-green-600 font-bold">-8d</span>
+                        </div>
+
+                        <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800 mb-1">Reallocate Resources to Critical Path</div>
+                                <div class="text-sm text-gray-600">Move 2 developers to Backend API Development</div>
+                            </div>
+                            <span class="text-green-600 font-bold">-4d</span>
+                        </div>
+
+                        <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800 mb-1">Reduce UI Polish Duration</div>
+                                <div class="text-sm text-gray-600">Focus on MVP features, defer nice-to-haves</div>
+                            </div>
+                            <span class="text-green-600 font-bold">-3d</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button onclick="closeModal('aiOptimizationModal')" class="btn btn-secondary">Cancel</button>
+                    <button onclick="applyOptimization()" class="btn btn-success">
+                        <i class="fas fa-magic"></i> Apply Optimization
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Demo data
+        const tasks = [
+            {
+                id: 1,
+                name: 'Requirements Gathering',
+                startDate: '2024-01-01',
+                endDate: '2024-01-10',
+                duration: 10,
+                progress: 100,
+                priority: 'high',
+                assignedTo: 'John Smith',
+                status: 'completed',
+                dependencies: [],
+                isCritical: false
+            },
+            {
+                id: 2,
+                name: 'Design Phase',
+                startDate: '2024-01-11',
+                endDate: '2024-01-25',
+                duration: 15,
+                progress: 100,
+                priority: 'high',
+                assignedTo: 'Sarah Johnson',
+                status: 'completed',
+                dependencies: [1],
+                isCritical: true
+            },
+            {
+                id: 3,
+                name: 'Development Setup',
+                startDate: '2024-01-26',
+                endDate: '2024-02-05',
+                duration: 10,
+                progress: 100,
+                priority: 'medium',
+                assignedTo: 'Mike Chen',
+                status: 'completed',
+                dependencies: [2],
+                isCritical: false
+            },
+            {
+                id: 4,
+                name: 'Backend API Development',
+                startDate: '2024-02-06',
+                endDate: '2024-03-10',
+                duration: 33,
+                progress: 65,
+                priority: 'critical',
+                assignedTo: 'Mike Chen',
+                status: 'at-risk',
+                dependencies: [3],
+                isCritical: true
+            },
+            {
+                id: 5,
+                name: 'Frontend Development',
+                startDate: '2024-02-15',
+                endDate: '2024-03-20',
+                duration: 34,
+                progress: 45,
+                priority: 'high',
+                assignedTo: 'Emily Davis',
+                status: 'on-track',
+                dependencies: [3],
+                isCritical: false
+            },
+            {
+                id: 6,
+                name: 'Database Design',
+                startDate: '2024-02-06',
+                endDate: '2024-02-20',
+                duration: 15,
+                progress: 80,
+                priority: 'high',
+                assignedTo: 'John Smith',
+                status: 'on-track',
+                dependencies: [3],
+                isCritical: true
+            },
+            {
+                id: 7,
+                name: 'Integration Testing',
+                startDate: '2024-03-11',
+                endDate: '2024-03-25',
+                duration: 15,
+                progress: 0,
+                priority: 'high',
+                assignedTo: 'Sarah Johnson',
+                status: 'on-track',
+                dependencies: [4, 5],
+                isCritical: true
+            },
+            {
+                id: 8,
+                name: 'UI Polish',
+                startDate: '2024-03-21',
+                endDate: '2024-04-05',
+                duration: 15,
+                progress: 0,
+                priority: 'medium',
+                assignedTo: 'Emily Davis',
+                status: 'on-track',
+                dependencies: [5],
+                isCritical: false
+            },
+            {
+                id: 9,
+                name: 'Documentation',
+                startDate: '2024-03-26',
+                endDate: '2024-04-10',
+                duration: 15,
+                progress: 0,
+                priority: 'medium',
+                assignedTo: 'John Smith',
+                status: 'on-track',
+                dependencies: [7],
+                isCritical: false
+            },
+            {
+                id: 10,
+                name: 'Deployment',
+                startDate: '2024-04-11',
+                endDate: '2024-04-15',
+                duration: 5,
+                progress: 0,
+                priority: 'critical',
+                assignedTo: 'Mike Chen',
+                status: 'on-track',
+                dependencies: [7, 8, 9],
+                isCritical: true
+            }
+        ];
+
+        const milestones = [
+            { name: 'Design Complete', date: '2024-01-25', taskId: 2 },
+            { name: 'Development Complete', date: '2024-03-20', taskId: 5 },
+            { name: 'Testing Complete', date: '2024-03-25', taskId: 7 },
+            { name: 'Launch', date: '2024-04-15', taskId: 10 }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderGanttChart();
+            renderCharts();
+            renderCriticalPath();
+            renderResourceConflicts();
+            updateStats();
+        });
+
+        // Render Gantt Chart
+        function renderGanttChart() {
+            const container = document.getElementById('ganttContainer');
+            
+            // Generate date range
+            const startDate = new Date('2024-01-01');
+            const endDate = new Date('2024-04-30');
+            const dates = [];
+            let currentDate = new Date(startDate);
+            
+            while (currentDate <= endDate) {
+                dates.push(new Date(currentDate));
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            // Create header
+            const header = document.createElement('div');
+            header.className = 'gantt-header';
+            header.innerHTML = `
+                <div class="gantt-task-column">Task Name</div>
+                <div class="gantt-timeline-column">
+                    ${dates.map(date => `
+                        <div class="gantt-date-cell">
+                            ${date.getDate() === 1 ? date.toLocaleDateString('en-US', { month: 'short' }) : date.getDate()}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = '';
+            container.appendChild(header);
+
+            // Create rows
+            tasks.forEach(task => {
+                const row = document.createElement('div');
+                row.className = 'gantt-row';
+                
+                const taskStart = new Date(task.startDate);
+                const taskEnd = new Date(task.endDate);
+                const startOffset = Math.floor((taskStart - startDate) / (1000 * 60 * 60 * 24));
+                const duration = Math.floor((taskEnd - taskStart) / (1000 * 60 * 60 * 24)) + 1;
+                const cellWidth = 40; // matches min-width of gantt-date-cell
+                
+                row.innerHTML = `
+                    <div class="gantt-task-name">
+                        <div class="font-semibold">${task.name}</div>
+                        <div class="text-xs text-white text-opacity-60 mt-1">
+                            ${task.assignedTo} • ${task.duration} days
+                        </div>
+                    </div>
+                    <div class="gantt-timeline">
+                        <div class="gantt-bar ${task.isCritical ? 'critical' : task.status}" 
+                             style="left: ${startOffset * cellWidth}px; width: ${duration * cellWidth}px;"
+                             draggable="true"
+                             ondragstart="dragStart(event, ${task.id})"
+                             ondragend="dragEnd(event)">
+                            <div class="gantt-progress" style="width: ${task.progress}%"></div>
+                            <span>${task.name} (${task.progress}%)</span>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(row);
+            });
+
+            // Add today line
+            const today = new Date();
+            if (today >= startDate && today <= endDate) {
+                const todayOffset = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+                const todayLine = document.createElement('div');
+                todayLine.className = 'today-line';
+                todayLine.style.left = `${250 + todayOffset * cellWidth}px`;
+                container.appendChild(todayLine);
+            }
+        }
+
+        // Render Charts
+        function renderCharts() {
+            // Timeline Chart
+            const timelineCtx = document.getElementById('timelineChart');
+            if (timelineCtx) {
+                new Chart(timelineCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+                        datasets: [{
+                            label: 'Planned',
+                            data: [8, 12, 15, 10],
+                            backgroundColor: 'rgba(102, 126, 234, 0.5)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 2
+                        }, {
+                            label: 'Actual',
+                            data: [8, 11, 13, 0],
+                            backgroundColor: 'rgba(56, 239, 125, 0.5)',
+                            borderColor: 'rgba(56, 239, 125, 1)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                labels: { color: 'white' }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            x: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Phase Chart
+            const phaseCtx = document.getElementById('phaseChart');
+            if (phaseCtx) {
+                new Chart(phaseCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Planning', 'Design', 'Development', 'Testing', 'Deployment'],
+                        datasets: [{
+                            data: [10, 15, 45, 20, 10],
+                            backgroundColor: [
+                                'rgba(102, 126, 234, 0.8)',
+                                'rgba(118, 75, 162, 0.8)',
+                                'rgba(56, 239, 125, 0.8)',
+                                'rgba(255, 165, 2, 0.8)',
+                                'rgba(79, 172, 254, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: 'white' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Progress Chart
+            const progressCtx = document.getElementById('progressChart');
+            if (progressCtx) {
+                new Chart(progressCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Planning', 'Design', 'Development', 'Testing', 'Deployment'],
+                        datasets: [{
+                            label: 'Progress %',
+                            data: [100, 100, 65, 30, 0],
+                            backgroundColor: 'rgba(56, 239, 125, 0.8)',
+                            borderColor: 'rgba(56, 239, 125, 1)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                labels: { color: 'white' }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            x: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Slack Chart
+            const slackCtx = document.getElementById('slackChart');
+            if (slackCtx) {
+                new Chart(slackCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Backend API', 'Frontend', 'Database', 'Testing', 'UI Polish'],
+                        datasets: [{
+                            label: 'Slack Days',
+                            data: [0, 5, 0, 0, 8],
+                            backgroundColor: function(context) {
+                                const value = context.parsed.y;
+                                return value === 0 ? 'rgba(245, 87, 108, 0.8)' : 'rgba(56, 239, 125, 0.8)';
+                            },
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                labels: { color: 'white' }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            x: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Risk Impact Chart
+            const riskCtx = document.getElementById('riskImpactChart');
+            if (riskCtx) {
+                new Chart(riskCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Schedule', 'Budget', 'Quality', 'Resources', 'Scope'],
+                        datasets: [{
+                            label: 'Risk Level',
+                            data: [8, 6, 4, 7, 5],
+                            backgroundColor: 'rgba(245, 87, 108, 0.2)',
+                            borderColor: 'rgba(245, 87, 108, 1)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                labels: { color: 'white' }
+                            }
+                        },
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 10,
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.2)' },
+                                pointLabels: { color: 'white' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Resource Timeline Chart
+            const resourceTimelineCtx = document.getElementById('resourceTimelineChart');
+            if (resourceTimelineCtx) {
+                new Chart(resourceTimelineCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                        datasets: [{
+                            label: 'Developers',
+                            data: [4, 5, 6, 6, 5, 4],
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                            tension: 0.4
+                        }, {
+                            label: 'Designers',
+                            data: [2, 3, 2, 2, 1, 1],
+                            borderColor: 'rgba(118, 75, 162, 1)',
+                            backgroundColor: 'rgba(118, 75, 162, 0.2)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                labels: { color: 'white' }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            x: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Workload Chart
+            const workloadCtx = document.getElementById('workloadChart');
+            if (workloadCtx) {
+                new Chart(workloadCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['John Smith', 'Sarah Johnson', 'Mike Chen', 'Emily Davis'],
+                        datasets: [{
+                            label: 'Hours Allocated',
+                            data: [160, 140, 180, 150],
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                            borderWidth: 2
+                        }, {
+                            label: 'Capacity',
+                            data: [160, 160, 160, 160],
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                labels: { color: 'white' }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            x: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Utilization Chart
+            const utilizationCtx = document.getElementById('utilizationChart');
+            if (utilizationCtx) {
+                new Chart(utilizationCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Utilized', 'Available'],
+                        datasets: [{
+                            data: [78, 22],
+                            backgroundColor: [
+                                'rgba(56, 239, 125, 0.8)',
+                                'rgba(255, 255, 255, 0.2)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: 'white' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Scenario Chart
+            const scenarioCtx = document.getElementById('scenarioChart');
+            if (scenarioCtx) {
+                new Chart(scenarioCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Baseline', 'Optimistic', 'Pessimistic'],
+                        datasets: [{
+                            label: 'Duration (days)',
+                            data: [90, 75, 120],
+                            backgroundColor: [
+                                'rgba(102, 126, 234, 0.8)',
+                                'rgba(56, 239, 125, 0.8)',
+                                'rgba(245, 87, 108, 0.8)'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                labels: { color: 'white' }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            x: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Render Critical Path
+        function renderCriticalPath() {
+            const container = document.getElementById('criticalPathList');
+            if (!container) return;
+
+            const criticalTasks = tasks.filter(t => t.isCritical);
+            
+            container.innerHTML = criticalTasks.map(task => `
+                <div class="glass-card p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-exclamation-triangle text-red-400 text-xl"></i>
+                            <div>
+                                <div class="font-bold text-white">${task.name}</div>
+                                <div class="text-sm text-white text-opacity-70">${task.assignedTo} • ${task.duration} days</div>
+                            </div>
+                        </div>
+                        <span class="badge badge-critical">Critical</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-sm text-white text-opacity-80">
+                        <div><i class="fas fa-calendar mr-2"></i>${task.startDate} to ${task.endDate}</div>
+                        <div><i class="fas fa-chart-line mr-2"></i>${task.progress}% Complete</div>
+                        <div><i class="fas fa-clock mr-2"></i>0 days slack</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Resource Conflicts
+        function renderResourceConflicts() {
+            const container = document.getElementById('resourceConflicts');
+            if (!container) return;
+
+            const conflicts = [
+                {
+                    resource: 'Mike Chen',
+                    tasks: ['Backend API Development', 'Deployment'],
+                    overallocation: '125%',
+                    period: 'Week of Apr 8'
+                },
+                {
+                    resource: 'Emily Davis',
+                    tasks: ['Frontend Development', 'UI Polish'],
+                    overallocation: '110%',
+                    period: 'Week of Mar 18'
+                }
+            ];
+
+            container.innerHTML = conflicts.map(conflict => `
+                <div class="glass-card p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-user-clock text-yellow-400 text-xl"></i>
+                            <div>
+                                <div class="font-bold text-white">${conflict.resource}</div>
+                                <div class="text-sm text-white text-opacity-70">${conflict.period}</div>
+                            </div>
+                        </div>
+                        <span class="badge badge-warning">${conflict.overallocation}</span>
+                    </div>
+                    <div class="text-sm text-white text-opacity-80">
+                        <div class="mb-2">Conflicting tasks:</div>
+                        <div class="flex gap-2">
+                            ${conflict.tasks.map(task => `<span class="badge badge-medium">${task}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update Stats
+        function updateStats() {
+            document.getElementById('totalTasks').textContent = tasks.length;
+            
+            const criticalTasks = tasks.filter(t => t.isCritical);
+            const criticalPathDuration = criticalTasks.reduce((sum, t) => sum + t.duration, 0);
+            document.getElementById('criticalPathDays').textContent = `${criticalPathDuration} days`;
+            
+            const onScheduleTasks = tasks.filter(t => t.status === 'on-track' || t.status === 'completed').length;
+            const onSchedulePercent = Math.round((onScheduleTasks / tasks.length) * 100);
+            document.getElementById('onSchedule').textContent = `${onSchedulePercent}%`;
+            
+            document.getElementById('resourceLoad').textContent = '78%';
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.closest('.tab').classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        // View Controls
+        function changeView(view) {
+            document.querySelectorAll('.view-toggle button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            // In a real app, this would re-render the Gantt with different time scale
+            console.log('Changed view to:', view);
+        }
+
+        let currentZoom = 100;
+        function zoomIn() {
+            currentZoom = Math.min(currentZoom + 25, 200);
+            document.getElementById('zoomLevel').textContent = `${currentZoom}%`;
+            // In a real app, this would adjust the Gantt scale
+        }
+
+        function zoomOut() {
+            currentZoom = Math.max(currentZoom - 25, 50);
+            document.getElementById('zoomLevel').textContent = `${currentZoom}%`;
+            // In a real app, this would adjust the Gantt scale
+        }
+
+        function toggleDependencies() {
+            // In a real app, this would show/hide dependency lines
+            console.log('Toggled dependencies');
+        }
+
+        function toggleMilestones() {
+            // In a real app, this would show/hide milestone markers
+            console.log('Toggled milestones');
+        }
+
+        // Drag and Drop
+        let draggedTaskId = null;
+
+        function dragStart(event, taskId) {
+            draggedTaskId = taskId;
+            event.target.style.opacity = '0.5';
+        }
+
+        function dragEnd(event) {
+            event.target.style.opacity = '1';
+            // In a real app, this would update the task dates based on new position
+            console.log('Task dragged:', draggedTaskId);
+        }
+
+        // Modal Functions
+        function showCreateTaskModal() {
+            document.getElementById('createTaskModal').classList.add('active');
+        }
+
+        function showAIOptimization() {
+            document.getElementById('aiOptimizationModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function createTask(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const newTask = {
+                id: tasks.length + 1,
+                name: formData.get('taskName'),
+                startDate: formData.get('startDate'),
+                endDate: formData.get('endDate'),
+                duration: parseInt(formData.get('duration')),
+                progress: parseInt(formData.get('progress')),
+                priority: formData.get('priority'),
+                assignedTo: formData.get('assignedTo'),
+                status: 'on-track',
+                dependencies: [],
+                isCritical: false
+            };
+            
+            tasks.push(newTask);
+            renderGanttChart();
+            updateStats();
+            closeModal('createTaskModal');
+            event.target.reset();
+            
+            // Show success message
+            alert('Task created successfully!');
+        }
+
+        function applyAIRecommendation(type) {
+            // In a real app, this would apply the AI recommendation
+            alert(`Applied AI recommendation: ${type}`);
+        }
+
+        function applyOptimization() {
+            // In a real app, this would apply all optimization changes
+            alert('Optimization applied successfully! Timeline reduced by 12 days.');
+            closeModal('aiOptimizationModal');
+        }
+
+        function exportGantt() {
+            // In a real app, this would export to PDF/Excel/MS Project
+            alert('Export functionality would generate PDF/Excel/MS Project file');
+        }
+
+        function createScenario() {
+            const name = prompt('Enter scenario name:');
+            if (name) {
+                alert(`Scenario "${name}" created successfully!`);
+            }
+        }
+
+        function loadScenario(scenario) {
+            alert(`Loaded ${scenario} scenario`);
+        }
+    </script>
+</body>
+</html>

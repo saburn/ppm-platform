@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PPM Pro - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .sidebar {
+            background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+        }
+        .chart-container {
+            max-height: 250px;
+            position: relative;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full w-64 text-white z-40">
+        <div class="p-6">
+            <div class="flex items-center mb-8">
+                <i class="fas fa-chart-line text-2xl mr-3"></i>
+                <h1 class="text-xl font-bold">AI PPM Pro</h1>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="dashboard-beautiful.html" class="flex items-center p-3 rounded-lg bg-white bg-opacity-10">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="project-management-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-project-diagram mr-3"></i>
+                    Projects
+                </a>
+                <a href="gantt-chart-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-chart-gantt mr-3"></i>
+                    Gantt Charts
+                </a>
+                <a href="resource-allocation-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-users-cog mr-3"></i>
+                    Resources
+                </a>
+                <a href="raid-management-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-shield-alt mr-3"></i>
+                    RAID
+                </a>
+                <a href="automated-reports-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-file-alt mr-3"></i>
+                    Reports
+                </a>
+            </nav>
+        </div>
+        
+        <div class="absolute bottom-6 left-6 right-6">
+            <button onclick="logout()" class="w-full flex items-center justify-center p-3 rounded-lg bg-red-600 hover:bg-red-700 transition">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-64">
+        <!-- Header -->
+        <header class="bg-white shadow-sm px-8 py-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
+                    <p class="text-gray-600">Welcome back! Here's your project portfolio overview.</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <div class="flex items-center">
+                        <img src="https://picsum.photos/seed/avatar1/40/40.jpg" alt="User" class="w-10 h-10 rounded-full mr-3">
+                        <div>
+                            <div class="font-semibold">Demo User</div>
+                            <div class="text-sm text-gray-600">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="p-8">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="card-hover bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-blue-100 rounded-lg">
+                            <i class="fas fa-folder-open text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm text-green-600 font-semibold">+12%</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">24</h3>
+                    <p class="text-gray-600">Active Projects</p>
+                </div>
+
+                <div class="card-hover bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-green-100 rounded-lg">
+                            <i class="fas fa-users text-green-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm text-green-600 font-semibold">+8%</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">142</h3>
+                    <p class="text-gray-600">Team Members</p>
+                </div>
+
+                <div class="card-hover bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-purple-100 rounded-lg">
+                            <i class="fas fa-tasks text-purple-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm text-red-600 font-semibold">-5%</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">68%</h3>
+                    <p class="text-gray-600">Completion Rate</p>
+                </div>
+
+                <div class="card-hover bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-red-100 rounded-lg">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm text-green-600 font-semibold">-18%</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">7</h3>
+                    <p class="text-gray-600">At Risk Items</p>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">Project Performance</h3>
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">Resource Utilization</h3>
+                    <div class="chart-container">
+                        <canvas id="resourceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-6 rounded-xl text-white mb-8">
+                <h3 class="text-xl font-bold mb-4">AI Insights</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-brain mr-2"></i>
+                            <span class="font-semibold">Predictive Analysis</span>
+                        </div>
+                        <p class="text-sm opacity-90">3 projects at risk of delay. Recommend resource reallocation.</p>
+                    </div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-chart-line mr-2"></i>
+                            <span class="font-semibold">Optimization Opportunity</span>
+                        </div>
+                        <p class="text-sm opacity-90">$45K savings identified through better resource allocation.</p>
+                    </div>
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-shield-alt mr-2"></i>
+                            <span class="font-semibold">Risk Alert</span>
+                        </div>
+                        <p class="text-sm opacity-90">High-risk dependencies detected in Project Alpha.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Projects -->
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold mb-4">Recent Projects</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left border-b">
+                                <th class="pb-3">Project Name</th>
+                                <th class="pb-3">Status</th>
+                                <th class="pb-3">Progress</th>
+                                <th class="pb-3">Due Date</th>
+                                <th class="pb-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="py-3">Website Redesign</td>
+                                <td class="py-3">
+                                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">On Track</span>
+                                </td>
+                                <td class="py-3">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-600 h-2 rounded-full" style="width: 75%"></div>
+                                    </div>
+                                </td>
+                                <td class="py-3">Dec 31, 2024</td>
+                                <td class="py-3">
+                                    <button class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-3">Mobile App Launch</td>
+                                <td class="py-3">
+                                    <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">At Risk</span>
+                                </td>
+                                <td class="py-3">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-yellow-600 h-2 rounded-full" style="width: 45%"></div>
+                                    </div>
+                                </td>
+                                <td class="py-3">Jan 15, 2025</td>
+                                <td class="py-3">
+                                    <button class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="py-3">Data Migration</td>
+                                <td class="py-3">
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">In Progress</span>
+                                </td>
+                                <td class="py-3">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 60%"></div>
+                                    </div>
+                                </td>
+                                <td class="py-3">Feb 28, 2025</td>
+                                <td class="py-3">
+                                    <button class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Performance Chart
+        const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+        new Chart(performanceCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'On-Time Completion',
+                    data: [92, 88, 94, 91, 89, 93],
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Budget Performance',
+                    data: [95, 92, 88, 94, 96, 91],
+                    borderColor: 'rgb(16, 185, 129)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // Resource Chart
+        const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+        new Chart(resourceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Development', 'Design', 'Marketing', 'Management', 'Other'],
+                datasets: [{
+                    data: [35, 20, 15, 25, 5],
+                    backgroundColor: [
+                        'rgb(59, 130, 246)',
+                        'rgb(16, 185, 129)',
+                        'rgb(251, 146, 60)',
+                        'rgb(147, 51, 234)',
+                        'rgb(156, 163, 175)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // Enhanced AI Intelligence System
+        let aiModel = {
+            predictiveAnalytics: true,
+            riskAnalysis: true,
+            resourceOptimization: true,
+            timelineForecasting: true,
+            successScoring: true
+        };
+
+        let projectData = {
+            projects: [],
+            performance: [],
+            risks: [],
+            resources: [],
+            predictions: {}
+        };
+
+        // Initialize Enhanced AI Analytics
+        function initializeEnhancedAI() {
+            loadProjectData();
+            runPredictiveAnalytics();
+            generateAdvancedInsights();
+            startRealTimeMonitoring();
+        }
+
+        function loadProjectData() {
+            // Simulate loading comprehensive project data
+            projectData.projects = [
+                { id: 1, name: 'Website Redesign', progress: 75, budget: 150000, spent: 112500, team: 8, risks: 3, deadline: '2024-12-31', status: 'on_track' },
+                { id: 2, name: 'Mobile App Launch', progress: 45, budget: 200000, spent: 95000, team: 12, risks: 7, deadline: '2025-01-15', status: 'at_risk' },
+                { id: 3, name: 'Data Migration', progress: 60, budget: 180000, spent: 108000, team: 6, risks: 2, deadline: '2025-02-28', status: 'on_track' },
+                { id: 4, name: 'API Integration', progress: 30, budget: 120000, spent: 48000, team: 5, risks: 4, deadline: '2025-01-31', status: 'delayed' },
+                { id: 5, name: 'Security Enhancement', progress: 85, budget: 90000, spent: 81000, team: 4, risks: 1, deadline: '2024-12-15', status: 'on_track' },
+                { id: 6, name: 'Cloud Migration', progress: 55, budget: 250000, spent: 162500, team: 10, risks: 5, deadline: '2025-03-15', status: 'on_track' }
+            ];
+
+            projectData.performance = [
+                { month: 'Jan', onTime: 92, budget: 95, quality: 88, satisfaction: 90 },
+                { month: 'Feb', onTime: 88, budget: 92, quality: 91, satisfaction: 87 },
+                { month: 'Mar', onTime: 94, budget: 88, quality: 93, satisfaction: 92 },
+                { month: 'Apr', onTime: 91, budget: 94, quality: 89, satisfaction: 89 },
+                { month: 'May', onTime: 89, budget: 96, quality: 92, satisfaction: 91 },
+                { month: 'Jun', onTime: 93, budget: 91, quality: 94, satisfaction: 93 }
+            ];
+        }
+
+        function runPredictiveAnalytics() {
+            // Advanced predictive models for project success
+            projectData.predictions = {};
+            
+            projectData.projects.forEach(project => {
+                const prediction = calculateProjectSuccessProbability(project);
+                const riskForecast = predictRiskEscalation(project);
+                const budgetForecast = predictBudgetVariance(project);
+                const timelineForecast = predictTimelineVariance(project);
+                
+                projectData.predictions[project.id] = {
+                    successProbability: prediction,
+                    riskForecast: riskForecast,
+                    budgetForecast: budgetForecast,
+                    timelineForecast: timelineForecast,
+                    recommendations: generateAIRecommendations(project, prediction, riskForecast),
+                    confidence: calculateConfidenceScore(project)
+                };
+            });
+            
+            console.log('Predictive analytics completed:', projectData.predictions);
+        }
+
+        function calculateProjectSuccessProbability(project) {
+            // Multi-factor success prediction model
+            const factors = {
+                progressHealth: project.progress > 50 ? 0.3 : 0.1,
+                budgetHealth: project.spent / project.budget < 0.8 ? 0.25 : 0.05,
+                riskLevel: project.risks < 3 ? 0.2 : -0.1,
+                teamSize: project.team >= 6 && project.team <= 12 ? 0.15 : 0.05,
+                timelineBuffer: calculateTimelineBuffer(project.deadline) > 14 ? 0.1 : 0.0
+            };
+            
+            const baseScore = 0.5;
+            const totalScore = baseScore + Object.values(factors).reduce((a, b) => a + b, 0);
+            
+            return Math.min(0.95, Math.max(0.15, totalScore));
+        }
+
+        function calculateTimelineBuffer(deadline) {
+            const now = new Date();
+            const deadlineDate = new Date(deadline);
+            const bufferDays = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
+            return bufferDays;
+        }
+
+        function predictRiskEscalation(project) {
+            // Risk escalation prediction using historical patterns
+            const currentRisks = project.risks;
+            const teamStress = project.team > 8 ? 1.5 : 1.0;
+            const budgetPressure = project.spent / project.budget > 0.7 ? 1.3 : 1.0;
+            const timelinePressure = calculateTimelineBuffer(project.deadline) < 30 ? 1.4 : 1.0;
+            
+            const escalationProbability = (currentRisks * teamStress * budgetPressure * timelinePressure) / 100;
+            
+            return {
+                probability: Math.min(0.9, escalationProbability),
+                expectedIncrease: Math.round(currentRisks * escalationProbability),
+                timeToEscalation: Math.round(30 / (1 + escalationProbability))
+            };
+        }
+
+        function predictBudgetVariance(project) {
+            // Budget variance prediction using spending patterns
+            const spendRate = project.spent / (project.progress / 100);
+            const projectedSpend = spendRate * 100;
+            const variance = (projectedSpend - project.budget) / project.budget;
+            
+            return {
+                projectedOverrun: Math.max(0, variance * 100),
+                confidence: project.progress > 50 ? 'high' : 'medium',
+                riskFactors: identifyBudgetRiskFactors(project)
+            };
+        }
+
+        function predictTimelineVariance(project) {
+            // Timeline variance prediction
+            const progressRate = project.progress / getProjectDurationInDays(project);
+            const requiredRate = 100 / calculateTimelineBuffer(project.deadline);
+            const variance = (requiredRate - progressRate) / requiredRate;
+            
+            return {
+                delayProbability: Math.max(0, variance),
+                expectedDelay: Math.max(0, variance * calculateTimelineBuffer(project.deadline)),
+                criticalPath: identifyCriticalPathRisks(project)
+            };
+        }
+
+        function getProjectDurationInDays(project) {
+            // Calculate total project duration in days
+            const start = new Date('2024-09-01'); // Assumed start date
+            const end = new Date(project.deadline);
+            return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        }
+
+        function identifyBudgetRiskFactors(project) {
+            const factors = [];
+            
+            if (project.spent / project.budget > 0.7 && project.progress < 50) {
+                factors.push('High spend rate with low progress');
+            }
+            if (project.risks > 5) {
+                factors.push('Multiple risks increase uncertainty');
+            }
+            if (project.team > 10) {
+                factors.push('Large team size increases overhead');
+            }
+            
+            return factors;
+        }
+
+        function identifyCriticalPathRisks(project) {
+            const risks = [];
+            
+            if (project.risks > 3) {
+                risks.push('Risk overload may delay critical path');
+            }
+            if (project.team < 6) {
+                risks.push('Small team may cause bottlenecks');
+            }
+            if (calculateTimelineBuffer(project.deadline) < 30) {
+                risks.push('Tight timeline leaves no room for delays');
+            }
+            
+            return risks;
+        }
+
+        function calculateConfidenceScore(project) {
+            // Calculate AI confidence in predictions
+            const dataCompleteness = project.progress > 30 ? 0.3 : 0.1;
+            const historicalData = 0.25; // Simulated historical accuracy
+            const projectComplexity = project.budget > 150000 ? 0.2 : 0.3;
+            const teamStability = project.team > 5 ? 0.15 : 0.1;
+            
+            return Math.min(0.98, dataCompleteness + historicalData + projectComplexity + teamStability);
+        }
+
+        function generateAIRecommendations(project, successProb, riskForecast) {
+            const recommendations = [];
+            
+            if (successProb < 0.6) {
+                recommendations.push({
+                    priority: 'critical',
+                    action: 'immediate_intervention',
+                    description: 'Project success probability below 60%. Executive review required.',
+                    impact: 'high',
+                    effort: 'medium'
+                });
+            }
+            
+            if (riskForecast.probability > 0.7) {
+                recommendations.push({
+                    priority: 'high',
+                    action: 'risk_mitigation',
+                    description: `High risk of escalation (${Math.round(riskForecast.probability * 100)}%). Implement mitigation strategies.`,
+                    impact: 'high',
+                    effort: 'low'
+                });
+            }
+            
+            if (project.spent / project.budget > 0.8 && project.progress < 70) {
+                recommendations.push({
+                    priority: 'medium',
+                    action: 'budget_realignment',
+                    description: 'Budget burn rate exceeds progress. Consider scope adjustment or additional funding.',
+                    impact: 'medium',
+                    effort: 'high'
+                });
+            }
+            
+            return recommendations;
+        }
+
+        function generateAdvancedInsights() {
+            const insights = analyzePortfolioTrends();
+            updateAIInsightsDisplay(insights);
+        }
+
+        function analyzePortfolioTrends() {
+            const insights = {
+                portfolioHealth: calculatePortfolioHealth(),
+                resourceOptimization: identifyResourceOpportunities(),
+                riskPatterns: analyzeRiskPatterns(),
+                performanceTrends: analyzePerformanceTrends(),
+                strategicRecommendations: generateStrategicRecommendations()
+            };
+            
+            return insights;
+        }
+
+        function calculatePortfolioHealth() {
+            const activeProjects = projectData.projects.filter(p => p.status !== 'completed');
+            const avgSuccessProb = activeProjects.reduce((sum, p) => {
+                return sum + (projectData.predictions[p.id]?.successProbability || 0.5);
+            }, 0) / activeProjects.length;
+            
+            const riskLevel = activeProjects.reduce((sum, p) => sum + p.risks, 0) / activeProjects.length;
+            const budgetUtilization = activeProjects.reduce((sum, p) => sum + (p.spent / p.budget), 0) / activeProjects.length;
+            
+            return {
+                overall: avgSuccessProb,
+                riskLevel: riskLevel,
+                budgetHealth: 1 - Math.abs(budgetUtilization - 0.7),
+                trend: calculateHealthTrend()
+            };
+        }
+
+        function identifyResourceOpportunities() {
+            // AI-powered resource optimization analysis
+            const opportunities = [
+                {
+                    type: 'cross_training',
+                    description: 'Identify 3 team members for cross-training to reduce resource bottlenecks',
+                    potentialSavings: 25000,
+                    implementationTime: '4 weeks'
+                },
+                {
+                    type: 'workload_balancing',
+                    description: 'Redistribute workload from overloaded teams to underutilized resources',
+                    potentialSavings: 15000,
+                    implementationTime: '2 weeks'
+                },
+                {
+                    type: 'skill_optimization',
+                    description: 'Leverage existing skills for upcoming projects instead of external hiring',
+                    potentialSavings: 45000,
+                    implementationTime: '6 weeks'
+                }
+            ];
+            
+            return opportunities;
+        }
+
+        function analyzeRiskPatterns() {
+            const patterns = {
+                commonRisks: ['Resource availability', 'Timeline pressure', 'Budget constraints'],
+                earlyWarningIndicators: ['Team workload > 80%', 'Spend rate > progress rate', 'Risk count increase'],
+                mitigationEffectiveness: {
+                    'Resource planning': 0.85,
+                    'Timeline buffering': 0.72,
+                    'Budget contingencies': 0.68
+                }
+            };
+            
+            return patterns;
+        }
+
+        function analyzePerformanceTrends() {
+            const latest = projectData.performance[projectData.performance.length - 1];
+            const previous = projectData.performance[projectData.performance.length - 2];
+            
+            return {
+                onTimeTrend: latest.onTime - previous.onTime,
+                budgetTrend: latest.budget - previous.budget,
+                qualityTrend: latest.quality - previous.quality,
+                satisfactionTrend: latest.satisfaction - previous.satisfaction,
+                overallTrend: ((latest.onTime + latest.budget + latest.quality + latest.satisfaction) - 
+                               (previous.onTime + previous.budget + previous.quality + previous.satisfaction)) / 4
+            };
+        }
+
+        function generateStrategicRecommendations() {
+            return [
+                {
+                    category: 'portfolio_optimization',
+                    recommendation: 'Consolidate similar projects to reduce overhead and improve focus',
+                    expectedImpact: 15,
+                    timeframe: '3 months'
+                },
+                {
+                    category: 'resource_development',
+                    recommendation: 'Invest in AI skills training to improve project efficiency',
+                    expectedImpact: 22,
+                    timeframe: '6 months'
+                },
+                {
+                    category: 'risk_management',
+                    recommendation: 'Implement predictive risk monitoring for early intervention',
+                    expectedImpact: 18,
+                    timeframe: '2 months'
+                }
+            ];
+        }
+
+        function calculateHealthTrend() {
+            // Calculate portfolio health trend over time
+            const recent = projectData.performance.slice(-3);
+            const scores = recent.map(p => (p.onTime + p.budget + p.quality + p.satisfaction) / 4);
+            
+            if (scores.length < 2) return 'stable';
+            
+            const trend = scores[scores.length - 1] - scores[0];
+            
+            if (trend > 2) return 'improving';
+            if (trend < -2) return 'declining';
+            return 'stable';
+        }
+
+        function updateAIInsightsDisplay(insights) {
+            // Update the AI insights section with enhanced analytics
+            const aiInsightsSection = document.querySelector('.bg-gradient-to-r.from-purple-600.to-blue-600');
+            
+            if (aiInsightsSection) {
+                const insightCards = aiInsightsSection.querySelectorAll('.text-sm');
+                
+                // Update with enhanced AI intelligence
+                if (insightCards[0]) {
+                    insightCards[0].textContent = `${insights.portfolioHealth.riskLevel} risks identified with ${Math.round(insights.portfolioHealth.overall * 100)}% portfolio success probability. Top recommendations: ${insights.strategicRecommendations[0].recommendation}`;
+                }
+                
+                if (insightCards[1]) {
+                    const topOpportunity = insights.resourceOptimization.reduce((max, opp) => 
+                        opp.potentialSavings > max.potentialSavings ? opp : max, insights.resourceOptimization[0]);
+                    insightCards[1].textContent = `$${topOpportunity.potentialSavings.toLocaleString()} savings identified through ${topOpportunity.type.replace('_', ' ')}. Implementation: ${topOpportunity.implementationTime}`;
+                }
+                
+                if (insightCards[2]) {
+                    const highRiskProjects = projectData.projects.filter(p => 
+                        (projectData.predictions[p.id]?.successProbability || 0.5) < 0.6);
+                    insightCards[2].textContent = `${highRiskProjects.length} projects requiring executive intervention. Early warning indicators: ${insights.riskPatterns.earlyWarningIndicators.slice(0, 2).join(', ')}`;
+                }
+            }
+        }
+
+        function startRealTimeMonitoring() {
+            // Start real-time AI monitoring
+            setInterval(() => {
+                updatePredictions();
+                checkForAnomalies();
+                generateAlerts();
+            }, 30000); // Update every 30 seconds
+        }
+
+        function updatePredictions() {
+            // Continuously update predictions with new data
+            projectData.projects.forEach(project => {
+                // Simulate new data arrival and prediction updates
+                const currentPrediction = projectData.predictions[project.id];
+                
+                if (currentPrediction) {
+                    // Adjust predictions based on new information
+                    const adjustment = (Math.random() - 0.5) * 0.02; // Small random adjustment
+                    currentPrediction.successProbability = Math.min(0.95, Math.max(0.15, 
+                        currentPrediction.successProbability + adjustment));
+                    currentPrediction.confidence = Math.min(0.98, currentPrediction.confidence + 0.01);
+                }
+            });
+        }
+
+        function checkForAnomalies() {
+            // AI anomaly detection
+            projectData.projects.forEach(project => {
+                const prediction = projectData.predictions[project.id];
+                
+                if (prediction) {
+                    // Check for unusual patterns
+                    if (prediction.successProbability < 0.3) {
+                        triggerAnomalyAlert(project, 'critical_success_probability');
+                    }
+                    
+                    if (prediction.riskForecast.probability > 0.8) {
+                        triggerAnomalyAlert(project, 'high_risk_escalation');
+                    }
+                    
+                    if (prediction.budgetForecast.projectedOverrun > 20) {
+                        triggerAnomalyAlert(project, 'excessive_budget_overrun');
+                    }
+                }
+            });
+        }
+
+        function triggerAnomalyAlert(project, anomalyType) {
+            console.log(`ANOMALY DETECTED: ${project.name} - ${anomalyType}`);
+            
+            // Create notification for anomaly
+            const alert = {
+                type: 'anomaly',
+                project: project.name,
+                anomaly: anomalyType,
+                severity: anomalyType.includes('critical') ? 'high' : 'medium',
+                timestamp: new Date(),
+                recommendations: projectData.predictions[project.id]?.recommendations || []
+            };
+            
+            // In real implementation, this would trigger notifications
+            console.log('Anomaly alert created:', alert);
+        }
+
+        function generateAlerts() {
+            // Generate proactive alerts based on AI insights
+            const alerts = [];
+            
+            projectData.projects.forEach(project => {
+                const prediction = projectData.predictions[project.id];
+                
+                if (prediction) {
+                    if (prediction.successProbability < 0.5 && Math.random() > 0.8) {
+                        alerts.push({
+                            type: 'success_probability_warning',
+                            project: project.name,
+                            probability: Math.round(prediction.successProbability * 100),
+                            urgency: 'high'
+                        });
+                    }
+                    
+                    if (prediction.timelineForecast.delayProbability > 0.6 && Math.random() > 0.7) {
+                        alerts.push({
+                            type: 'timeline_delay_warning',
+                            project: project.name,
+                            expectedDelay: Math.round(prediction.timelineForecast.expectedDelay),
+                            urgency: 'medium'
+                        });
+                    }
+                }
+            });
+            
+            if (alerts.length > 0) {
+                console.log('AI-generated alerts:', alerts);
+            }
+        }
+
+        // Enhanced dashboard interactions
+        function enhanceDashboardInteractions() {
+            // Add click handlers for deeper analytics
+            document.querySelectorAll('.card-hover').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (!e.target.closest('button')) {
+                        showDetailedAnalytics(this);
+                    }
+                });
+            });
+        }
+
+        function showDetailedAnalytics(cardElement) {
+            // Show detailed AI analytics for clicked element
+            const title = cardElement.querySelector('h3')?.textContent || 'Analytics';
+            
+            console.log(`Showing detailed AI analytics for: ${title}`);
+            
+            // In real implementation, this would open a modal with detailed analysis
+            alert(`Detailed AI Analytics for ${title}:\n\n• Predictive trends analysis\n• Risk factor breakdown\n• Optimization opportunities\n• Historical performance comparison\n• AI confidence intervals`);
+        }
+
+        // Initialize enhanced AI system on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                initializeEnhancedAI();
+                enhanceDashboardInteractions();
+                console.log('Enhanced AI Intelligence System initialized');
+            }, 1000);
+        });
+
+        // Real-time Collaboration System
+        let collaborationEngine = {
+            activeUsers: [],
+            notifications: [],
+            activityFeed: [],
+            realTimeUpdates: true,
+            presenceSystem: true
+        };
+
+        function initializeRealTimeCollaboration() {
+            setupPresenceSystem();
+            initializeNotificationEngine();
+            startActivityFeed();
+            setupCollaborativeEditing();
+            initializeLiveUpdates();
+        }
+
+        function setupPresenceSystem() {
+            // Initialize user presence tracking
+            collaborationEngine.activeUsers = [
+                {
+                    id: 1,
+                    name: 'Demo User',
+                    role: 'Administrator',
+                    status: 'active',
+                    lastSeen: new Date(),
+                    currentModule: 'dashboard',
+                    avatar: 'https://picsum.photos/seed/demo/40/40.jpg',
+                    color: '#3b82f6'
+                },
+                {
+                    id: 2,
+                    name: 'Sarah Chen',
+                    role: 'Project Manager',
+                    status: 'active',
+                    lastSeen: new Date(),
+                    currentModule: 'gantt',
+                    avatar: 'https://picsum.photos/seed/sarah/40/40.jpg',
+                    color: '#10b981'
+                },
+                {
+                    id: 3,
+                    name: 'Mike Johnson',
+                    role: 'Developer',
+                    status: 'away',
+                    lastSeen: new Date(Date.now() - 15 * 60000),
+                    currentModule: 'resources',
+                    avatar: 'https://picsum.photos/seed/mike/40/40.jpg',
+                    color: '#f59e0b'
+                }
+            ];
+            
+            // Display active users
+            displayActiveUsers();
+            
+            // Update presence every 30 seconds
+            setInterval(updateUserPresence, 30000);
+            
+            // Simulate other users' activities
+            simulateUserActivities();
+        }
+
+        function displayActiveUsers() {
+            // Create presence indicator in dashboard
+            const presenceContainer = createPresenceIndicator();
+            
+            if (presenceContainer && !document.contains(presenceContainer)) {
+                document.body.appendChild(presenceContainer);
+            }
+        }
+
+        function createPresenceIndicator() {
+            const existing = document.getElementById('presence-indicator');
+            if (existing) {
+                document.body.removeChild(existing);
+            }
+            
+            const container = document.createElement('div');
+            container.id = 'presence-indicator';
+            container.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: white;
+                border-radius: 12px;
+                padding: 12px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                z-index: 1000;
+                min-width: 280px;
+                max-width: 320px;
+            `;
+            
+            const activeUsersCount = collaborationEngine.activeUsers.filter(u => u.status === 'active').length;
+            
+            container.innerHTML = `
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-semibold text-sm">Active Now</h4>
+                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">${activeUsersCount} online</span>
+                </div>
+                <div class="space-y-2" id="active-users-list">
+                    ${collaborationEngine.activeUsers.map(user => createUserPresenceHTML(user)).join('')}
+                </div>
+                <div class="mt-3 pt-3 border-t">
+                    <button onclick="showCollaborationPanel()" class="text-blue-600 text-sm hover:text-blue-800">
+                        <i class="fas fa-users mr-1"></i>View All Activities
+                    </button>
+                </div>
+            `;
+            
+            return container;
+        }
+
+        function createUserPresenceHTML(user) {
+            const statusColor = user.status === 'active' ? 'bg-green-500' : 'bg-yellow-500';
+            const statusText = user.status === 'active' ? 'Active' : 'Away';
+            
+            return `
+                <div class="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer" onclick="startCollaboration('${user.id}')">
+                    <div class="relative">
+                        <img src="${user.avatar}" alt="${user.name}" class="w-8 h-8 rounded-full">
+                        <div class="absolute bottom-0 right-0 w-3 h-3 ${statusColor} rounded-full border-2 border-white"></div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-medium truncate">${user.name}</p>
+                            <span class="text-xs text-gray-500">${statusText}</span>
+                        </div>
+                        <p class="text-xs text-gray-600">${user.currentModule}</p>
+                    </div>
+                    <div class="w-2 h-2 rounded-full" style="background-color: ${user.color}"></div>
+                </div>
+            `;
+        }
+
+        function updateUserPresence() {
+            // Update user presence status
+            collaborationEngine.activeUsers.forEach(user => {
+                // Randomly update status for simulation
+                if (Math.random() > 0.7) {
+                    user.status = user.status === 'active' ? 'away' : 'active';
+                    user.lastSeen = new Date();
+                }
+            });
+            
+            displayActiveUsers();
+        }
+
+        function simulateUserActivities() {
+            // Simulate real user activities
+            setInterval(() => {
+                const activities = [
+                    { user: 2, action: 'updated', target: 'Website Redesign timeline', module: 'gantt' },
+                    { user: 3, action: 'commented on', target: 'Resource allocation request', module: 'resources' },
+                    { user: 2, action: 'approved', target: 'Budget increase proposal', module: 'reports' },
+                    { user: 1, action: 'created', target: 'New risk mitigation task', module: 'raid' },
+                    { user: 3, action: 'completed', target: 'API integration milestone', module: 'gantt' }
+                ];
+                
+                const activity = activities[Math.floor(Math.random() * activities.length)];
+                const user = collaborationEngine.activeUsers.find(u => u.id === activity.user);
+                
+                if (user) {
+                    addActivityToFeed({
+                        user: user.name,
+                        action: activity.action,
+                        target: activity.target,
+                        module: activity.module,
+                        timestamp: new Date(),
+                        avatar: user.avatar,
+                        userId: user.id
+                    });
+                    
+                    // Update user's current module
+                    user.currentModule = activity.module;
+                    
+                    // Show real-time notification
+                    showRealTimeNotification(user, activity);
+                }
+            }, 15000); // Every 15 seconds
+        }
+
+        function addActivityToFeed(activity) {
+            collaborationEngine.activityFeed.unshift(activity);
+            
+            // Keep only last 50 activities
+            if (collaborationEngine.activityFeed.length > 50) {
+                collaborationEngine.activityFeed = collaborationEngine.activityFeed.slice(0, 50);
+            }
+            
+            console.log('Activity added to feed:', activity);
+        }
+
+        function showRealTimeNotification(user, activity) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 right-4 bg-white rounded-lg shadow-lg p-4 z-50 min-w-80 transform translate-x-full transition-transform duration-300';
+            
+            notification.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <img src="${user.avatar}" alt="${user.name}" class="w-10 h-10 rounded-full">
+                    <div class="flex-1">
+                        <p class="font-semibold text-sm">${user.name}</p>
+                        <p class="text-sm text-gray-600">${activity.action} <span class="font-medium">${activity.target}</span></p>
+                        <p class="text-xs text-gray-500 mt-1">just now in ${activity.module}</p>
+                    </div>
+                    <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (document.body.contains(notification)) {
+                            document.body.removeChild(notification);
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+
+        function initializeNotificationEngine() {
+            // Initialize comprehensive notification system
+            collaborationEngine.notifications = {
+                unread: [],
+                settings: {
+                    realTime: true,
+                    email: false,
+                    desktop: true,
+                    mobile: false
+                }
+            };
+            
+            // Create notification center
+            createNotificationCenter();
+            
+            // Check for new notifications every minute
+            setInterval(checkForNotifications, 60000);
+        }
+
+        function createNotificationCenter() {
+            const notificationButton = document.createElement('button');
+            notificationButton.className = 'fixed top-24 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition z-40';
+            notificationButton.innerHTML = `
+                <i class="fas fa-bell"></i>
+                <span id="notification-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
+            `;
+            
+            notificationButton.onclick = showNotificationCenter;
+            
+            if (!document.contains(notificationButton)) {
+                document.body.appendChild(notificationButton);
+            }
+        }
+
+        function showNotificationCenter() {
+            const existing = document.getElementById('notification-center');
+            if (existing) {
+                document.body.removeChild(existing);
+                return;
+            }
+            
+            const center = document.createElement('div');
+            center.id = 'notification-center';
+            center.className = 'fixed top-24 right-20 bg-white rounded-lg shadow-xl z-50 w-96 max-h-96 overflow-hidden';
+            
+            center.innerHTML = `
+                <div class="p-4 border-b bg-gray-50">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-semibold">Notifications</h3>
+                        <button onclick="this.closest('#notification-center').remove()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="max-h-80 overflow-y-auto" id="notification-list">
+                    ${generateNotificationHTML()}
+                </div>
+                <div class="p-3 border-t bg-gray-50">
+                    <button onclick="markAllNotificationsRead()" class="text-sm text-blue-600 hover:text-blue-800">Mark all as read</button>
+                </div>
+            `;
+            
+            document.body.appendChild(center);
+        }
+
+        function generateNotificationHTML() {
+            const notifications = collaborationEngine.notifications.unread;
+            
+            if (notifications.length === 0) {
+                return `
+                    <div class="p-8 text-center text-gray-500">
+                        <i class="fas fa-bell-slash text-3xl mb-2"></i>
+                        <p>No new notifications</p>
+                    </div>
+                `;
+            }
+            
+            return notifications.map(notification => `
+                <div class="p-4 border-b hover:bg-gray-50 cursor-pointer" onclick="openNotification('${notification.id}')">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+                        <div class="flex-1">
+                            <p class="font-medium text-sm">${notification.title}</p>
+                            <p class="text-sm text-gray-600">${notification.message}</p>
+                            <p class="text-xs text-gray-500 mt-1">${formatNotificationTime(notification.timestamp)}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addNotification(type, title, message, priority = 'normal') {
+            const notification = {
+                id: 'notif_' + Date.now(),
+                type: type,
+                title: title,
+                message: message,
+                priority: priority,
+                timestamp: new Date(),
+                read: false
+            };
+            
+            collaborationEngine.notifications.unread.push(notification);
+            updateNotificationBadge();
+            
+            // Show real-time toast if enabled
+            if (collaborationEngine.notifications.settings.realTime) {
+                showToastNotification(notification);
+            }
+        }
+
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notification-badge');
+            if (badge) {
+                const count = collaborationEngine.notifications.unread.length;
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.style.display = count > 0 ? 'flex' : 'none';
+            }
+        }
+
+        function showToastNotification(notification) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg p-4 z-50 min-w-80';
+            
+            const priorityColors = {
+                'high': 'border-l-4 border-red-500',
+                'normal': 'border-l-4 border-blue-500',
+                'low': 'border-l-4 border-gray-500'
+            };
+            
+            toast.className += ' ' + priorityColors[notification.priority];
+            
+            toast.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <div class="flex-1">
+                        <p class="font-semibold text-sm">${notification.title}</p>
+                        <p class="text-sm text-gray-600">${notification.message}</p>
+                    </div>
+                    <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Auto-remove after 4 seconds
+            setTimeout(() => {
+                if (document.body.contains(toast)) {
+                    document.body.removeChild(toast);
+                }
+            }, 4000);
+        }
+
+        function formatNotificationTime(timestamp) {
+            const now = new Date();
+            const diff = now - timestamp;
+            const minutes = Math.floor(diff / 60000);
+            
+            if (minutes < 1) return 'just now';
+            if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            
+            const days = Math.floor(hours / 24);
+            return `${days} day${days > 1 ? 's' : ''} ago`;
+        }
+
+        function markAllNotificationsRead() {
+            collaborationEngine.notifications.unread.forEach(n => n.read = true);
+            collaborationEngine.notifications.unread = [];
+            updateNotificationBadge();
+            showNotificationCenter(); // Refresh the view
+        }
+
+        function startActivityFeed() {
+            // Initialize activity feed system
+            const feedContainer = document.createElement('div');
+            feedContainer.id = 'activity-feed';
+            feedContainer.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background: white;
+                border-radius: 12px;
+                padding: 12px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                z-index: 1000;
+                max-width: 320px;
+            `;
+            
+            updateActivityFeed();
+            
+            if (!document.contains(feedContainer)) {
+                document.body.appendChild(feedContainer);
+            }
+            
+            // Update feed every 30 seconds
+            setInterval(updateActivityFeed, 30000);
+        }
+
+        function updateActivityFeed() {
+            const feedContainer = document.getElementById('activity-feed');
+            if (!feedContainer) return;
+            
+            const recentActivities = collaborationEngine.activityFeed.slice(0, 3);
+            
+            feedContainer.innerHTML = `
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-semibold text-sm">Recent Activity</h4>
+                    <button onclick="showFullActivityFeed()" class="text-blue-600 text-xs hover:text-blue-800">
+                        View All
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    ${recentActivities.map(activity => createActivityHTML(activity)).join('')}
+                </div>
+            `;
+        }
+
+        function createActivityHTML(activity) {
+            return `
+                <div class="flex items-start space-x-2 p-2 rounded hover:bg-gray-50">
+                    <img src="${activity.avatar}" alt="${activity.user}" class="w-6 h-6 rounded-full">
+                    <div class="flex-1">
+                        <p class="text-xs">
+                            <span class="font-medium">${activity.user}</span>
+                            <span class="text-gray-600"> ${activity.action}</span>
+                            <span class="font-medium">${activity.target}</span>
+                        </p>
+                        <p class="text-xs text-gray-500">${formatNotificationTime(activity.timestamp)}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setupCollaborativeEditing() {
+            // Initialize collaborative editing features
+            const collaborativeElements = document.querySelectorAll('.card-hover, .bg-white.p-6');
+            
+            collaborativeElements.forEach(element => {
+                // Add collaborative editing indicators
+                element.addEventListener('mouseenter', showCollaborationIndicators);
+                element.addEventListener('mouseleave', hideCollaborationIndicators);
+            });
+            
+            // Simulate collaborative editing events
+            setInterval(simulateCollaborativeEditing, 20000);
+        }
+
+        function showCollaborationIndicators(event) {
+            const element = event.target.closest('.card-hover, .bg-white.p-6');
+            if (!element) return;
+            
+            // Simulate other users viewing/editing the same element
+            const otherUsers = collaborationEngine.activeUsers.filter(u => u.id !== 1 && Math.random() > 0.5);
+            
+            if (otherUsers.length > 0) {
+                const indicator = document.createElement('div');
+                indicator.className = 'collaboration-indicator';
+                indicator.style.cssText = `
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    background: rgba(59, 130, 246, 0.9);
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-size: 11px;
+                    z-index: 10;
+                `;
+                
+                const user = otherUsers[0];
+                indicator.innerHTML = `<i class="fas fa-eye mr-1"></i>${user.name} is viewing`;
+                
+                element.style.position = 'relative';
+                element.appendChild(indicator);
+            }
+        }
+
+        function hideCollaborationIndicators(event) {
+            const element = event.target.closest('.card-hover, .bg-white.p-6');
+            if (!element) return;
+            
+            const indicator = element.querySelector('.collaboration-indicator');
+            if (indicator) {
+                element.removeChild(indicator);
+            }
+        }
+
+        function simulateCollaborativeEditing() {
+            // Simulate other users making edits
+            const user = collaborationEngine.activeUsers.find(u => u.id !== 1 && Math.random() > 0.6);
+            
+            if (user) {
+                const activities = [
+                    { action: 'viewing', target: 'dashboard metrics' },
+                    { action: 'editing', target: 'project timeline' },
+                    { action: 'analyzing', target: 'resource allocation' },
+                    { action: 'reviewing', target: 'risk assessment' }
+                ];
+                
+                const activity = activities[Math.floor(Math.random() * activities.length)];
+                
+                addNotification(
+                    'collaboration',
+                    `${user.name} is ${activity.action}`,
+                    activity.target,
+                    'low'
+                );
+            }
+        }
+
+        function initializeLiveUpdates() {
+            // Initialize real-time data updates
+            const updateInterval = 30000; // 30 seconds
+            
+            setInterval(() => {
+                performLiveDataUpdate();
+            }, updateInterval);
+            
+            // Establish WebSocket connection simulation
+            simulateWebSocketConnection();
+        }
+
+        function performLiveDataUpdate() {
+            // Simulate real-time data updates
+            const updates = [
+                { type: 'project_status', project: 'Website Redesign', change: 'progress', value: '+2%' },
+                { type: 'resource_allocation', resource: 'Development Team', change: 'availability', value: '-1 member' },
+                { type: 'risk_level', risk: 'Timeline Pressure', change: 'probability', value: '+5%' },
+                { type: 'budget', project: 'Mobile App', change: 'spent', value: '+$5,000' }
+            ];
+            
+            const update = updates[Math.floor(Math.random() * updates.length)];
+            
+            // Update UI with new data
+            updateUIWithLiveData(update);
+            
+            // Notify users of significant changes
+            if (Math.random() > 0.7) {
+                notifySignificantChange(update);
+            }
+        }
+
+        function updateUIWithLiveData(update) {
+            // Update UI elements with live data
+            console.log('Live data update:', update);
+            
+            // Find and update relevant UI elements
+            const elements = document.querySelectorAll('[data-live-update]');
+            elements.forEach(element => {
+                if (element.getAttribute('data-live-update') === update.type) {
+                    // Add visual indicator of update
+                    element.style.transition = 'background-color 0.5s';
+                    element.style.backgroundColor = '#fef3c7';
+                    
+                    setTimeout(() => {
+                        element.style.backgroundColor = '';
+                    }, 2000);
+                }
+            });
+        }
+
+        function notifySignificantChange(update) {
+            addNotification(
+                'live_update',
+                'Live Update Available',
+                `${update.project || update.resource || update.risk} has changed: ${update.change} is now ${update.value}`,
+                update.type === 'budget' ? 'high' : 'normal'
+            );
+        }
+
+        function simulateWebSocketConnection() {
+            // Simulate WebSocket connection for real-time updates
+            console.log('WebSocket connection established for real-time collaboration');
+            
+            // Simulate incoming messages
+            setInterval(() => {
+                const messages = [
+                    { type: 'user_joined', user: 'Alex Kumar', module: 'resources' },
+                    { type: 'project_updated', project: 'API Integration', field: 'status', value: 'completed' },
+                    { type: 'comment_added', user: 'Jane Smith', comment: 'Timeline looks good, proceeding with design phase' },
+                    { type: 'task_assigned', user: 'Mike Johnson', task: 'Database optimization', assignee: 'Dev Team' }
+                ];
+                
+                const message = messages[Math.floor(Math.random() * messages.length)];
+                handleWebSocketMessage(message);
+            }, 25000);
+        }
+
+        function handleWebSocketMessage(message) {
+            console.log('WebSocket message received:', message);
+            
+            switch (message.type) {
+                case 'user_joined':
+                    const newUser = {
+                        id: Date.now(),
+                        name: message.user,
+                        role: 'Team Member',
+                        status: 'active',
+                        lastSeen: new Date(),
+                        currentModule: message.module,
+                        avatar: `https://picsum.photos/seed/${message.user.replace(' ', '')}/40/40.jpg`,
+                        color: '#' + Math.floor(Math.random()*16777215).toString(16)
+                    };
+                    
+                    collaborationEngine.activeUsers.push(newUser);
+                    displayActiveUsers();
+                    
+                    addNotification(
+                        'user_activity',
+                        'New User Joined',
+                        `${message.user} is now online and viewing ${message.module}`,
+                        'low'
+                    );
+                    break;
+                    
+                case 'project_updated':
+                    addNotification(
+                        'project_update',
+                        'Project Updated',
+                        `${message.project}: ${message.field} changed to ${message.value}`,
+                        'normal'
+                    );
+                    break;
+                    
+                case 'comment_added':
+                    addNotification(
+                        'comment',
+                        'New Comment',
+                        `${message.user}: ${message.comment}`,
+                        'normal'
+                    );
+                    break;
+                    
+                case 'task_assigned':
+                    addNotification(
+                        'task_assignment',
+                        'Task Assigned',
+                        `${message.user} assigned "${message.task}" to ${message.assignee}`,
+                        'normal'
+                    );
+                    break;
+            }
+        }
+
+        function startCollaboration(userId) {
+            // Start collaboration session with specific user
+            const user = collaborationEngine.activeUsers.find(u => u.id == userId);
+            
+            if (user) {
+                addNotification(
+                    'collaboration',
+                    'Collaboration Request',
+                    `Starting collaboration session with ${user.name}`,
+                    'normal'
+                );
+                
+                // In real implementation, this would open a collaboration panel
+                alert(`Collaboration session initiated with ${user.name}\n\nFeatures:\n• Real-time screen sharing\n• Voice/video chat\n• Collaborative editing\n• File sharing\n• Whiteboard collaboration`);
+            }
+        }
+
+        function showCollaborationPanel() {
+            // Show full collaboration panel
+            const panel = document.createElement('div');
+            panel.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            panel.innerHTML = `
+                <div class="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                    <div class="p-6 border-b">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-2xl font-bold">Collaboration Center</h3>
+                            <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-4">Active Collaborators</h4>
+                                <div class="space-y-3">
+                                    ${collaborationEngine.activeUsers.map(user => `
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                            <div class="flex items-center space-x-3">
+                                                <img src="${user.avatar}" alt="${user.name}" class="w-10 h-10 rounded-full">
+                                                <div>
+                                                    <p class="font-medium">${user.name}</p>
+                                                    <p class="text-sm text-gray-600">${user.role} • ${user.currentModule}</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex space-x-2">
+                                                <button onclick="startCollaboration('${user.id}')" class="text-blue-600 hover:text-blue-800">
+                                                    <i class="fas fa-video"></i>
+                                                </button>
+                                                <button onclick="sendMessage('${user.id}')" class="text-green-600 hover:text-green-800">
+                                                    <i class="fas fa-comment"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold mb-4">Recent Activity</h4>
+                                <div class="space-y-3 max-h-96 overflow-y-auto">
+                                    ${collaborationEngine.activityFeed.slice(0, 10).map(activity => createActivityHTML(activity)).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                            <h4 class="font-semibold mb-2">Collaboration Features</h4>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div class="flex items-center">
+                                    <i class="fas fa-video text-blue-600 mr-2"></i>
+                                    <span>Video Conferencing</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-comments text-green-600 mr-2"></i>
+                                    <span>Team Chat</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-edit text-purple-600 mr-2"></i>
+                                    <span>Real-time Editing</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-share-alt text-orange-600 mr-2"></i>
+                                    <span>Screen Sharing</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(panel);
+        }
+
+        function showFullActivityFeed() {
+            // Show full activity feed modal
+            console.log('Showing full activity feed');
+        }
+
+        function sendMessage(userId) {
+            // Send message to user
+            const user = collaborationEngine.activeUsers.find(u => u.id == userId);
+            
+            if (user) {
+                const message = prompt(`Send message to ${user.name}:`);
+                
+                if (message) {
+                    addNotification(
+                        'message_sent',
+                        'Message Sent',
+                        `Message sent to ${user.name}: "${message}"`,
+                        'normal'
+                    );
+                }
+            }
+        }
+
+        function openNotification(notificationId) {
+            // Open notification details
+            console.log('Opening notification:', notificationId);
+        }
+
+        function checkForNotifications() {
+            // Check for new notifications
+            if (Math.random() > 0.8) {
+                const notifications = [
+                    { type: 'system', title: 'System Update', message: 'New features available in dashboard' },
+                    { type: 'reminder', title: 'Meeting Reminder', message: 'Project review meeting in 30 minutes' },
+                    { type: 'alert', title: 'Risk Alert', message: 'New risk identified in Mobile App project' }
+                ];
+                
+                const notification = notifications[Math.floor(Math.random() * notifications.length)];
+                
+                addNotification(notification.type, notification.title, notification.message, 'normal');
+            }
+        }
+
+        // Initialize real-time collaboration on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                initializeRealTimeCollaboration();
+                console.log('Real-time collaboration system initialized');
+            }, 2000);
+        });
+
+        function logout() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

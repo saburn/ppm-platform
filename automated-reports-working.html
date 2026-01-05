@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Reports - AI PPM Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        .sidebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+        
+        .report-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .report-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        
+        .generating-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            z-index: 10;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .report-preview {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .report-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .report-section {
+            padding: 30px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .metric-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .metric-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .metric-change {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+        
+        .metric-positive { color: #10b981; }
+        .metric-negative { color: #ef4444; }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-completed { background: #dbeafe; color: #1e40af; }
+        .status-delayed { background: #fee2e2; color: #991b1b; }
+        .status-planning { background: #fef3c7; color: #92400e; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 1200px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .action-button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+            background: white;
+        }
+        
+        .action-button:hover {
+            background: #f9fafb;
+            transform: translateY(-1px);
+        }
+        
+        .schedule-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="p-6">
+            <h2 class="text-2xl font-bold text-white mb-8">AI PPM Tool</h2>
+            
+            <nav class="space-y-2">
+                <a href="#" class="flex items-center text-white/80 hover:text-white p-3 rounded-lg transition">
+                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="#" class="flex items-center text-white/80 hover:text-white p-3 rounded-lg transition">
+                    <i class="fas fa-project-diagram w-5 mr-3"></i>
+                    Projects
+                </a>
+                <a href="#" class="flex items-center text-white/80 hover:text-white p-3 rounded-lg transition">
+                    <i class="fas fa-users w-5 mr-3"></i>
+                    Resources
+                </a>
+                <a href="#" class="flex items-center text-white/80 hover:text-white p-3 rounded-lg transition">
+                    <i class="fas fa-chart-gantt w-5 mr-3"></i>
+                    Gantt Charts
+                </a>
+                <a href="#" class="flex items-center text-white/80 hover:text-white p-3 rounded-lg transition">
+                    <i class="fas fa-shield-alt w-5 mr-3"></i>
+                    RAID Logs
+                </a>
+                <a href="#" class="flex items-center text-white bg-white/10 p-3 rounded-lg">
+                    <i class="fas fa-file-alt w-5 mr-3"></i>
+                    Reports
+                </a>
+                <a href="#" class="flex items-center text-white/80 hover:text-white p-3 rounded-lg transition">
+                    <i class="fas fa-robot w-5 mr-3"></i>
+                    AI Assistant
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="px-6 py-4 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Automated Reports</h1>
+                    <p class="text-gray-600">AI-powered reporting with real-time data and intelligent insights</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="openScheduleModal()" class="action-button">
+                        <i class="fas fa-clock mr-2"></i>Schedule Reports
+                    </button>
+                    <button onclick="openCustomReport()" class="btn-primary">
+                        <i class="fas fa-plus mr-2"></i>Custom Report
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="p-6">
+            <!-- Report Generation Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg p-6 shadow-sm border-t-4 border-blue-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Reports Generated</p>
+                            <p class="text-2xl font-bold text-gray-900">247</p>
+                            <p class="text-xs text-green-600 mt-1">+18 this week</p>
+                        </div>
+                        <div class="text-blue-500 text-3xl">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-sm border-t-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Scheduled Reports</p>
+                            <p class="text-2xl font-bold text-gray-900">12</p>
+                            <p class="text-xs text-gray-500 mt-1">4 active today</p>
+                        </div>
+                        <div class="text-green-500 text-3xl">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-sm border-t-4 border-purple-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">AI Insights Generated</p>
+                            <p class="text-2xl font-bold text-gray-900">1,847</p>
+                            <p class="text-xs text-purple-600 mt-1">94% accuracy</p>
+                        </div>
+                        <div class="text-purple-500 text-3xl">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-sm border-t-4 border-orange-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Time Saved</p>
+                            <p class="text-2xl font-bold text-gray-900">156 hrs</p>
+                            <p class="text-xs text-orange-600 mt-1">This month</p>
+                        </div>
+                        <div class="text-orange-500 text-3xl">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Templates -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Report Templates</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Executive Report -->
+                    <div class="report-card" onclick="generateReport('executive')">
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-briefcase text-blue-600 text-xl"></i>
+                                </div>
+                                <span class="text-xs text-gray-500">Most Popular</span>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Executive Dashboard</h3>
+                            <p class="text-sm text-gray-600 mb-4">High-level overview for C-suite executives with KPIs, portfolio health, and strategic insights.</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-clock mr-1"></i>2 min generation</span>
+                                <span><i class="fas fa-users mr-1"></i>18 recipients</span>
+                            </div>
+                        </div>
+                        <div id="executiveGenerating" class="generating-overlay" style="display: none;">
+                            <div class="spinner"></div>
+                            <p class="mt-4 text-gray-600">Generating Executive Report...</p>
+                        </div>
+                    </div>
+
+                    <!-- Project Progress Report -->
+                    <div class="report-card" onclick="generateReport('progress')">
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-tasks text-green-600 text-xl"></i>
+                                </div>
+                                <span class="text-xs text-gray-500">Weekly</span>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Project Progress</h3>
+                            <p class="text-sm text-gray-600 mb-4">Detailed project status, milestones, task completion, and team performance metrics.</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-clock mr-1"></i>3 min generation</span>
+                                <span><i class="fas fa-users mr-1"></i>12 recipients</span>
+                            </div>
+                        </div>
+                        <div id="progressGenerating" class="generating-overlay" style="display: none;">
+                            <div class="spinner"></div>
+                            <p class="mt-4 text-gray-600">Generating Progress Report...</p>
+                        </div>
+                    </div>
+
+                    <!-- Financial Report -->
+                    <div class="report-card" onclick="generateReport('financial')">
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
+                                </div>
+                                <span class="text-xs text-gray-500">Monthly</span>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Financial Analysis</h3>
+                            <p class="text-sm text-gray-600 mb-4">Budget vs actuals, cost variance, ROI analysis, and financial forecasting.</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-clock mr-1"></i>4 min generation</span>
+                                <span><i class="fas fa-users mr-1"></i>8 recipients</span>
+                            </div>
+                        </div>
+                        <div id="financialGenerating" class="generating-overlay" style="display: none;">
+                            <div class="spinner"></div>
+                            <p class="mt-4 text-gray-600">Generating Financial Report...</p>
+                        </div>
+                    </div>
+
+                    <!-- Resource Report -->
+                    <div class="report-card" onclick="generateReport('resource')">
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-users text-orange-600 text-xl"></i>
+                                </div>
+                                <span class="text-xs text-gray-500">Bi-weekly</span>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Resource Utilization</h3>
+                            <p class="text-sm text-gray-600 mb-4">Team capacity, workload distribution, skill gaps, and resource optimization insights.</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-clock mr-1"></i>3 min generation</span>
+                                <span><i class="fas fa-users mr-1"></i>6 recipients</span>
+                            </div>
+                        </div>
+                        <div id="resourceGenerating" class="generating-overlay" style="display: none;">
+                            <div class="spinner"></div>
+                            <p class="mt-4 text-gray-600">Generating Resource Report...</p>
+                        </div>
+                    </div>
+
+                    <!-- Risk Report -->
+                    <div class="report-card" onclick="generateReport('risk')">
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                                </div>
+                                <span class="text-xs text-gray-500">Weekly</span>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Risk & RAID Analysis</h3>
+                            <p class="text-sm text-gray-600 mb-4">Risk assessment, mitigation strategies, RAID log status, and predictive risk analysis.</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-clock mr-1"></i>2 min generation</span>
+                                <span><i class="fas fa-users mr-1"></i>10 recipients</span>
+                            </div>
+                        </div>
+                        <div id="riskGenerating" class="generating-overlay" style="display: none;">
+                            <div class="spinner"></div>
+                            <p class="mt-4 text-gray-600">Generating Risk Report...</p>
+                        </div>
+                    </div>
+
+                    <!-- Custom Report -->
+                    <div class="report-card" onclick="generateReport('custom')">
+                        <div class="relative">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-cog text-indigo-600 text-xl"></i>
+                                </div>
+                                <span class="text-xs text-gray-500">On-demand</span>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Custom Report Builder</h3>
+                            <p class="text-sm text-gray-600 mb-4">Create custom reports with AI assistance using natural language queries.</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-clock mr-1"></i>Variable</span>
+                                <span><i class="fas fa-users mr-1"></i>Custom</span>
+                            </div>
+                        </div>
+                        <div id="customGenerating" class="generating-overlay" style="display: none;">
+                            <div class="spinner"></div>
+                            <p class="mt-4 text-gray-600">Building Custom Report...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduled Reports -->
+            <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Scheduled Reports</h2>
+                <div class="space-y-3">
+                    <div class="schedule-item">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-briefcase text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Executive Dashboard</h4>
+                                    <p class="text-sm text-gray-600">Every Monday at 8:00 AM • Next: Mar 25, 2024</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="status-badge status-active">Active</span>
+                                <button onclick="editSchedule(1)" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="schedule-item">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-tasks text-green-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Project Progress Report</h4>
+                                    <p class="text-sm text-gray-600">Every Friday at 5:00 PM • Next: Mar 29, 2024</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="status-badge status-active">Active</span>
+                                <button onclick="editSchedule(2)" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="schedule-item">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-dollar-sign text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Monthly Financial Report</h4>
+                                    <p class="text-sm text-gray-600">1st of every month at 9:00 AM • Next: Apr 1, 2024</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="status-badge status-active">Active</span>
+                                <button onclick="editSchedule(3)" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Reports -->
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Recently Generated Reports</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-4">Report Name</th>
+                                <th class="text-left py-3 px-4">Type</th>
+                                <th class="text-left py-3 px-4">Generated</th>
+                                <th class="text-left py-3 px-4">Generated By</th>
+                                <th class="text-left py-3 px-4">Status</th>
+                                <th class="text-left py-3 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentReportsTable">
+                            <!-- Reports will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Preview Modal -->
+    <div id="reportPreviewModal" class="modal">
+        <div class="modal-content">
+            <div class="report-preview">
+                <div class="flex justify-between items-center p-6 border-b border-gray-200">
+                    <h2 id="reportTitle" class="text-2xl font-bold text-gray-900">Report Preview</h2>
+                    <div class="flex gap-3">
+                        <button onclick="downloadPDF()" class="action-button">
+                            <i class="fas fa-download mr-2"></i>PDF
+                        </button>
+                        <button onclick="downloadExcel()" class="action-button">
+                            <i class="fas fa-file-excel mr-2"></i>Excel
+                        </button>
+                        <button onclick="emailReport()" class="action-button">
+                            <i class="fas fa-envelope mr-2"></i>Email
+                        </button>
+                        <button onclick="closeReportPreview()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="reportContent">
+                    <!-- Report content will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Report Modal -->
+    <div id="customReportModal" class="modal">
+        <div class="modal-content">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-t-16">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">Custom Report Builder</h2>
+                    <button onclick="closeCustomReport()" class="text-white/80 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Describe Your Report</label>
+                    <textarea id="customReportQuery" class="form-input" rows="4" placeholder="Example: 'Show me all projects with budget over $100K that are behind schedule, including risk analysis and resource allocation details'"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                        <select class="form-input">
+                            <option>Last 7 days</option>
+                            <option>Last 30 days</option>
+                            <option>Last quarter</option>
+                            <option>Year to date</option>
+                            <option>Custom range</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Format</label>
+                        <select class="form-input">
+                            <option>Executive summary</option>
+                            <option>Detailed analysis</option>
+                            <option>Dashboard format</option>
+                            <option>Data table</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Include Sections</label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2" checked>
+                            <span class="text-sm">Project Overview</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2" checked>
+                            <span class="text-sm">Financial Metrics</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2">
+                            <span class="text-sm">Resource Analysis</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2" checked>
+                            <span class="text-sm">Risk Assessment</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2">
+                            <span class="text-sm">Timeline View</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2" checked>
+                            <span class="text-sm">AI Insights</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button onclick="closeCustomReport()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button onclick="generateCustomReport()" class="btn-primary">
+                        <i class="fas fa-magic mr-2"></i>Generate with AI
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="project-management-data.js"></script>
+    <script>
+        // Report generation functions
+        const reportGenerators = {
+            executive: generateExecutiveReport,
+            progress: generateProgressReport,
+            financial: generateFinancialReport,
+            resource: generateResourceReport,
+            risk: generateRiskReport,
+            custom: generateCustomReport
+        };
+
+        function generateReport(type) {
+            const generatingOverlay = document.getElementById(type + 'Generating');
+            generatingOverlay.style.display = 'flex';
+            
+            // Simulate report generation time
+            setTimeout(() => {
+                generatingOverlay.style.display = 'none';
+                const report = reportGenerators[type]();
+                showReportPreview(report);
+                addToRecentReports(type);
+            }, 2000 + Math.random() * 2000);
+        }
+
+        function generateExecutiveReport() {
+            const projects = ppmSystem.getAllProjects();
+            const stats = ppmSystem.getPortfolioStats();
+            
+            return {
+                title: 'Executive Dashboard Report',
+                date: new Date().toLocaleDateString(),
+                type: 'executive',
+                content: {
+                    summary: {
+                        totalProjects: stats.totalProjects,
+                        activeProjects: stats.activeProjects,
+                        totalBudget: stats.totalBudget,
+                        overallHealth: '87%'
+                    },
+                    kpis: [
+                        { name: 'Portfolio Performance', value: '87%', change: '+5%', positive: true },
+                        { name: 'Budget Efficiency', value: '92%', change: '+3%', positive: true },
+                        { name: 'On-Time Delivery', value: '78%', change: '-2%', positive: false },
+                        { name: 'Resource Utilization', value: '68%', change: '+8%', positive: true }
+                    ],
+                    topProjects: projects.slice(0, 5).map(p => ({
+                        name: p.name,
+                        progress: p.progress,
+                        status: p.status,
+                        budget: p.budget,
+                        manager: p.manager
+                    })),
+                    aiInsights: [
+                        '3 projects at risk of budget overrun requiring immediate attention',
+                        'Resource optimization opportunity identified: $45K potential savings',
+                        'Portfolio success probability: 91% (AI confidence: 94%)'
+                    ]
+                }
+            };
+        }
+
+        function generateProgressReport() {
+            const projects = ppmSystem.getAllProjects();
+            
+            return {
+                title: 'Project Progress Report',
+                date: new Date().toLocaleDateString(),
+                type: 'progress',
+                content: {
+                    summary: {
+                        totalTasks: projects.reduce((sum, p) => sum + (p.totalTasks || 0), 0),
+                        completedTasks: projects.reduce((sum, p) => sum + (p.completedTasks || 0), 0),
+                        averageProgress: Math.round(projects.reduce((sum, p) => sum + p.progress, 0) / projects.length)
+                    },
+                    projectDetails: projects.map(p => ({
+                        name: p.name,
+                        manager: p.manager,
+                        progress: p.progress,
+                        tasksCompleted: p.completedTasks || 0,
+                        totalTasks: p.totalTasks || 0,
+                        status: p.status,
+                        nextMilestone: calculateNextMilestone(p)
+                    })),
+                    teamPerformance: analyzeTeamPerformance(projects)
+                }
+            };
+        }
+
+        function generateFinancialReport() {
+            const projects = ppmSystem.getAllProjects();
+            const totalBudget = projects.reduce((sum, p) => sum + p.budget, 0);
+            const totalSpent = projects.reduce((sum, p) => sum + p.spent, 0);
+            
+            return {
+                title: 'Financial Analysis Report',
+                date: new Date().toLocaleDateString(),
+                type: 'financial',
+                content: {
+                    summary: {
+                        totalBudget: totalBudget,
+                        totalSpent: totalSpent,
+                        budgetUtilization: Math.round((totalSpent / totalBudget) * 100),
+                        costVariance: totalBudget - totalSpent
+                    },
+                    projectFinancials: projects.map(p => ({
+                        name: p.name,
+                        budget: p.budget,
+                        spent: p.spent,
+                        remaining: p.budget - p.spent,
+                        utilization: Math.round((p.spent / p.budget) * 100)
+                    })),
+                    forecasts: generateFinancialForecasts(projects)
+                }
+            };
+        }
+
+        function generateResourceReport() {
+            const teamMembers = ppmSystem.teamMembers;
+            const projects = ppmSystem.getAllProjects();
+            
+            return {
+                title: 'Resource Utilization Report',
+                date: new Date().toLocaleDateString(),
+                type: 'resource',
+                content: {
+                    summary: {
+                        totalResources: teamMembers.length,
+                        averageUtilization: '68%',
+                        availableCapacity: '32%',
+                        skillGaps: ['DevOps', 'Cloud Architecture', 'Data Science']
+                    },
+                    resourceDetails: teamMembers.map(member => ({
+                        name: member.name,
+                        role: member.role,
+                        department: member.department,
+                        utilization: calculateResourceUtilization(member, projects),
+                        skills: member.skills,
+                        availability: member.availability
+                    })),
+                    optimization: generateResourceOptimization(teamMembers, projects)
+                }
+            };
+        }
+
+        function generateRiskReport() {
+            const projects = ppmSystem.getAllProjects();
+            
+            return {
+                title: 'Risk & RAID Analysis Report',
+                date: new Date().toLocaleDateString(),
+                type: 'risk',
+                content: {
+                    summary: {
+                        totalRisks: projects.reduce((sum, p) => sum + (p.risks?.length || 0), 0),
+                        criticalRisks: projects.reduce((sum, p) => sum + (p.risks?.filter(r => r.status === 'active' && r.impact === 'high').length || 0), 0),
+                        mitigatedRisks: projects.reduce((sum, p) => sum + (p.risks?.filter(r => r.status === 'mitigated').length || 0), 0)
+                    },
+                    riskBreakdown: analyzeRiskBreakdown(projects),
+                    predictions: generateRiskPredictions(projects)
+                }
+            };
+        }
+
+        function generateCustomReport() {
+            const query = document.getElementById('customReportQuery').value;
+            
+            // Simulate AI processing
+            return {
+                title: 'Custom AI-Generated Report',
+                date: new Date().toLocaleDateString(),
+                type: 'custom',
+                query: query,
+                content: {
+                    aiProcessed: true,
+                    insights: ['AI-generated insights based on query'],
+                    data: []
+                }
+            };
+        }
+
+        function showReportPreview(report) {
+            const modal = document.getElementById('reportPreviewModal');
+            const titleElement = document.getElementById('reportTitle');
+            const contentElement = document.getElementById('reportContent');
+            
+            titleElement.textContent = report.title;
+            contentElement.innerHTML = generateReportHTML(report);
+            
+            modal.classList.add('active');
+        }
+
+        function generateReportHTML(report) {
+            let html = `
+                <div class="report-header">
+                    <h1 class="text-3xl font-bold mb-2">${report.title}</h1>
+                    <p class="text-white/90">Generated on ${report.date}</p>
+                </div>
+            `;
+            
+            if (report.type === 'executive') {
+                html += generateExecutiveHTML(report.content);
+            } else if (report.type === 'progress') {
+                html += generateProgressHTML(report.content);
+            } else if (report.type === 'financial') {
+                html += generateFinancialHTML(report.content);
+            }
+            // Add other report types as needed
+            
+            return html;
+        }
+
+        function generateExecutiveHTML(content) {
+            return `
+                <div class="report-section">
+                    <h2 class="text-xl font-semibold mb-4">Executive Summary</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="metric-card">
+                            <div class="metric-value">${content.summary.totalProjects}</div>
+                            <div class="metric-label">Total Projects</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${content.summary.activeProjects}</div>
+                            <div class="metric-label">Active Projects</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">$${(content.summary.totalBudget/1000000).toFixed(1)}M</div>
+                            <div class="metric-label">Total Budget</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${content.summary.overallHealth}</div>
+                            <div class="metric-label">Portfolio Health</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="report-section">
+                    <h2 class="text-xl font-semibold mb-4">Key Performance Indicators</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${content.kpis.map(kpi => `
+                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h3 class="font-medium">${kpi.name}</h3>
+                                    <p class="text-2xl font-bold">${kpi.value}</p>
+                                </div>
+                                <div class="metric-change ${kpi.positive ? 'metric-positive' : 'metric-negative'}">
+                                    ${kpi.change}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="report-section">
+                    <h2 class="text-xl font-semibold mb-4">AI Insights</h2>
+                    <div class="space-y-3">
+                        ${content.aiInsights.map(insight => `
+                            <div class="p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+                                <p class="text-gray-700">${insight}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeReportPreview() {
+            document.getElementById('reportPreviewModal').classList.remove('active');
+        }
+
+        function openCustomReport() {
+            document.getElementById('customReportModal').classList.add('active');
+        }
+
+        function closeCustomReport() {
+            document.getElementById('customReportModal').classList.remove('active');
+        }
+
+        function downloadPDF() {
+            // PDF download logic using jsPDF
+            console.log('Downloading PDF...');
+        }
+
+        function downloadExcel() {
+            // Excel download logic
+            console.log('Downloading Excel...');
+        }
+
+        function emailReport() {
+            // Email report logic
+            console.log('Emailing report...');
+        }
+
+        function addToRecentReports(type) {
+            const table = document.getElementById('recentReportsTable');
+            const row = document.createElement('tr');
+            row.className = 'border-b border-gray-100';
+            row.innerHTML = `
+                <td class="py-3 px-4 font-medium">${type.charAt(0).toUpperCase() + type.slice(1)} Report</td>
+                <td class="py-3 px-4">${type}</td>
+                <td class="py-3 px-4">${new Date().toLocaleString()}</td>
+                <td class="py-3 px-4">Current User</td>
+                <td class="py-3 px-4"><span class="status-badge status-completed">Completed</span></td>
+                <td class="py-3 px-4">
+                    <button class="text-blue-600 hover:text-blue-800 mr-3">View</button>
+                    <button class="text-green-600 hover:text-green-800">Download</button>
+                </td>
+            `;
+            table.insertBefore(row, table.firstChild);
+            
+            // Keep only last 10 reports
+            while (table.children.length > 10) {
+                table.removeChild(table.lastChild);
+            }
+        }
+
+        // Helper functions
+        function calculateNextMilestone(project) {
+            // Simplified milestone calculation
+            return 'Phase 1 Completion';
+        }
+
+        function analyzeTeamPerformance(projects) {
+            // Simplified team performance analysis
+            return {
+                averageVelocity: '85%',
+                burndownRate: 'Normal',
+                teamSatisfaction: '4.2/5'
+            };
+        }
+
+        function generateFinancialForecasts(projects) {
+            // Simplified financial forecasting
+            return {
+                nextMonthForecast: '$250K',
+                quarterForecast: '$750K',
+                yearEndProjection: '$2.5M'
+            };
+        }
+
+        function calculateResourceUtilization(member, projects) {
+            // Simplified utilization calculation
+            return Math.floor(Math.random() * 40) + 40; // 40-80%
+        }
+
+        function generateResourceOptimization(teamMembers, projects) {
+            // Simplified optimization suggestions
+            return [
+                'Optimize developer allocation: 15% efficiency gain possible',
+                'Cross-train QA team: Reduce bottlenecks',
+                'Consider contract resources for peak demand'
+            ];
+        }
+
+        function analyzeRiskBreakdown(projects) {
+            // Simplified risk breakdown
+            return {
+                byCategory: { Technical: 40%, Financial: 25%, Schedule: 20%, Resource: 15% },
+                byImpact: { Critical: 15%, High: 35%, Medium: 30%, Low: 20% }
+            };
+        }
+
+        function generateRiskPredictions(projects) {
+            // Simplified risk predictions
+            return [
+                'Probability of budget overruns: 22%',
+                'Schedule delay risk: 18%',
+                'Resource shortage probability: 12%'
+            ];
+        }
+
+        // Initialize recent reports table
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add some sample recent reports
+            addToRecentReports('executive');
+            addToRecentReports('progress');
+            addToRecentReports('financial');
+        });
+
+        // Modal close handlers
+        document.getElementById('reportPreviewModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeReportPreview();
+            }
+        });
+
+        document.getElementById('customReportModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCustomReport();
+            }
+        });
+    </script>
+</body>
+</html>

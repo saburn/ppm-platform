@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board View - Complete Suite | PPM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .kanban-column { min-height: 500px; background: #f9fafb; border-radius: 12px; padding: 16px; }
+        .kanban-card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; cursor: move; transition: all 0.3s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .kanban-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-2px); }
+        .priority-high { border-left: 4px solid #ef4444; }
+        .priority-medium { border-left: 4px solid #f59e0b; }
+        .priority-low { border-left: 4px solid #10b981; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-columns text-3xl"></i>
+                    <div>
+                        <h1 class="text-3xl font-bold">Board View</h1>
+                        <p class="text-purple-200">Kanban-Style Project Management</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="addCard()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-plus mr-2"></i>Add Card
+                    </button>
+                    <button onclick="configureBoard()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-cog mr-2"></i>Configure
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-blue-100 p-3 rounded-lg"><i class="fas fa-inbox text-blue-600 text-2xl"></i></div>
+                    <span class="text-blue-600 text-sm font-semibold">12</span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Intake Queue</h3>
+                <p class="text-3xl font-bold text-gray-900">New</p>
+                <p class="text-sm text-gray-500 mt-2">Pending review</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-green-100 p-3 rounded-lg"><i class="fas fa-play text-green-600 text-2xl"></i></div>
+                    <span class="text-green-600 text-sm font-semibold">18</span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">In Progress</h3>
+                <p class="text-3xl font-bold text-gray-900">Active</p>
+                <p class="text-sm text-gray-500 mt-2">Being worked on</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-purple-100 p-3 rounded-lg"><i class="fas fa-check text-purple-600 text-2xl"></i></div>
+                    <span class="text-purple-600 text-sm font-semibold">24</span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Completed</h3>
+                <p class="text-3xl font-bold text-gray-900">Done</p>
+                <p class="text-sm text-gray-500 mt-2">This month</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-orange-100 p-3 rounded-lg"><i class="fas fa-chart-line text-orange-600 text-2xl"></i></div>
+                    <span class="text-green-600 text-sm font-semibold">+50%</span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Throughput</h3>
+                <p class="text-3xl font-bold text-gray-900">Fast</p>
+                <p class="text-sm text-gray-500 mt-2">Improved flow</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900">Project Intake Board</h2>
+                <div class="flex items-center space-x-4">
+                    <input type="text" placeholder="Search cards..." class="border border-gray-300 rounded-lg px-4 py-2 text-sm w-64">
+                    <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        <option>All Priorities</option>
+                        <option>High</option>
+                        <option>Medium</option>
+                        <option>Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- Backlog Column -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-inbox text-gray-600 mr-2"></i>
+                            Backlog
+                        </h3>
+                        <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-semibold">12</span>
+                    </div>
+                    <div class="kanban-column">
+                        <div class="kanban-card priority-high">
+                            <h4 class="font-semibold text-gray-900 mb-2">Cloud Migration Project</h4>
+                            <p class="text-sm text-gray-600 mb-3">Migrate infrastructure to AWS</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-user mr-1"></i>John Smith</span>
+                                <span class="bg-red-100 text-red-600 px-2 py-1 rounded font-semibold">HIGH</span>
+                            </div>
+                        </div>
+                        <div class="kanban-card priority-medium">
+                            <h4 class="font-semibold text-gray-900 mb-2">Mobile App Enhancement</h4>
+                            <p class="text-sm text-gray-600 mb-3">Add new features to mobile app</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-user mr-1"></i>Sarah Johnson</span>
+                                <span class="bg-orange-100 text-orange-600 px-2 py-1 rounded font-semibold">MEDIUM</span>
+                            </div>
+                        </div>
+                        <div class="kanban-card priority-low">
+                            <h4 class="font-semibold text-gray-900 mb-2">Documentation Update</h4>
+                            <p class="text-sm text-gray-600 mb-3">Update user documentation</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-user mr-1"></i>Mike Chen</span>
+                                <span class="bg-green-100 text-green-600 px-2 py-1 rounded font-semibold">LOW</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- In Progress Column -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-play text-blue-600 mr-2"></i>
+                            In Progress
+                        </h3>
+                        <span class="bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs font-semibold">18</span>
+                    </div>
+                    <div class="kanban-column">
+                        <div class="kanban-card priority-high">
+                            <h4 class="font-semibold text-gray-900 mb-2">Security Audit</h4>
+                            <p class="text-sm text-gray-600 mb-3">Complete security assessment</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-user mr-1"></i>Lisa Wang</span>
+                                <span class="bg-red-100 text-red-600 px-2 py-1 rounded font-semibold">HIGH</span>
+                            </div>
+                        </div>
+                        <div class="kanban-card priority-medium">
+                            <h4 class="font-semibold text-gray-900 mb-2">API Integration</h4>
+                            <p class="text-sm text-gray-600 mb-3">Integrate third-party APIs</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-user mr-1"></i>Tom Brown</span>
+                                <span class="bg-orange-100 text-orange-600 px-2 py-1 rounded font-semibold">MEDIUM</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review Column -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-eye text-purple-600 mr-2"></i>
+                            Review
+                        </h3>
+                        <span class="bg-purple-200 text-purple-700 px-2 py-1 rounded text-xs font-semibold">8</span>
+                    </div>
+                    <div class="kanban-column">
+                        <div class="kanban-card priority-high">
+                            <h4 class="font-semibold text-gray-900 mb-2">Performance Testing</h4>
+                            <p class="text-sm text-gray-600 mb-3">Load testing completed</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-user mr-1"></i>Alex Kim</span>
+                                <span class="bg-red-100 text-red-600 px-2 py-1 rounded font-semibold">HIGH</span>
+                            </div>
+                        </div>
+                        <div class="kanban-card priority-low">
+                            <h4 class="font-semibold text-gray-900 mb-2">UI Redesign</h4>
+                            <p class="text-sm text-gray-600 mb-3">New design ready for review</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-user mr-1"></i>Emma Davis</span>
+                                <span class="bg-green-100 text-green-600 px-2 py-1 rounded font-semibold">LOW</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Done Column -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            Done
+                        </h3>
+                        <span class="bg-green-200 text-green-700 px-2 py-1 rounded text-xs font-semibold">24</span>
+                    </div>
+                    <div class="kanban-column">
+                        <div class="kanban-card priority-medium">
+                            <h4 class="font-semibold text-gray-900 mb-2">Database Optimization</h4>
+                            <p class="text-sm text-gray-600 mb-3">Query performance improved</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-user mr-1"></i>Chris Lee</span>
+                                <span class="bg-green-100 text-green-600 px-2 py-1 rounded font-semibold">✓ DONE</span>
+                            </div>
+                        </div>
+                        <div class="kanban-card priority-high">
+                            <h4 class="font-semibold text-gray-900 mb-2">Customer Portal</h4>
+                            <p class="text-sm text-gray-600 mb-3">Portal launched successfully</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span><i class="fas fa-user mr-1"></i>Rachel Green</span>
+                                <span class="bg-green-100 text-green-600 px-2 py-1 rounded font-semibold">✓ DONE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function addCard() { showToast('Opening card creator...', 'info'); }
+        function configureBoard() { showToast('Opening board configuration...', 'info'); }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-blue-500';
+            toast.className = `fixed top-20 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50`;
+            toast.innerHTML = `<div class="flex items-center space-x-3"><i class="fas fa-check-circle text-xl"></i><span class="font-semibold">${message}</span></div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

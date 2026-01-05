@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PPM Pro - World's First AI-Powered Project Portfolio Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .feature-card {
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #3b82f6;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+        }
+        .stat-number {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-brain text-blue-600 text-2xl mr-3"></i>
+                    <span class="font-bold text-xl">AI PPM Pro</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-700 hover:text-blue-600">Features</a>
+                    <a href="#modules" class="text-gray-700 hover:text-blue-600">Modules</a>
+                    <a href="#stats" class="text-gray-700 hover:text-blue-600">Impact</a>
+                    <a href="#demo" class="text-gray-700 hover:text-blue-600">Demo</a>
+                    <button onclick="goToDashboard()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        Try Dashboard
+                    </button>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button onclick="toggleMobileMenu()" class="text-gray-700">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white border-t">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="#features" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Features</a>
+                <a href="#modules" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Modules</a>
+                <a href="#stats" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Impact</a>
+                <a href="#demo" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Demo</a>
+                <button onclick="goToDashboard()" class="w-full text-left bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700">
+                    Try Dashboard
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                        World's First AI-Powered<br>
+                        <span class="text-yellow-300">Project Portfolio Management</span>
+                    </h1>
+                    <p class="text-xl mb-8 text-gray-200">
+                        Transform your project management with intelligent automation, predictive analytics, and AI-driven insights. Reduce planning time by 80% and increase project success rates by 40%.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="goToDashboard()" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100">
+                            <i class="fas fa-rocket mr-2"></i>Start Free Trial
+                        </button>
+                        <button onclick="scrollToSection('demo')" class="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600">
+                            <i class="fas fa-play mr-2"></i>Watch Demo
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="float-animation">
+                        <i class="fas fa-brain text-8xl text-yellow-300 mb-4"></i>
+                        <div class="bg-white/20 backdrop-blur-sm rounded-lg p-6">
+                            <p class="text-2xl font-bold">94% AI Accuracy</p>
+                            <p class="text-gray-200">in Project Predictions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Proven Business Impact</h2>
+                <p class="text-gray-600">Real results from organizations using AI PPM Pro</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="stat-number text-4xl font-bold mb-2">80%</div>
+                    <p class="text-gray-600">Time Reduction</p>
+                    <p class="text-sm text-gray-500">in project planning</p>
+                </div>
+                <div class="text-center">
+                    <div class="stat-number text-4xl font-bold mb-2">40%</div>
+                    <p class="text-gray-600">Better Success Rate</p>
+                    <p class="text-sm text-gray-500">with AI predictions</p>
+                </div>
+                <div class="text-center">
+                    <div class="stat-number text-4xl font-bold mb-2">$150K</div>
+                    <p class="text-gray-600">Annual Savings</p>
+                    <p class="text-sm text-gray-500">per organization</p>
+                </div>
+                <div class="text-center">
+                    <div class="stat-number text-4xl font-bold mb-2">35%</div>
+                    <p class="text-gray-600">Efficiency Gain</p>
+                    <p class="text-sm text-gray-500">through automation</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Revolutionary AI Capabilities</h2>
+                <p class="text-gray-600">Industry-first features that make traditional PPM tools obsolete</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="feature-card bg-white rounded-lg p-6 shadow-lg">
+                    <div class="text-blue-600 mb-4">
+                        <i class="fas fa-brain text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Conversational AI Assistant</h3>
+                    <p class="text-gray-600 mb-4">Natural language interface for project queries with 92% success rate. Ask questions in plain English and get instant AI-powered insights.</p>
+                    <div class="text-sm text-blue-600 font-semibold">
+                        <i class="fas fa-check-circle mr-1"></i>92% Accuracy Rate
+                    </div>
+                </div>
+                
+                <div class="feature-card bg-white rounded-lg p-6 shadow-lg">
+                    <div class="text-purple-600 mb-4">
+                        <i class="fas fa-chart-line text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Predictive Analytics</h3>
+                    <p class="text-gray-600 mb-4">94% accurate predictions for budget overruns, schedule delays, and success probability. Act on risks before they become problems.</p>
+                    <div class="text-sm text-purple-600 font-semibold">
+                        <i class="fas fa-check-circle mr-1"></i>94% Prediction Accuracy
+                    </div>
+                </div>
+                
+                <div class="feature-card bg-white rounded-lg p-6 shadow-lg">
+                    <div class="text-green-600 mb-4">
+                        <i class="fas fa-magic text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">AI Project Generation</h3>
+                    <p class="text-gray-600 mb-4">Generate complete project plans with tasks, resources, and risks from simple descriptions. 95% success rate in creating viable project structures.</p>
+                    <div class="text-sm text-green-600 font-semibold">
+                        <i class="fas fa-check-circle mr-1"></i>95% Success Rate
+                    </div>
+                </div>
+                
+                <div class="feature-card bg-white rounded-lg p-6 shadow-lg">
+                    <div class="text-yellow-600 mb-4">
+                        <i class="fas fa-shield-alt text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">AI Risk Intelligence</h3>
+                    <p class="text-gray-600 mb-4">88% accuracy in risk prediction with automated mitigation strategies. Identify and address project risks before they impact delivery.</p>
+                    <div class="text-sm text-yellow-600 font-semibold">
+                        <i class="fas fa-check-circle mr-1"></i>88% Risk Detection
+                    </div>
+                </div>
+                
+                <div class="feature-card bg-white rounded-lg p-6 shadow-lg">
+                    <div class="text-red-600 mb-4">
+                        <i class="fas fa-users text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Resource Optimization</h3>
+                    <p class="text-gray-600 mb-4">AI-powered resource allocation saving $45K on average. Optimize team assignments and prevent burnout with intelligent workload balancing.</p>
+                    <div class="text-sm text-red-600 font-semibold">
+                        <i class="fas fa-check-circle mr-1"></i>$45K Avg Savings
+                    </div>
+                </div>
+                
+                <div class="feature-card bg-white rounded-lg p-6 shadow-lg">
+                    <div class="text-indigo-600 mb-4">
+                        <i class="fas fa-robot text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Automated Reports</h3>
+                    <p class="text-gray-600 mb-4">AI-generated executive reports with natural language summaries. Save 99.9% time on reporting with instant, insights-rich documentation.</p>
+                    <div class="text-sm text-indigo-600 font-semibold">
+                        <i class="fas fa-check-circle mr-1"></i>99.9% Time Saved
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modules Section -->
+    <section id="modules" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Complete Module Suite</h2>
+                <p class="text-gray-600">All the tools you need for enterprise project portfolio management</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="goToModule('dashboard')">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-dashboard text-blue-600 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">AI Dashboard</h3>
+                    </div>
+                    <p class="text-gray-700 mb-3">Central command center with real-time AI insights and portfolio analytics.</p>
+                    <div class="text-blue-600 text-sm font-semibold">
+                        <i class="fas fa-arrow-right mr-1"></i>Explore Dashboard
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="goToModule('projects')">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-project-diagram text-purple-600 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">Projects Hub</h3>
+                    </div>
+                    <p class="text-gray-700 mb-3">Complete project lifecycle management with AI-powered insights and automation.</p>
+                    <div class="text-purple-600 text-sm font-semibold">
+                        <i class="fas fa-arrow-right mr-1"></i>Manage Projects
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="goToModule('gantt')">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-chart-gantt text-green-600 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">Gantt Charts</h3>
+                    </div>
+                    <p class="text-gray-700 mb-3">Interactive drag-and-drop timelines with hybrid methodology support.</p>
+                    <div class="text-green-600 text-sm font-semibold">
+                        <i class="fas fa-arrow-right mr-1"></i>View Timelines
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="goToModule('resources')">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-users text-yellow-600 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">Resource Management</h3>
+                    </div>
+                    <p class="text-gray-700 mb-3">End-to-end resource allocation with AI optimization and capacity planning.</p>
+                    <div class="text-yellow-600 text-sm font-semibold">
+                        <i class="fas fa-arrow-right mr-1"></i>Allocate Resources
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="goToModule('raid')">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shield-alt text-red-600 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">RAID Management</h3>
+                    </div>
+                    <p class="text-gray-700 mb-3">AI-powered risk prediction and comprehensive RAID tracking system.</p>
+                    <div class="text-red-600 text-sm font-semibold">
+                        <i class="fas fa-arrow-right mr-1"></i>Manage Risks
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="goToModule('reports')">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-chart-bar text-indigo-600 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">Automated Reports</h3>
+                    </div>
+                    <p class="text-gray-700 mb-3">AI-generated reports with natural language insights and executive summaries.</p>
+                    <div class="text-indigo-600 text-sm font-semibold">
+                        <i class="fas fa-arrow-right mr-1"></i>Generate Reports
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">See AI PPM Pro in Action</h2>
+                <p class="text-gray-600">Experience the power of AI-driven project management</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-xl p-8">
+                <div class="text-center mb-6">
+                    <i class="fas fa-play-circle text-6xl text-blue-600 mb-4"></i>
+                    <h3 class="text-2xl font-semibold mb-2">Interactive Demo Available</h3>
+                    <p class="text-gray-600 mb-6">Try our fully functional dashboard with sample data and AI features</p>
+                    <button onclick="goToDashboard()" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 text-lg">
+                        <i class="fas fa-rocket mr-2"></i>Launch Live Demo
+                    </button>
+                </div>
+                <div class="grid md:grid-cols-4 gap-4 mt-8 text-center">
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-check text-green-600 text-2xl mb-2"></i>
+                        <p class="font-semibold">No Credit Card</p>
+                        <p class="text-sm text-gray-600">Start instantly</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-check text-green-600 text-2xl mb-2"></i>
+                        <p class="font-semibold">Full Features</p>
+                        <p class="text-sm text-gray-600">All modules enabled</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-check text-green-600 text-2xl mb-2"></i>
+                        <p class="font-semibold">Sample Data</p>
+                        <p class="text-sm text-gray-600">Realistic projects</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-check text-green-600 text-2xl mb-2"></i>
+                        <p class="font-semibold">AI Enabled</p>
+                        <p class="text-sm text-gray-600">Experience AI power</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 hero-gradient text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-bold mb-4">Ready to Transform Your Project Management?</h2>
+            <p class="text-xl mb-8 text-gray-200">Join organizations saving $150K+ annually with AI PPM Pro</p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="goToDashboard()" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">
+                    <i class="fas fa-rocket mr-2"></i>Start Free Trial
+                </button>
+                <button class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600">
+                    <i class="fas fa-calendar mr-2"></i>Schedule Demo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-brain text-blue-400 text-2xl mr-3"></i>
+                        <span class="font-bold text-xl">AI PPM Pro</span>
+                    </div>
+                    <p class="text-gray-400">World's first AI-powered project portfolio management platform.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Product</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#features" class="hover:text-white">Features</a></li>
+                        <li><a href="#modules" class="hover:text-white">Modules</a></li>
+                        <li><a href="#demo" class="hover:text-white">Demo</a></li>
+                        <li><a href="#pricing" class="hover:text-white">Pricing</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">About</a></li>
+                        <li><a href="#" class="hover:text-white">Blog</a></li>
+                        <li><a href="#" class="hover:text-white">Careers</a></li>
+                        <li><a href="#" class="hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Connect</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-youtube text-xl"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 AI PPM Pro. All rights reserved. | Industry-leading AI project management solution.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function goToDashboard() {
+            window.open('dashboard-beautiful.html', '_blank');
+        }
+
+        function goToModule(moduleType) {
+            const moduleUrls = {
+                'dashboard': 'dashboard-beautiful.html',
+                'projects': 'project-management-hub.html',
+                'gantt': 'gantt-chart-enterprise.html',
+                'resources': 'resource-allocation-enterprise.html',
+                'raid': 'raid-management-enterprise.html',
+                'reports': 'automated-reports-enterprise.html'
+            };
+            
+            if (moduleUrls[moduleType]) {
+                window.open(moduleUrls[moduleType], '_blank');
+            }
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Add scroll animations
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('shadow-xl');
+            } else {
+                nav.classList.remove('shadow-xl');
+            }
+        });
+    </script>
+</body>
+</html>

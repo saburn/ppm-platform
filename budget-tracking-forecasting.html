@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Forecasting - AI Powered | PPM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .ai-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .forecast-card {
+            border-left: 4px solid;
+        }
+        .forecast-positive { border-color: #10b981; }
+        .forecast-warning { border-color: #f59e0b; }
+        .forecast-negative { border-color: #ef4444; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-chart-line text-3xl"></i>
+                    <div>
+                        <h1 class="text-3xl font-bold">Budget Forecasting</h1>
+                        <p class="text-purple-200">AI-Powered Predictions & Trend Analysis</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="ai-badge">
+                        <i class="fas fa-robot mr-2"></i>AI Powered
+                    </span>
+                    <button onclick="runForecast()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Run Forecast
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- AI Forecast Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i class="fas fa-brain text-blue-600 text-2xl"></i>
+                    </div>
+                    <span class="text-blue-600 text-sm font-semibold">90% Accuracy</span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">AI Confidence</h3>
+                <p class="text-3xl font-bold text-gray-900">High</p>
+                <p class="text-sm text-gray-500 mt-2">Based on 847 data points</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-calendar-check text-green-600 text-2xl"></i>
+                    </div>
+                    <span class="text-green-600 text-sm font-semibold">Q2 2024</span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Forecast Period</h3>
+                <p class="text-3xl font-bold text-gray-900">6 Months</p>
+                <p class="text-sm text-gray-500 mt-2">Jan - Jun 2024</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <i class="fas fa-chart-area text-purple-600 text-2xl"></i>
+                    </div>
+                    <span class="text-green-600 text-sm font-semibold">
+                        <i class="fas fa-arrow-up mr-1"></i>12%
+                    </span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Projected Spend</h3>
+                <p class="text-3xl font-bold text-gray-900">$9.4M</p>
+                <p class="text-sm text-gray-500 mt-2">+$1M from current</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-orange-100 p-3 rounded-lg">
+                        <i class="fas fa-exclamation-circle text-orange-600 text-2xl"></i>
+                    </div>
+                    <span class="text-orange-600 text-sm font-semibold">5 Alerts</span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Risk Projects</h3>
+                <p class="text-3xl font-bold text-gray-900">8</p>
+                <p class="text-sm text-gray-500 mt-2">Require attention</p>
+            </div>
+        </div>
+
+        <!-- Forecast Chart & Scenarios -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Main Forecast Chart -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">6-Month Budget Forecast</h2>
+                    <div class="flex items-center space-x-2">
+                        <button class="px-3 py-1 bg-purple-100 text-purple-600 rounded-lg text-sm font-semibold">
+                            Actual
+                        </button>
+                        <button class="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-semibold">
+                            Best Case
+                        </button>
+                        <button class="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-semibold">
+                            Worst Case
+                        </button>
+                    </div>
+                </div>
+                <canvas id="forecastChart" style="max-height: 300px;"></canvas>
+            </div>
+
+            <!-- Scenario Analysis -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Scenario Analysis</h2>
+                <div class="space-y-4">
+                    <div class="forecast-card forecast-positive bg-green-50 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-gray-900">Best Case</span>
+                            <span class="text-green-600 font-bold">-15%</span>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-900 mb-1">$7.1M</p>
+                        <p class="text-sm text-gray-600">$1.3M under budget</p>
+                    </div>
+
+                    <div class="forecast-card forecast-warning bg-blue-50 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-gray-900">Expected</span>
+                            <span class="text-blue-600 font-bold">+2%</span>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-900 mb-1">$8.6M</p>
+                        <p class="text-sm text-gray-600">$200K over budget</p>
+                    </div>
+
+                    <div class="forecast-card forecast-negative bg-red-50 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-gray-900">Worst Case</span>
+                            <span class="text-red-600 font-bold">+18%</span>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-900 mb-1">$9.9M</p>
+                        <p class="text-sm text-gray-600">$1.5M over budget</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insights & Recommendations -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- AI Insights -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">AI Insights</h2>
+                    <span class="ai-badge">
+                        <i class="fas fa-robot mr-1"></i>42 Insights
+                    </span>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-3 p-4 bg-blue-50 rounded-lg">
+                        <div class="bg-blue-500 p-2 rounded-lg">
+                            <i class="fas fa-lightbulb text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 mb-1">Spending Pattern Detected</h4>
+                            <p class="text-sm text-gray-600">Infrastructure costs are 23% higher than historical average. Consider optimization opportunities.</p>
+                            <div class="flex items-center space-x-2 mt-2">
+                                <span class="text-xs text-blue-600 font-semibold">High Priority</span>
+                                <span class="text-xs text-gray-500">• 2 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-3 p-4 bg-green-50 rounded-lg">
+                        <div class="bg-green-500 p-2 rounded-lg">
+                            <i class="fas fa-check-circle text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 mb-1">Cost Savings Opportunity</h4>
+                            <p class="text-sm text-gray-600">Personnel allocation efficiency improved by 18%. Projected savings of $450K over next quarter.</p>
+                            <div class="flex items-center space-x-2 mt-2">
+                                <span class="text-xs text-green-600 font-semibold">Positive</span>
+                                <span class="text-xs text-gray-500">• 5 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-3 p-4 bg-orange-50 rounded-lg">
+                        <div class="bg-orange-500 p-2 rounded-lg">
+                            <i class="fas fa-exclamation-triangle text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 mb-1">Budget Overrun Risk</h4>
+                            <p class="text-sm text-gray-600">Mobile App Development project trending 15% over budget. Recommend immediate review.</p>
+                            <div class="flex items-center space-x-2 mt-2">
+                                <span class="text-xs text-orange-600 font-semibold">Warning</span>
+                                <span class="text-xs text-gray-500">• 1 day ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">AI Recommendations</h2>
+                    <span class="ai-badge">
+                        <i class="fas fa-magic mr-1"></i>18 Actions
+                    </span>
+                </div>
+                <div class="space-y-4">
+                    <div class="p-4 border-l-4 border-purple-500 bg-purple-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold text-gray-900">Reallocate Resources</h4>
+                            <span class="text-xs bg-purple-600 text-white px-2 py-1 rounded">High Impact</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Move 3 developers from Cloud Migration to Mobile App to prevent delays and cost overruns.</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-purple-600 font-semibold">Potential Savings: $85K</span>
+                            <button onclick="applyRecommendation(1)" class="text-purple-600 hover:text-purple-700 text-sm font-semibold">
+                                Apply <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-4 border-l-4 border-blue-500 bg-blue-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold text-gray-900">Optimize Infrastructure</h4>
+                            <span class="text-xs bg-blue-600 text-white px-2 py-1 rounded">Medium Impact</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Switch to reserved instances for 40% of cloud infrastructure to reduce monthly costs.</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-blue-600 font-semibold">Potential Savings: $125K/year</span>
+                            <button onclick="applyRecommendation(2)" class="text-blue-600 hover:text-blue-700 text-sm font-semibold">
+                                Apply <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-4 border-l-4 border-green-500 bg-green-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold text-gray-900">Consolidate Tools</h4>
+                            <span class="text-xs bg-green-600 text-white px-2 py-1 rounded">Quick Win</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Eliminate redundant software licenses across 5 projects to reduce overhead.</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-green-600 font-semibold">Potential Savings: $45K/year</span>
+                            <button onclick="applyRecommendation(3)" class="text-green-600 hover:text-green-700 text-sm font-semibold">
+                                Apply <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trend Analysis -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900">Spending Trends</h2>
+                <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <option>Last 6 Months</option>
+                    <option>Last 12 Months</option>
+                    <option>Year to Date</option>
+                </select>
+            </div>
+            <canvas id="trendChart" style="max-height: 300px;"></canvas>
+        </div>
+
+        <!-- Forecast Accuracy Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Forecast Accuracy</h3>
+                    <i class="fas fa-chart-pie text-purple-600 text-xl"></i>
+                </div>
+                <canvas id="accuracyChart" style="max-height: 200px;"></canvas>
+                <div class="mt-4 text-center">
+                    <p class="text-3xl font-bold text-gray-900">90.2%</p>
+                    <p class="text-sm text-gray-500">Average accuracy</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Prediction Confidence</h3>
+                    <i class="fas fa-brain text-blue-600 text-xl"></i>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm text-gray-600">Next Month</span>
+                            <span class="text-sm font-semibold text-gray-900">95%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: 95%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm text-gray-600">Next Quarter</span>
+                            <span class="text-sm font-semibold text-gray-900">87%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 87%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm text-gray-600">Next 6 Months</span>
+                            <span class="text-sm font-semibold text-gray-900">78%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-orange-500 h-2 rounded-full" style="width: 78%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Model Performance</h3>
+                    <i class="fas fa-tachometer-alt text-green-600 text-xl"></i>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-600">Data Points</span>
+                            <span class="text-lg font-bold text-gray-900">847</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-600">Training Accuracy</span>
+                            <span class="text-lg font-bold text-gray-900">92.4%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-600">Last Updated</span>
+                            <span class="text-lg font-bold text-gray-900">2h ago</span>
+                        </div>
+                    </div>
+                    <button onclick="retrainModel()" class="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Retrain Model
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize charts
+        function initCharts() {
+            // Forecast Chart
+            const ctx1 = document.getElementById('forecastChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Actual',
+                        data: [1200, 1350, 1280, 1450, 1520, 1600],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Forecast',
+                        data: [null, null, null, null, 1520, 1580, 1650],
+                        borderColor: '#8b5cf6',
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        fill: false
+                    }, {
+                        label: 'Best Case',
+                        data: [null, null, null, null, 1520, 1480, 1420],
+                        borderColor: '#10b981',
+                        borderDash: [2, 2],
+                        tension: 0.4,
+                        fill: false
+                    }, {
+                        label: 'Worst Case',
+                        data: [null, null, null, null, 1520, 1680, 1780],
+                        borderColor: '#ef4444',
+                        borderDash: [2, 2],
+                        tension: 0.4,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value + 'K';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Trend Chart
+            const ctx2 = document.getElementById('trendChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Personnel',
+                        data: [620, 640, 655, 670, 685, 700],
+                        borderColor: '#3b82f6',
+                        tension: 0.4
+                    }, {
+                        label: 'Infrastructure',
+                        data: [340, 355, 350, 365, 370, 380],
+                        borderColor: '#10b981',
+                        tension: 0.4
+                    }, {
+                        label: 'Software',
+                        data: [240, 245, 250, 255, 260, 265],
+                        borderColor: '#8b5cf6',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value + 'K';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Accuracy Chart
+            const ctx3 = document.getElementById('accuracyChart').getContext('2d');
+            new Chart(ctx3, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Accurate', 'Variance'],
+                    datasets: [{
+                        data: [90.2, 9.8],
+                        backgroundColor: ['#10b981', '#e5e7eb'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Functions
+        function runForecast() {
+            showToast('Running AI forecast analysis...', 'info');
+            setTimeout(() => {
+                showToast('Forecast updated successfully!', 'success');
+            }, 2000);
+        }
+
+        function applyRecommendation(id) {
+            showToast('Applying recommendation...', 'success');
+        }
+
+        function retrainModel() {
+            showToast('Retraining AI model with latest data...', 'info');
+        }
+
+        // Toast notification
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            toast.className = `toast ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} text-xl"></i>
+                <span class="font-semibold">${message}</span>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+        });
+    </script>
+</body>
+</html>

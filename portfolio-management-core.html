@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Management - Core Module</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .project-card {
+            transition: all 0.3s ease;
+        }
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .slide-panel {
+            position: fixed;
+            right: -700px;
+            top: 0;
+            width: 700px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+        .slide-panel.active {
+            right: 0;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .health-excellent { background: #d1fae5; color: #065f46; }
+        .health-good { background: #dbeafe; color: #1e40af; }
+        .health-warning { background: #fef3c7; color: #92400e; }
+        .health-critical { background: #fee2e2; color: #991b1b; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="gradient-bg text-white p-6 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">📊 Portfolio Management</h1>
+                    <p class="text-purple-100">Strategic oversight of 42 active projects</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="addProject()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-plus mr-2"></i>Add Project
+                    </button>
+                    <button onclick="optimizePortfolio()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-magic mr-2"></i>Optimize
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Portfolio Health Dashboard -->
+        <div class="grid grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">Active</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-1">Total Projects</p>
+                <p class="text-3xl font-bold text-gray-800 mb-2">42</p>
+                <div class="flex items-center text-sm">
+                    <span class="text-green-600 font-semibold">35 On Track</span>
+                    <span class="text-gray-400 mx-2">•</span>
+                    <span class="text-yellow-600 font-semibold">7 At Risk</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Budget</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-1">Portfolio Value</p>
+                <p class="text-3xl font-bold text-gray-800 mb-2">$8.4M</p>
+                <div class="flex items-center text-sm">
+                    <i class="fas fa-arrow-up text-green-600 mr-1"></i>
+                    <span class="text-green-600 font-semibold">$2.1M invested</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">ROI</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-1">Expected ROI</p>
+                <p class="text-3xl font-bold text-gray-800 mb-2">287%</p>
+                <div class="flex items-center text-sm">
+                    <span class="text-purple-600 font-semibold">$6.3M projected return</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-heartbeat text-yellow-600 text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">Health</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-1">Portfolio Health</p>
+                <p class="text-3xl font-bold text-gray-800 mb-2">83%</p>
+                <div class="flex items-center text-sm">
+                    <span class="text-green-600 font-semibold">Good</span>
+                    <span class="text-gray-400 mx-2">•</span>
+                    <span class="text-gray-600">7 issues</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Charts -->
+        <div class="grid grid-cols-2 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">📊 Portfolio Distribution</h2>
+                <canvas id="distributionChart" height="250"></canvas>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">💰 Budget Allocation</h2>
+                <canvas id="budgetChart" height="250"></canvas>
+            </div>
+        </div>
+
+        <!-- Strategic Alignment -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">🎯 Strategic Alignment</h2>
+            <div class="grid grid-cols-4 gap-4">
+                <div class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-gray-800">Revenue Growth</h3>
+                        <i class="fas fa-chart-line text-blue-600 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-blue-600 mb-2">18</p>
+                    <p class="text-sm text-gray-600">projects aligned</p>
+                    <div class="mt-3 w-full bg-blue-200 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full" style="width: 75%"></div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-gray-800">Cost Reduction</h3>
+                        <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-green-600 mb-2">12</p>
+                    <p class="text-sm text-gray-600">projects aligned</p>
+                    <div class="mt-3 w-full bg-green-200 rounded-full h-2">
+                        <div class="bg-green-600 h-2 rounded-full" style="width: 50%"></div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-gray-800">Innovation</h3>
+                        <i class="fas fa-lightbulb text-purple-600 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-purple-600 mb-2">8</p>
+                    <p class="text-sm text-gray-600">projects aligned</p>
+                    <div class="mt-3 w-full bg-purple-200 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: 33%"></div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-gray-800">Customer Exp.</h3>
+                        <i class="fas fa-users text-yellow-600 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-yellow-600 mb-2">4</p>
+                    <p class="text-sm text-gray-600">projects aligned</p>
+                    <div class="mt-3 w-full bg-yellow-200 rounded-full h-2">
+                        <div class="bg-yellow-600 h-2 rounded-full" style="width: 17%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Cards -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-800">📁 Active Projects</h2>
+                <div class="flex gap-2">
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option>All Projects</option>
+                        <option>On Track</option>
+                        <option>At Risk</option>
+                        <option>Delayed</option>
+                    </select>
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option>Sort by Priority</option>
+                        <option>Sort by Budget</option>
+                        <option>Sort by Progress</option>
+                        <option>Sort by Health</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-6">
+                <!-- Project Card 1 -->
+                <div class="project-card border-2 border-green-200 bg-gradient-to-br from-green-50 to-white rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <h3 class="font-bold text-gray-800">Project Alpha</h3>
+                                <span class="status-badge health-excellent">Excellent</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Mobile App Development</p>
+                        </div>
+                        <button onclick="viewProject('alpha')" class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-gray-600">Progress</span>
+                            <span class="font-bold text-gray-800">87%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: 87%"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="font-bold text-gray-800">$450K</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">ROI</p>
+                            <p class="font-bold text-green-600">342%</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Team</p>
+                            <p class="font-bold text-gray-800">12 members</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Due Date</p>
+                            <p class="font-bold text-gray-800">Jun 30</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">Revenue Growth</span>
+                        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">Innovation</span>
+                    </div>
+                </div>
+
+                <!-- Project Card 2 -->
+                <div class="project-card border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <h3 class="font-bold text-gray-800">Project Beta</h3>
+                                <span class="status-badge health-good">Good</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Website Redesign</p>
+                        </div>
+                        <button onclick="viewProject('beta')" class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-gray-600">Progress</span>
+                            <span class="font-bold text-gray-800">72%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 72%"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="font-bold text-gray-800">$320K</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">ROI</p>
+                            <p class="font-bold text-green-600">245%</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Team</p>
+                            <p class="font-bold text-gray-800">8 members</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Due Date</p>
+                            <p class="font-bold text-gray-800">Jul 15</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">Customer Exp.</span>
+                    </div>
+                </div>
+
+                <!-- Project Card 3 -->
+                <div class="project-card border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-white rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <h3 class="font-bold text-gray-800">Project Gamma</h3>
+                                <span class="status-badge health-warning">At Risk</span>
+                            </div>
+                            <p class="text-sm text-gray-600">API Integration</p>
+                        </div>
+                        <button onclick="viewProject('gamma')" class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-gray-600">Progress</span>
+                            <span class="font-bold text-gray-800">58%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-yellow-500 h-2 rounded-full" style="width: 58%"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="font-bold text-gray-800">$280K</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">ROI</p>
+                            <p class="font-bold text-green-600">198%</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Team</p>
+                            <p class="font-bold text-gray-800">6 members</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Due Date</p>
+                            <p class="font-bold text-red-600">Overdue</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Cost Reduction</span>
+                    </div>
+                </div>
+
+                <!-- Project Card 4 -->
+                <div class="project-card border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <h3 class="font-bold text-gray-800">Project Delta</h3>
+                                <span class="status-badge health-excellent">Excellent</span>
+                            </div>
+                            <p class="text-sm text-gray-600">AI Platform</p>
+                        </div>
+                        <button onclick="viewProject('delta')" class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-gray-600">Progress</span>
+                            <span class="font-bold text-gray-800">45%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full" style="width: 45%"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="font-bold text-gray-800">$1.2M</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">ROI</p>
+                            <p class="font-bold text-green-600">425%</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Team</p>
+                            <p class="font-bold text-gray-800">18 members</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Due Date</p>
+                            <p class="font-bold text-gray-800">Dec 31</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">Innovation</span>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">Revenue Growth</span>
+                    </div>
+                </div>
+
+                <!-- Project Card 5 -->
+                <div class="project-card border-2 border-green-200 bg-gradient-to-br from-green-50 to-white rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <h3 class="font-bold text-gray-800">Project Epsilon</h3>
+                                <span class="status-badge health-good">Good</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Cloud Migration</p>
+                        </div>
+                        <button onclick="viewProject('epsilon')" class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-gray-600">Progress</span>
+                            <span class="font-bold text-gray-800">65%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: 65%"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="font-bold text-gray-800">$680K</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">ROI</p>
+                            <p class="font-bold text-green-600">312%</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Team</p>
+                            <p class="font-bold text-gray-800">14 members</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Due Date</p>
+                            <p class="font-bold text-gray-800">Sep 15</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Cost Reduction</span>
+                    </div>
+                </div>
+
+                <!-- Project Card 6 -->
+                <div class="project-card border-2 border-red-200 bg-gradient-to-br from-red-50 to-white rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <h3 class="font-bold text-gray-800">Project Zeta</h3>
+                                <span class="status-badge health-critical">Critical</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Security Upgrade</p>
+                        </div>
+                        <button onclick="viewProject('zeta')" class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-gray-600">Progress</span>
+                            <span class="font-bold text-gray-800">32%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-red-500 h-2 rounded-full" style="width: 32%"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="font-bold text-gray-800">$540K</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">ROI</p>
+                            <p class="font-bold text-green-600">156%</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Team</p>
+                            <p class="font-bold text-gray-800">10 members</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Due Date</p>
+                            <p class="font-bold text-red-600">Delayed</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Cost Reduction</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center">
+                <button onclick="loadMore()" class="bg-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-purple-700">
+                    Load More Projects (36 remaining)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Details Panel -->
+    <div id="projectPanel" class="slide-panel">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Project Details</h2>
+                <button onclick="closeProjectPanel()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Project details content would go here -->
+            <div class="space-y-6">
+                <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <h3 class="font-bold text-gray-800 mb-2">Project Alpha</h3>
+                    <p class="text-sm text-gray-600">Mobile App Development</p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-3">Key Metrics</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-xs text-gray-500">Progress</p>
+                            <p class="text-xl font-bold text-gray-800">87%</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-xs text-gray-500">Budget</p>
+                            <p class="text-xl font-bold text-gray-800">$450K</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-xs text-gray-500">ROI</p>
+                            <p class="text-xl font-bold text-green-600">342%</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-xs text-gray-500">Health</p>
+                            <p class="text-xl font-bold text-green-600">Excellent</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-3">Strategic Alignment</h4>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">Revenue Growth</span>
+                            <span class="text-sm text-gray-600">Primary objective</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">Innovation</span>
+                            <span class="text-sm text-gray-600">Secondary objective</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button class="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700">
+                        View Full Details
+                    </button>
+                    <button class="px-6 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50">
+                        Edit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Charts
+        function initCharts() {
+            // Distribution Chart
+            const ctx1 = document.getElementById('distributionChart');
+            if (ctx1) {
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['On Track', 'At Risk', 'Delayed', 'Completed'],
+                        datasets: [{
+                            data: [35, 5, 2, 15],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#3b82f6']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            // Budget Chart
+            const ctx2 = document.getElementById('budgetChart');
+            if (ctx2) {
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Revenue Growth', 'Cost Reduction', 'Innovation', 'Customer Exp.'],
+                        datasets: [{
+                            label: 'Budget Allocated ($M)',
+                            data: [3.2, 2.1, 2.4, 0.7],
+                            backgroundColor: ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+        });
+
+        // Panel Management
+        function viewProject(id) {
+            document.getElementById('projectPanel').classList.add('active');
+        }
+
+        function closeProjectPanel() {
+            document.getElementById('projectPanel').classList.remove('active');
+        }
+
+        // Actions
+        function addProject() {
+            showToast('Opening new project form...');
+        }
+
+        function optimizePortfolio() {
+            showToast('Running portfolio optimization...');
+            setTimeout(() => {
+                showToast('Portfolio optimized! 3 recommendations generated.');
+            }, 2000);
+        }
+
+        function loadMore() {
+            showToast('Loading more projects...');
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

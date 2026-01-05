@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid Gantt System - PPM Champion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gantt-container {
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        .gantt-chart {
+            min-width: 1200px;
+        }
+        .task-bar {
+            transition: all 0.3s ease;
+            cursor: move;
+        }
+        .task-bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .milestone {
+            width: 20px;
+            height: 20px;
+            transform: rotate(45deg);
+            background-color: #F59E0B;
+            margin: auto;
+        }
+        .critical-path {
+            stroke: #EF4444;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+        }
+        .dependency-line {
+            stroke: #6B7280;
+            stroke-width: 1;
+            marker-end: url(#arrowhead);
+        }
+        .sprint-card {
+            transition: all 0.3s ease;
+        }
+        .sprint-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .story-card {
+            cursor: move;
+            transition: all 0.2s ease;
+        }
+        .story-card:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+        .dragging {
+            opacity: 0.5;
+        }
+        .drop-zone {
+            min-height: 100px;
+            border: 2px dashed transparent;
+            transition: all 0.3s ease;
+        }
+        .drop-zone.drag-over {
+            border-color: #3B82F6;
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="text-gray-600 hover:text-gray-800 mr-4">
+                        <i class="fas fa-arrow-left text-xl"></i>
+                    </button>
+                    <i class="fas fa-chart-gantt text-blue-600 text-2xl mr-3"></i>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">Hybrid Gantt System</h1>
+                        <p class="text-sm text-gray-600">Cloud Migration Project</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center bg-gray-100 rounded-lg p-1">
+                        <button onclick="setMethodology('waterfall')" id="waterfallBtn" class="px-3 py-1 bg-white rounded text-sm font-medium">Waterfall</button>
+                        <button onclick="setMethodology('agile')" id="agileBtn" class="px-3 py-1 text-sm font-medium text-gray-600">Agile</button>
+                        <button onclick="setMethodology('hybrid')" id="hybridBtn" class="px-3 py-1 text-sm font-medium text-gray-600">Hybrid</button>
+                    </div>
+                    <button onclick="addTask()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-plus mr-2"></i>Add Task
+                    </button>
+                    <button onclick="exportGantt()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Timeline Controls -->
+    <div class="bg-white border-b sticky top-16 z-40">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <button onclick="zoomIn()" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button onclick="zoomOut()" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <select onchange="changeView(this.value)" class="px-3 py-1 border border-gray-300 rounded text-sm">
+                        <option value="day">Day</option>
+                        <option value="week" selected>Week</option>
+                        <option value="month">Month</option>
+                        <option value="quarter">Quarter</option>
+                    </select>
+                    <button onclick="toggleCriticalPath()" class="text-gray-600 hover:text-gray-800 text-sm">
+                        <i class="fas fa-route mr-1"></i>Critical Path
+                    </button>
+                    <button onclick="toggleDependencies()" class="text-gray-600 hover:text-gray-800 text-sm">
+                        <i class="fas fa-project-diagram mr-1"></i>Dependencies
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <span>Timeline:</span>
+                    <span class="font-medium">Sep 2023 - Mar 2024</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Waterfall View -->
+        <div id="waterfallView" class="methodology-view">
+            <!-- Project Stats -->
+            <div class="grid md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Project Duration</p>
+                            <p class="text-xl font-bold text-gray-800">199 days</p>
+                        </div>
+                        <i class="fas fa-calendar text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Total Tasks</p>
+                            <p class="text-xl font-bold text-gray-800">48</p>
+                        </div>
+                        <i class="fas fa-tasks text-green-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Critical Tasks</p>
+                            <p class="text-xl font-bold text-red-600">12</p>
+                        </div>
+                        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Progress</p>
+                            <p class="text-xl font-bold text-blue-600">68%</p>
+                        </div>
+                        <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gantt Chart -->
+            <div class="bg-white rounded-lg shadow-sm">
+                <div class="p-4 border-b">
+                    <h3 class="text-lg font-semibold text-gray-800">Project Timeline</h3>
+                </div>
+                <div class="gantt-container">
+                    <div class="gantt-chart p-4">
+                        <canvas id="ganttChart" width="1200" height="600"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Task List -->
+                <div class="border-t">
+                    <div class="p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Task Details</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b bg-gray-50">
+                                        <th class="text-left py-2 px-4">Task Name</th>
+                                        <th class="text-left py-2 px-4">Start</th>
+                                        <th class="text-left py-2 px-4">End</th>
+                                        <th class="text-left py-2 px-4">Duration</th>
+                                        <th class="text-left py-2 px-4">Progress</th>
+                                        <th class="text-left py-2 px-4">Assignee</th>
+                                        <th class="text-left py-2 px-4">Dependencies</th>
+                                        <th class="text-left py-2 px-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="taskList">
+                                    <!-- Tasks will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agile View -->
+        <div id="agileView" class="methodology-view hidden">
+            <!-- Sprint Overview -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">Sprint Planning</h3>
+                    <button onclick="createSprint()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-plus mr-2"></i>Create Sprint
+                    </button>
+                </div>
+                
+                <div class="grid md:grid-cols-4 gap-4 mb-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-gray-800">Sprint 8</div>
+                        <div class="text-sm text-gray-600">Current Sprint</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-600">12</div>
+                        <div class="text-sm text-gray-600">Story Points</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600">8</div>
+                        <div class="text-sm text-gray-600">Days Left</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-purple-600">85%</div>
+                        <div class="text-sm text-gray-600">Velocity</div>
+                    </div>
+                </div>
+
+                <!-- Sprints -->
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="sprint-card border rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-semibold text-gray-800">Sprint 6</h4>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Completed</span>
+                        </div>
+                        <div class="space-y-2 mb-3">
+                            <div class="p-2 bg-gray-50 rounded text-sm">
+                                <div class="font-medium">Infrastructure Setup</div>
+                                <div class="text-gray-600">5 points • Completed</div>
+                            </div>
+                            <div class="p-2 bg-gray-50 rounded text-sm">
+                                <div class="font-medium">Security Configuration</div>
+                                <div class="text-gray-600">3 points • Completed</div>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <div>Completed: Dec 15, 2023</div>
+                            <div>Velocity: 42 points</div>
+                        </div>
+                    </div>
+
+                    <div class="sprint-card border rounded-lg p-4 border-blue-500 bg-blue-50">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-semibold text-gray-800">Sprint 7</h4>
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">In Progress</span>
+                        </div>
+                        <div class="space-y-2 mb-3">
+                            <div class="p-2 bg-white rounded text-sm">
+                                <div class="font-medium">Data Migration</div>
+                                <div class="text-gray-600">8 points • In Progress</div>
+                            </div>
+                            <div class="p-2 bg-white rounded text-sm">
+                                <div class="font-medium">API Integration</div>
+                                <div class="text-gray-600">5 points • In Progress</div>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <div>Ends: Jan 7, 2024</div>
+                            <div>Progress: 60%</div>
+                        </div>
+                    </div>
+
+                    <div class="sprint-card border rounded-lg p-4 border-gray-300">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-semibold text-gray-800">Sprint 8</h4>
+                            <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Planned</span>
+                        </div>
+                        <div class="space-y-2 mb-3">
+                            <div class="p-2 bg-gray-50 rounded text-sm">
+                                <div class="font-medium">Application Migration</div>
+                                <div class="text-gray-600">8 points • Planned</div>
+                            </div>
+                            <div class="p-2 bg-gray-50 rounded text-sm">
+                                <div class="font-medium">Testing & Validation</div>
+                                <div class="text-gray-600">6 points • Planned</div>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <div>Starts: Jan 8, 2024</div>
+                            <div>Duration: 2 weeks</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backlog -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Product Backlog</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- To Do Column -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">To Do</h4>
+                        <div class="drop-zone space-y-2" id="todoColumn">
+                            <div class="story-card bg-white border rounded-lg p-3" draggable="true">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-xs bg-gray-100 text-gray-600 rounded px-2">Task-101</span>
+                                    <span class="text-xs bg-blue-100 text-blue-600 rounded px-2">5 pts</span>
+                                </div>
+                                <h5 class="font-medium text-gray-800 mb-1">Setup Load Balancers</h5>
+                                <p class="text-sm text-gray-600 mb-2">Configure and test load balancing for cloud infrastructure</p>
+                                <div class="flex justify-between items-center">
+                                    <img src="https://picsum.photos/seed/user1/24/24.jpg" alt="Assignee" class="w-6 h-6 rounded-full">
+                                    <span class="text-xs text-gray-500">Infrastructure</span>
+                                </div>
+                            </div>
+                            
+                            <div class="story-card bg-white border rounded-lg p-3" draggable="true">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-xs bg-gray-100 text-gray-600 rounded px-2">Task-102</span>
+                                    <span class="text-xs bg-blue-100 text-blue-600 rounded px-2">3 pts</span>
+                                </div>
+                                <h5 class="font-medium text-gray-800 mb-1">Database Migration</h5>
+                                <p class="text-sm text-gray-600 mb-2">Migrate on-premise databases to cloud RDS</p>
+                                <div class="flex justify-between items-center">
+                                    <img src="https://picsum.photos/seed/user2/24/24.jpg" alt="Assignee" class="w-6 h-6 rounded-full">
+                                    <span class="text-xs text-gray-500">Backend</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- In Progress Column -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">In Progress</h4>
+                        <div class="drop-zone space-y-2" id="progressColumn">
+                            <div class="story-card bg-white border rounded-lg p-3" draggable="true">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-xs bg-gray-100 text-gray-600 rounded px-2">Task-103</span>
+                                    <span class="text-xs bg-yellow-100 text-yellow-600 rounded px-2">8 pts</span>
+                                </div>
+                                <h5 class="font-medium text-gray-800 mb-1">API Gateway Setup</h5>
+                                <p class="text-sm text-gray-600 mb-2">Implement API gateway for microservices communication</p>
+                                <div class="flex justify-between items-center">
+                                    <img src="https://picsum.photos/seed/user3/24/24.jpg" alt="Assignee" class="w-6 h-6 rounded-full">
+                                    <span class="text-xs text-gray-500">Backend</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hybrid View -->
+        <div id="hybridView" class="methodology-view hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Hybrid Project Management</h3>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Waterfall Phase -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-4">Waterfall Phases</h4>
+                        <div class="space-y-3">
+                            <div class="border rounded-lg p-4 bg-green-50 border-green-200">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h5 class="font-semibold text-gray-800">Phase 1: Planning & Design</h5>
+                                        <p class="text-sm text-gray-600">Sep 1 - Oct 15, 2023</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Completed</span>
+                                </div>
+                            </div>
+                            
+                            <div class="border rounded-lg p-4 bg-blue-50 border-blue-200">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h5 class="font-semibold text-gray-800">Phase 2: Infrastructure Setup</h5>
+                                        <p class="text-sm text-gray-600">Oct 16 - Dec 31, 2023</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">In Progress</span>
+                                </div>
+                            </div>
+                            
+                            <div class="border rounded-lg p-4 bg-gray-50 border-gray-200">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h5 class="font-semibold text-gray-800">Phase 3: Application Migration</h5>
+                                        <p class="text-sm text-gray-600">Jan 1 - Mar 15, 2024</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Planned</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Agile Sprints within Phase -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-4">Current Phase: Agile Sprints</h4>
+                        <div class="space-y-3">
+                            <div class="border rounded-lg p-3">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium text-gray-800">Sprint 7: Infrastructure</span>
+                                    <span class="text-xs bg-green-100 text-green-600 rounded px-2">Active</span>
+                                </div>
+                                <div class="space-y-1 text-sm">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                        <span>Setup VPC Networks</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                        <span>Configure Security Groups</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-circle text-yellow-500 mr-2"></i>
+                                        <span>Deploy Load Balancers</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-circle text-gray-400 mr-2"></i>
+                                        <span>Setup Monitoring</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border rounded-lg p-3">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium text-gray-800">Sprint 8: Services</span>
+                                    <span class="text-xs bg-gray-100 text-gray-600 rounded px-2">Next</span>
+                                </div>
+                                <div class="text-sm text-gray-600">Starting Jan 8, 2024</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Combined Timeline -->
+                <div class="mt-6">
+                    <h4 class="font-medium text-gray-700 mb-4">Combined Timeline View</h4>
+                    <canvas id="hybridChart" width="800" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Edit Modal -->
+    <div id="taskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">Task Details</h3>
+                <button onclick="closeTaskModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Task Name</label>
+                        <input type="text" id="taskName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                            <input type="date" id="taskStart" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                            <input type="date" id="taskEnd" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Assignee</label>
+                            <select id="taskAssignee" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>Sarah Chen</option>
+                                <option>Mike Johnson</option>
+                                <option>Emily Davis</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Progress</label>
+                            <input type="number" id="taskProgress" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" onclick="closeTaskModal()" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Save Task
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample task data
+        const tasks = [
+            { id: 1, name: 'Project Planning', start: '2023-09-01', end: '2023-09-30', progress: 100, assignee: 'Sarah Chen', dependencies: [] },
+            { id: 2, name: 'Infrastructure Setup', start: '2023-10-01', end: '2023-12-15', progress: 80, assignee: 'Mike Johnson', dependencies: [1] },
+            { id: 3, name: 'Security Configuration', start: '2023-10-15', end: '2023-11-30', progress: 90, assignee: 'Emily Davis', dependencies: [1] },
+            { id: 4, name: 'Data Migration', start: '2023-11-01', end: '2024-01-15', progress: 45, assignee: 'Sarah Chen', dependencies: [2, 3] },
+            { id: 5, name: 'Application Migration', start: '2024-01-01', end: '2024-02-28', progress: 20, assignee: 'Mike Johnson', dependencies: [4] },
+            { id: 6, name: 'Testing & Validation', start: '2024-02-01', end: '2024-03-15', progress: 0, assignee: 'Emily Davis', dependencies: [5] }
+        ];
+
+        // Methodology switching
+        function setMethodology(type) {
+            // Hide all views
+            document.querySelectorAll('.methodology-view').forEach(view => {
+                view.classList.add('hidden');
+            });
+            
+            // Reset all buttons
+            document.querySelectorAll('[id$="Btn"]').forEach(btn => {
+                if (btn.id.includes('waterfall') || btn.id.includes('agile') || btn.id.includes('hybrid')) {
+                    btn.className = 'px-3 py-1 text-sm font-medium text-gray-600';
+                }
+            });
+            
+            // Show selected view
+            if (type === 'waterfall') {
+                document.getElementById('waterfallView').classList.remove('hidden');
+                document.getElementById('waterfallBtn').className = 'px-3 py-1 bg-white rounded text-sm font-medium';
+                initializeGanttChart();
+            } else if (type === 'agile') {
+                document.getElementById('agileView').classList.remove('hidden');
+                document.getElementById('agileBtn').className = 'px-3 py-1 bg-white rounded text-sm font-medium';
+                initializeDragAndDrop();
+            } else if (type === 'hybrid') {
+                document.getElementById('hybridView').classList.remove('hidden');
+                document.getElementById('hybridBtn').className = 'px-3 py-1 bg-white rounded text-sm font-medium';
+                initializeHybridChart();
+            }
+        }
+
+        // Initialize Gantt Chart
+        function initializeGanttChart() {
+            const ctx = document.getElementById('ganttChart');
+            if (!ctx) return;
+
+            // Clear existing chart if any
+            if (window.ganttChartInstance) {
+                window.ganttChartInstance.destroy();
+            }
+
+            const chartData = tasks.map(task => ({
+                label: task.name,
+                data: [{
+                    x: [new Date(task.start), new Date(task.end)],
+                    y: task.id
+                }],
+                backgroundColor: task.progress === 100 ? '#10B981' : 
+                               task.progress > 50 ? '#3B82F6' : '#F59E0B',
+                borderColor: '#1F2937',
+                borderWidth: 1
+            }));
+
+            window.ganttChartInstance = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    datasets: chartData
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week',
+                                displayFormats: {
+                                    week: 'MMM dd'
+                                }
+                            },
+                            min: '2023-09-01',
+                            max: '2024-03-31'
+                        },
+                        y: {
+                            min: 0,
+                            max: tasks.length + 1,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    const task = tasks.find(t => t.id === value);
+                                    return task ? task.name : '';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const task = tasks.find(t => t.id === context.raw.y);
+                                    return [
+                                        `Task: ${task.name}`,
+                                        `Progress: ${task.progress}%`,
+                                        `Assignee: ${task.assignee}`
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Populate task list
+            populateTaskList();
+        }
+
+        // Populate task list
+        function populateTaskList() {
+            const taskList = document.getElementById('taskList');
+            if (!taskList) return;
+
+            taskList.innerHTML = tasks.map(task => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="py-2 px-4">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${task.progress === 100 ? '#10B981' : task.progress > 50 ? '#3B82F6' : '#F59E0B'}"></div>
+                            ${task.name}
+                        </div>
+                    </td>
+                    <td class="py-2 px-4">${task.start}</td>
+                    <td class="py-2 px-4">${task.end}</td>
+                    <td class="py-2 px-4">${calculateDuration(task.start, task.end)} days</td>
+                    <td class="py-2 px-4">
+                        <div class="flex items-center">
+                            <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: ${task.progress}%"></div>
+                            </div>
+                            <span class="text-sm">${task.progress}%</span>
+                        </div>
+                    </td>
+                    <td class="py-2 px-4">${task.assignee}</td>
+                    <td class="py-2 px-4">${task.dependencies.length > 0 ? task.dependencies.join(', ') : 'None'}</td>
+                    <td class="py-2 px-4">
+                        <button onclick="editTask(${task.id})" class="text-blue-600 hover:text-blue-800 mr-2">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteTask(${task.id})" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Calculate duration
+        function calculateDuration(start, end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            const diffTime = Math.abs(endDate - startDate);
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        // Initialize Hybrid Chart
+        function initializeHybridChart() {
+            const ctx = document.getElementById('hybridChart');
+            if (!ctx) return;
+
+            new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Phase 1: Planning', 'Phase 2: Infrastructure', 'Phase 3: Migration'],
+                    datasets: [{
+                        label: 'Waterfall Phase',
+                        data: [
+                            ['2023-09-01', '2023-10-15'],
+                            ['2023-10-16', '2023-12-31'],
+                            ['2024-01-01', '2024-03-15']
+                        ],
+                        backgroundColor: '#3B82F6'
+                    }, {
+                        label: 'Agile Sprints',
+                        data: [
+                            ['2023-09-01', '2023-09-15'],
+                            ['2023-09-16', '2023-09-30'],
+                            ['2023-10-01', '2023-10-15']
+                        ],
+                        backgroundColor: '#10B981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'month'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Drag and Drop
+        function initializeDragAndDrop() {
+            const storyCards = document.querySelectorAll('.story-card');
+            const dropZones = document.querySelectorAll('.drop-zone');
+
+            storyCards.forEach(card => {
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/html', e.target.innerHTML);
+                    e.target.classList.add('dragging');
+                });
+
+                card.addEventListener('dragend', (e) => {
+                    e.target.classList.remove('dragging');
+                });
+            });
+
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    zone.classList.add('drag-over');
+                });
+
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('drag-over');
+                });
+
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                    // Handle the drop logic here
+                });
+            });
+        }
+
+        // Task functions
+        function addTask() {
+            document.getElementById('taskName').value = '';
+            document.getElementById('taskStart').value = '';
+            document.getElementById('taskEnd').value = '';
+            document.getElementById('taskAssignee').value = 'Sarah Chen';
+            document.getElementById('taskProgress').value = 0;
+            document.getElementById('taskModal').classList.remove('hidden');
+        }
+
+        function editTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                document.getElementById('taskName').value = task.name;
+                document.getElementById('taskStart').value = task.start;
+                document.getElementById('taskEnd').value = task.end;
+                document.getElementById('taskAssignee').value = task.assignee;
+                document.getElementById('taskProgress').value = task.progress;
+                document.getElementById('taskModal').classList.remove('hidden');
+            }
+        }
+
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                const index = tasks.findIndex(t => t.id === taskId);
+                if (index > -1) {
+                    tasks.splice(index, 1);
+                    initializeGanttChart();
+                }
+            }
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.add('hidden');
+        }
+
+        // Navigation and controls
+        function goBack() {
+            window.location.href = 'project-detail-full.html';
+        }
+
+        function zoomIn() {
+            // Implement zoom in functionality
+            console.log('Zoom in');
+        }
+
+        function zoomOut() {
+            // Implement zoom out functionality
+            console.log('Zoom out');
+        }
+
+        function changeView(viewType) {
+            // Change timeline view
+            console.log('Change view to:', viewType);
+        }
+
+        function toggleCriticalPath() {
+            // Toggle critical path visibility
+            console.log('Toggle critical path');
+        }
+
+        function toggleDependencies() {
+            // Toggle dependency lines
+            console.log('Toggle dependencies');
+        }
+
+        function exportGantt() {
+            // Export Gantt chart
+            console.log('Export Gantt');
+        }
+
+        function createSprint() {
+            // Create new sprint
+            console.log('Create sprint');
+        }
+
+        // Initialize with waterfall view
+        window.addEventListener('load', () => {
+            setMethodology('waterfall');
+        });
+    </script>
+</body>
+</html>

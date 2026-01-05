@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customizable Widgets - Dashboard Module</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .widget-card {
+            transition: all 0.3s ease;
+            cursor: move;
+        }
+        .widget-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .widget-dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+        .widget-dropzone {
+            border: 2px dashed #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .slide-panel {
+            position: fixed;
+            right: -500px;
+            top: 0;
+            width: 500px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+        .slide-panel.active {
+            right: 0;
+        }
+        .widget-preview {
+            height: 200px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9fafb;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="gradient-bg text-white p-6 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">📊 Customizable Widgets</h1>
+                    <p class="text-purple-100">Drag, drop, and customize your perfect dashboard</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="openWidgetLibrary()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-plus mr-2"></i>Add Widget
+                    </button>
+                    <button onclick="saveLayout()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-save mr-2"></i>Save Layout
+                    </button>
+                    <button onclick="resetLayout()" class="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition">
+                        <i class="fas fa-undo mr-2"></i>Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Stats Bar -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Active Widgets</p>
+                        <p class="text-2xl font-bold text-purple-600" id="activeWidgets">12</p>
+                    </div>
+                    <i class="fas fa-th text-purple-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Available Widgets</p>
+                        <p class="text-2xl font-bold text-blue-600">50+</p>
+                    </div>
+                    <i class="fas fa-puzzle-piece text-blue-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Custom Layouts</p>
+                        <p class="text-2xl font-bold text-green-600">8</p>
+                    </div>
+                    <i class="fas fa-layer-group text-green-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Last Saved</p>
+                        <p class="text-sm font-semibold text-gray-700">2 mins ago</p>
+                    </div>
+                    <i class="fas fa-clock text-gray-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout Selector -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">📐 Layout Templates</h2>
+            <div class="grid grid-cols-4 gap-4">
+                <button onclick="applyLayout('executive')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 transition">
+                    <div class="text-center">
+                        <i class="fas fa-chart-line text-3xl text-purple-600 mb-2"></i>
+                        <p class="font-semibold">Executive</p>
+                        <p class="text-xs text-gray-500">High-level KPIs</p>
+                    </div>
+                </button>
+                <button onclick="applyLayout('project')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition">
+                    <div class="text-center">
+                        <i class="fas fa-tasks text-3xl text-blue-600 mb-2"></i>
+                        <p class="font-semibold">Project Manager</p>
+                        <p class="text-xs text-gray-500">Task & timeline focus</p>
+                    </div>
+                </button>
+                <button onclick="applyLayout('resource')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 transition">
+                    <div class="text-center">
+                        <i class="fas fa-users text-3xl text-green-600 mb-2"></i>
+                        <p class="font-semibold">Resource Manager</p>
+                        <p class="text-xs text-gray-500">Team & capacity</p>
+                    </div>
+                </button>
+                <button onclick="applyLayout('financial')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-yellow-500 transition">
+                    <div class="text-center">
+                        <i class="fas fa-dollar-sign text-3xl text-yellow-600 mb-2"></i>
+                        <p class="font-semibold">Financial</p>
+                        <p class="text-xs text-gray-500">Budget & costs</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Widget Grid (Drag & Drop Area) -->
+        <div id="widgetGrid" class="grid grid-cols-3 gap-6 mb-6">
+            <!-- Widget 1: Project Status -->
+            <div class="widget-card bg-white rounded-lg shadow-lg p-6" draggable="true" data-widget-id="1">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-grip-vertical text-gray-400 mr-2"></i>
+                        Project Status
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="configureWidget(1)" class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button onclick="removeWidget(1)" class="text-gray-400 hover:text-red-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <canvas id="projectStatusChart" height="200"></canvas>
+            </div>
+
+            <!-- Widget 2: Team Utilization -->
+            <div class="widget-card bg-white rounded-lg shadow-lg p-6" draggable="true" data-widget-id="2">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-grip-vertical text-gray-400 mr-2"></i>
+                        Team Utilization
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="configureWidget(2)" class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button onclick="removeWidget(2)" class="text-gray-400 hover:text-red-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Development</span>
+                            <span class="font-semibold">92%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-red-500 h-2 rounded-full" style="width: 92%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Design</span>
+                            <span class="font-semibold">78%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: 78%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>QA</span>
+                            <span class="font-semibold">65%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 65%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget 3: Budget Overview -->
+            <div class="widget-card bg-white rounded-lg shadow-lg p-6" draggable="true" data-widget-id="3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-grip-vertical text-gray-400 mr-2"></i>
+                        Budget Overview
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="configureWidget(3)" class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button onclick="removeWidget(3)" class="text-gray-400 hover:text-red-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <canvas id="budgetChart" height="200"></canvas>
+            </div>
+
+            <!-- Widget 4: Recent Activities -->
+            <div class="widget-card bg-white rounded-lg shadow-lg p-6" draggable="true" data-widget-id="4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-grip-vertical text-gray-400 mr-2"></i>
+                        Recent Activities
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="configureWidget(4)" class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button onclick="removeWidget(4)" class="text-gray-400 hover:text-red-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-check text-green-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold">Task completed</p>
+                            <p class="text-xs text-gray-500">API Integration - 5 mins ago</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-comment text-blue-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold">New comment</p>
+                            <p class="text-xs text-gray-500">Design Review - 12 mins ago</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-user-plus text-purple-600 text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold">Team member added</p>
+                            <p class="text-xs text-gray-500">Sarah Chen joined - 1 hour ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget 5: Risk Matrix -->
+            <div class="widget-card bg-white rounded-lg shadow-lg p-6" draggable="true" data-widget-id="5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-grip-vertical text-gray-400 mr-2"></i>
+                        Risk Matrix
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="configureWidget(5)" class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button onclick="removeWidget(5)" class="text-gray-400 hover:text-red-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="bg-yellow-100 p-3 rounded text-center">
+                        <p class="text-2xl font-bold text-yellow-700">3</p>
+                        <p class="text-xs text-yellow-600">Low</p>
+                    </div>
+                    <div class="bg-orange-100 p-3 rounded text-center">
+                        <p class="text-2xl font-bold text-orange-700">5</p>
+                        <p class="text-xs text-orange-600">Medium</p>
+                    </div>
+                    <div class="bg-red-100 p-3 rounded text-center">
+                        <p class="text-2xl font-bold text-red-700">2</p>
+                        <p class="text-xs text-red-600">High</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget 6: Upcoming Milestones -->
+            <div class="widget-card bg-white rounded-lg shadow-lg p-6" draggable="true" data-widget-id="6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-grip-vertical text-gray-400 mr-2"></i>
+                        Upcoming Milestones
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="configureWidget(6)" class="text-gray-400 hover:text-purple-600">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button onclick="removeWidget(6)" class="text-gray-400 hover:text-red-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-2 bg-purple-50 rounded">
+                        <div>
+                            <p class="text-sm font-semibold">Beta Release</p>
+                            <p class="text-xs text-gray-500">Project Alpha</p>
+                        </div>
+                        <span class="text-xs bg-purple-200 text-purple-700 px-2 py-1 rounded">3 days</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 bg-blue-50 rounded">
+                        <div>
+                            <p class="text-sm font-semibold">Design Complete</p>
+                            <p class="text-xs text-gray-500">Project Beta</p>
+                        </div>
+                        <span class="text-xs bg-blue-200 text-blue-700 px-2 py-1 rounded">1 week</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 bg-green-50 rounded">
+                        <div>
+                            <p class="text-sm font-semibold">UAT Start</p>
+                            <p class="text-xs text-gray-500">Project Gamma</p>
+                        </div>
+                        <span class="text-xs bg-green-200 text-green-700 px-2 py-1 rounded">2 weeks</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Widget Dropzone -->
+        <div class="widget-dropzone bg-white rounded-lg shadow-lg p-12 text-center">
+            <i class="fas fa-plus-circle text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 text-lg">Drag widgets here or click "Add Widget" to customize your dashboard</p>
+        </div>
+    </div>
+
+    <!-- Widget Library Slide Panel -->
+    <div id="widgetLibrary" class="slide-panel">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Widget Library</h2>
+                <button onclick="closeWidgetLibrary()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Search -->
+            <div class="mb-6">
+                <input type="text" placeholder="Search widgets..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+            </div>
+
+            <!-- Widget Categories -->
+            <div class="space-y-6">
+                <!-- KPI Widgets -->
+                <div>
+                    <h3 class="font-bold text-gray-700 mb-3">📊 KPI Widgets</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="addWidget('kpi-projects')" class="p-3 border border-gray-200 rounded-lg hover:border-purple-500 text-left">
+                            <p class="font-semibold text-sm">Active Projects</p>
+                            <p class="text-xs text-gray-500">Count & status</p>
+                        </button>
+                        <button onclick="addWidget('kpi-budget')" class="p-3 border border-gray-200 rounded-lg hover:border-purple-500 text-left">
+                            <p class="font-semibold text-sm">Budget Status</p>
+                            <p class="text-xs text-gray-500">Spent vs allocated</p>
+                        </button>
+                        <button onclick="addWidget('kpi-resources')" class="p-3 border border-gray-200 rounded-lg hover:border-purple-500 text-left">
+                            <p class="font-semibold text-sm">Resource Util.</p>
+                            <p class="text-xs text-gray-500">Team capacity</p>
+                        </button>
+                        <button onclick="addWidget('kpi-velocity')" class="p-3 border border-gray-200 rounded-lg hover:border-purple-500 text-left">
+                            <p class="font-semibold text-sm">Team Velocity</p>
+                            <p class="text-xs text-gray-500">Story points/sprint</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chart Widgets -->
+                <div>
+                    <h3 class="font-bold text-gray-700 mb-3">📈 Chart Widgets</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="addWidget('chart-burndown')" class="p-3 border border-gray-200 rounded-lg hover:border-blue-500 text-left">
+                            <p class="font-semibold text-sm">Burndown Chart</p>
+                            <p class="text-xs text-gray-500">Sprint progress</p>
+                        </button>
+                        <button onclick="addWidget('chart-gantt')" class="p-3 border border-gray-200 rounded-lg hover:border-blue-500 text-left">
+                            <p class="font-semibold text-sm">Mini Gantt</p>
+                            <p class="text-xs text-gray-500">Timeline view</p>
+                        </button>
+                        <button onclick="addWidget('chart-pie')" class="p-3 border border-gray-200 rounded-lg hover:border-blue-500 text-left">
+                            <p class="font-semibold text-sm">Status Pie</p>
+                            <p class="text-xs text-gray-500">Distribution</p>
+                        </button>
+                        <button onclick="addWidget('chart-bar')" class="p-3 border border-gray-200 rounded-lg hover:border-blue-500 text-left">
+                            <p class="font-semibold text-sm">Progress Bars</p>
+                            <p class="text-xs text-gray-500">Multiple metrics</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- List Widgets -->
+                <div>
+                    <h3 class="font-bold text-gray-700 mb-3">📋 List Widgets</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="addWidget('list-tasks')" class="p-3 border border-gray-200 rounded-lg hover:border-green-500 text-left">
+                            <p class="font-semibold text-sm">My Tasks</p>
+                            <p class="text-xs text-gray-500">Assigned to me</p>
+                        </button>
+                        <button onclick="addWidget('list-overdue')" class="p-3 border border-gray-200 rounded-lg hover:border-green-500 text-left">
+                            <p class="font-semibold text-sm">Overdue Items</p>
+                            <p class="text-xs text-gray-500">Needs attention</p>
+                        </button>
+                        <button onclick="addWidget('list-milestones')" class="p-3 border border-gray-200 rounded-lg hover:border-green-500 text-left">
+                            <p class="font-semibold text-sm">Milestones</p>
+                            <p class="text-xs text-gray-500">Upcoming dates</p>
+                        </button>
+                        <button onclick="addWidget('list-risks')" class="p-3 border border-gray-200 rounded-lg hover:border-green-500 text-left">
+                            <p class="font-semibold text-sm">Active Risks</p>
+                            <p class="text-xs text-gray-500">Risk register</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Activity Widgets -->
+                <div>
+                    <h3 class="font-bold text-gray-700 mb-3">🔔 Activity Widgets</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="addWidget('activity-feed')" class="p-3 border border-gray-200 rounded-lg hover:border-yellow-500 text-left">
+                            <p class="font-semibold text-sm">Activity Feed</p>
+                            <p class="text-xs text-gray-500">Recent updates</p>
+                        </button>
+                        <button onclick="addWidget('activity-comments')" class="p-3 border border-gray-200 rounded-lg hover:border-yellow-500 text-left">
+                            <p class="font-semibold text-sm">Comments</p>
+                            <p class="text-xs text-gray-500">Latest discussions</p>
+                        </button>
+                        <button onclick="addWidget('activity-notifications')" class="p-3 border border-gray-200 rounded-lg hover:border-yellow-500 text-left">
+                            <p class="font-semibold text-sm">Notifications</p>
+                            <p class="text-xs text-gray-500">Alerts & mentions</p>
+                        </button>
+                        <button onclick="addWidget('activity-changes')" class="p-3 border border-gray-200 rounded-lg hover:border-yellow-500 text-left">
+                            <p class="font-semibold text-sm">Change Log</p>
+                            <p class="text-xs text-gray-500">Audit trail</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Team Widgets -->
+                <div>
+                    <h3 class="font-bold text-gray-700 mb-3">👥 Team Widgets</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="addWidget('team-capacity')" class="p-3 border border-gray-200 rounded-lg hover:border-indigo-500 text-left">
+                            <p class="font-semibold text-sm">Team Capacity</p>
+                            <p class="text-xs text-gray-500">Availability</p>
+                        </button>
+                        <button onclick="addWidget('team-workload')" class="p-3 border border-gray-200 rounded-lg hover:border-indigo-500 text-left">
+                            <p class="font-semibold text-sm">Workload</p>
+                            <p class="text-xs text-gray-500">Distribution</p>
+                        </button>
+                        <button onclick="addWidget('team-performance')" class="p-3 border border-gray-200 rounded-lg hover:border-indigo-500 text-left">
+                            <p class="font-semibold text-sm">Performance</p>
+                            <p class="text-xs text-gray-500">Metrics</p>
+                        </button>
+                        <button onclick="addWidget('team-timeoff')" class="p-3 border border-gray-200 rounded-lg hover:border-indigo-500 text-left">
+                            <p class="font-semibold text-sm">Time Off</p>
+                            <p class="text-xs text-gray-500">Calendar</p>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Widget Configuration Slide Panel -->
+    <div id="widgetConfig" class="slide-panel">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Widget Settings</h2>
+                <button onclick="closeWidgetConfig()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Widget Preview -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Preview</label>
+                <div class="widget-preview">
+                    <i class="fas fa-chart-bar text-4xl text-gray-300"></i>
+                </div>
+            </div>
+
+            <!-- Configuration Options -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Widget Title</label>
+                    <input type="text" value="Project Status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Refresh Interval</label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option>Real-time</option>
+                        <option>Every 5 minutes</option>
+                        <option>Every 15 minutes</option>
+                        <option>Every hour</option>
+                        <option>Manual only</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Data Source</label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option>All Projects</option>
+                        <option>My Projects</option>
+                        <option>Active Projects</option>
+                        <option>Custom Filter</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Chart Type</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="p-3 border-2 border-purple-500 rounded-lg bg-purple-50">
+                            <i class="fas fa-chart-pie text-purple-600"></i>
+                            <p class="text-xs mt-1">Pie</p>
+                        </button>
+                        <button class="p-3 border border-gray-300 rounded-lg hover:border-purple-500">
+                            <i class="fas fa-chart-bar text-gray-600"></i>
+                            <p class="text-xs mt-1">Bar</p>
+                        </button>
+                        <button class="p-3 border border-gray-300 rounded-lg hover:border-purple-500">
+                            <i class="fas fa-chart-line text-gray-600"></i>
+                            <p class="text-xs mt-1">Line</p>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="mr-2">
+                        <span class="text-sm">Show legend</span>
+                    </label>
+                </div>
+
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="mr-2">
+                        <span class="text-sm">Enable animations</span>
+                    </label>
+                </div>
+
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2">
+                        <span class="text-sm">Export to PDF</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-6 flex gap-3">
+                <button onclick="saveWidgetConfig()" class="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700">
+                    Save Changes
+                </button>
+                <button onclick="closeWidgetConfig()" class="px-6 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Charts
+        function initCharts() {
+            // Project Status Chart
+            const ctx1 = document.getElementById('projectStatusChart');
+            if (ctx1) {
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['On Track', 'At Risk', 'Delayed'],
+                        datasets: [{
+                            data: [35, 5, 2],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+
+            // Budget Chart
+            const ctx2 = document.getElementById('budgetChart');
+            if (ctx2) {
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                        datasets: [{
+                            label: 'Planned',
+                            data: [600, 650, 700, 750],
+                            backgroundColor: '#93c5fd'
+                        }, {
+                            label: 'Actual',
+                            data: [580, 620, 0, 0],
+                            backgroundColor: '#3b82f6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Drag and Drop
+        let draggedWidget = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            setupDragAndDrop();
+        });
+
+        function setupDragAndDrop() {
+            const widgets = document.querySelectorAll('.widget-card');
+            const grid = document.getElementById('widgetGrid');
+
+            widgets.forEach(widget => {
+                widget.addEventListener('dragstart', function(e) {
+                    draggedWidget = this;
+                    this.classList.add('widget-dragging');
+                });
+
+                widget.addEventListener('dragend', function(e) {
+                    this.classList.remove('widget-dragging');
+                });
+            });
+
+            grid.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(grid, e.clientY);
+                if (afterElement == null) {
+                    grid.appendChild(draggedWidget);
+                } else {
+                    grid.insertBefore(draggedWidget, afterElement);
+                }
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.widget-card:not(.widget-dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // Widget Library
+        function openWidgetLibrary() {
+            document.getElementById('widgetLibrary').classList.add('active');
+        }
+
+        function closeWidgetLibrary() {
+            document.getElementById('widgetLibrary').classList.remove('active');
+        }
+
+        function addWidget(widgetType) {
+            showToast(`Widget "${widgetType}" added successfully!`);
+            closeWidgetLibrary();
+            
+            // Update counter
+            const counter = document.getElementById('activeWidgets');
+            counter.textContent = parseInt(counter.textContent) + 1;
+        }
+
+        // Widget Configuration
+        function configureWidget(widgetId) {
+            document.getElementById('widgetConfig').classList.add('active');
+        }
+
+        function closeWidgetConfig() {
+            document.getElementById('widgetConfig').classList.remove('active');
+        }
+
+        function saveWidgetConfig() {
+            showToast('Widget settings saved successfully!');
+            closeWidgetConfig();
+        }
+
+        // Widget Actions
+        function removeWidget(widgetId) {
+            if (confirm('Are you sure you want to remove this widget?')) {
+                showToast('Widget removed successfully!');
+                
+                // Update counter
+                const counter = document.getElementById('activeWidgets');
+                counter.textContent = parseInt(counter.textContent) - 1;
+            }
+        }
+
+        // Layout Management
+        function applyLayout(layoutType) {
+            showToast(`"${layoutType}" layout applied successfully!`);
+        }
+
+        function saveLayout() {
+            showToast('Dashboard layout saved successfully!');
+        }
+
+        function resetLayout() {
+            if (confirm('Are you sure you want to reset to default layout?')) {
+                showToast('Layout reset to default!');
+            }
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

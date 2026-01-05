@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Recommendations - AI-Enhanced PPM Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.6); }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .ai-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .ai-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: #3b82f6;
+        }
+        
+        .ai-high-priority {
+            animation: pulse-glow 2s infinite;
+            border-color: #ef4444 !important;
+        }
+        
+        .recommendation-card {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .recommendation-card:hover {
+            background: #f0f9ff;
+            transform: translateX(4px);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .ai-thinking {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .insight-badge {
+            transition: all 0.2s ease;
+        }
+        
+        .insight-badge:hover {
+            transform: scale(1.05);
+        }
+        
+        .progress-ring {
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        
+        .recommendation-item {
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .priority-high { border-left: 4px solid #ef4444; }
+        .priority-medium { border-left: 4px solid #f59e0b; }
+        .priority-low { border-left: 4px solid #10b981; }
+        
+        .ai-score {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-brain text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">AI Recommendations</h1>
+                        <p class="text-purple-100 text-sm">Intelligent insights for project optimization</p>
+                    </div>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="refreshRecommendations()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh AI
+                    </button>
+                    <button onclick="goToDashboard()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- AI Insights Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center ai-card">
+                <i class="fas fa-lightbulb text-3xl text-yellow-500 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="totalRecommendations">0</p>
+                <p class="text-sm text-gray-600">AI Insights</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center ai-card">
+                <i class="fas fa-exclamation-triangle text-3xl text-red-500 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="criticalIssues">0</p>
+                <p class="text-sm text-gray-600">Critical Issues</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center ai-card">
+                <i class="fas fa-chart-line text-3xl text-green-500 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="optimizationScore">0%</p>
+                <p class="text-sm text-gray-600">Optimization Score</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center ai-card">
+                <i class="fas fa-clock text-3xl text-blue-500 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="timeSaved">0h</p>
+                <p class="text-sm text-gray-600">Time Saved</p>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- AI Recommendations Section (2/3 width) -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Priority Recommendations -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-star mr-2 text-yellow-500"></i>Priority Recommendations
+                        </h3>
+                        <div class="flex space-x-2">
+                            <button onclick="filterRecommendations('all')" class="filter-btn px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-medium transition">
+                                All
+                            </button>
+                            <button onclick="filterRecommendations('critical')" class="filter-btn px-3 py-1 bg-red-100 hover:bg-red-200 rounded-lg text-sm font-medium text-red-800 transition">
+                                Critical
+                            </button>
+                            <button onclick="filterRecommendations('optimization')" class="filter-btn px-3 py-1 bg-green-100 hover:bg-green-200 rounded-lg text-sm font-medium text-green-800 transition">
+                                Optimization
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="priorityRecommendations" class="space-y-4">
+                        <!-- Recommendations will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Task Breakdown Recommendations -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-tasks mr-2 text-blue-500"></i>Smart Task Breakdown
+                        </h3>
+                        <button onclick="generateTaskBreakdown()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-magic mr-2"></i>Generate Breakdown
+                        </button>
+                    </div>
+
+                    <div id="taskBreakdown" class="space-y-4">
+                        <!-- Task breakdown will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Resource Optimization -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-users-cog mr-2 text-purple-500"></i>Resource Optimization
+                        </h3>
+                        <button onclick="optimizeResources()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-sync-alt mr-2"></i>Optimize Now
+                        </button>
+                    </div>
+
+                    <div id="resourceOptimization" class="space-y-4">
+                        <!-- Resource optimization will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar (1/3 width) -->
+            <div class="space-y-6">
+                <!-- AI Performance Metrics -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-pie mr-2 text-amber-500"></i>AI Performance
+                    </h3>
+                    <canvas id="aiPerformanceChart" width="400" height="300"></canvas>
+                    <div class="mt-4 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Accuracy Rate</span>
+                            <span class="font-semibold text-green-600">94%</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Recommendations Applied</span>
+                            <span class="font-semibold text-blue-600">87%</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">User Satisfaction</span>
+                            <span class="font-semibold text-purple-600">91%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Prediction -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-crystal-ball mr-2 text-red-500"></i>Risk Predictions
+                    </h3>
+                    <div id="riskPredictions" class="space-y-3">
+                        <!-- Risk predictions will be populated here -->
+                    </div>
+                </div>
+
+                <!-- AI Learning -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-graduation-cap mr-2 text-indigo-500"></i>AI Learning Insights
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="bg-indigo-50 rounded-lg p-3">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-brain text-indigo-600 mr-2"></i>
+                                <span class="font-medium text-indigo-800">Learning Mode Active</span>
+                            </div>
+                            <p class="text-sm text-gray-700">AI is analyzing your project patterns to provide better recommendations.</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-600">Patterns Identified</span>
+                                <span class="font-semibold">127</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-indigo-500 h-2 rounded-full" style="width: 78%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Recommendation Details Modal -->
+    <div id="recommendationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-2xl w-full mx-4 slide-up">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Recommendation Details</h3>
+            <div id="recommendationDetailsContent">
+                <!-- Details will be populated here -->
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="dismissRecommendation()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
+                    Dismiss
+                </button>
+                <button onclick="applyRecommendation()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                    Apply Recommendation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Management
+        let projects = [];
+        let recommendations = [];
+        let aiMetrics = {
+            accuracy: 94,
+            appliedRate: 87,
+            satisfaction: 91,
+            patternsIdentified: 127
+        };
+        let currentFilter = 'all';
+        let selectedRecommendation = null;
+        let performanceChart = null;
+
+        // Initialize data
+        function initializeData() {
+            // Load projects
+            const savedProjects = localStorage.getItem('ppm_projects');
+            if (savedProjects) {
+                projects = JSON.parse(savedProjects);
+            }
+
+            // Generate AI recommendations
+            generateAIRecommendations();
+            updateUI();
+        }
+
+        // Generate AI recommendations
+        function generateAIRecommendations() {
+            recommendations = [];
+            
+            // Analyze projects and generate recommendations
+            projects.forEach(project => {
+                const projectRecs = analyzeProject(project);
+                recommendations.push(...projectRecs);
+            });
+
+            // Add general recommendations
+            recommendations.push(...generateGeneralRecommendations());
+            
+            // Sort by priority
+            recommendations.sort((a, b) => {
+                const priorityOrder = { 'critical': 3, 'high': 2, 'medium': 1, 'low': 0 };
+                return priorityOrder[b.priority] - priorityOrder[a.priority];
+            });
+        }
+
+        // Analyze individual project
+        function analyzeProject(project) {
+            const recs = [];
+            const tasks = project.tasks || [];
+            
+            // Task progress analysis
+            const completedTasks = tasks.filter(t => t.progress === 100).length;
+            const totalTasks = tasks.length;
+            const progressRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+            
+            // Deadline analysis
+            const overdueTasks = tasks.filter(t => {
+                const dueDate = moment(t.dueDate);
+                return dueDate.isBefore(moment()) && t.progress < 100;
+            });
+            
+            // Resource analysis
+            const resources = project.resources || [];
+            const teamSize = resources.reduce((sum, r) => sum + (r.count || 1), 0);
+            
+            // Generate specific recommendations
+            if (progressRate < 30 && totalTasks > 0) {
+                recs.push({
+                    id: Date.now() + Math.random(),
+                    type: 'progress',
+                    priority: 'high',
+                    title: 'Low Project Progress Detected',
+                    description: `Project "${project.name}" is only ${Math.round(progressRate)}% complete. Consider reviewing task assignments and timelines.`,
+                    projectId: project.id,
+                    projectName: project.name,
+                    impact: 'high',
+                    effort: 'medium',
+                    aiConfidence: 92,
+                    suggestedActions: [
+                        'Review task dependencies',
+                        'Reallocate resources to critical tasks',
+                        'Consider extending deadlines for non-critical tasks'
+                    ],
+                    potentialSavings: '2-3 weeks',
+                    category: 'optimization'
+                });
+            }
+            
+            if (overdueTasks.length > 0) {
+                recs.push({
+                    id: Date.now() + Math.random(),
+                    type: 'deadline',
+                    priority: 'critical',
+                    title: `${overdueTasks.length} Overdue Tasks`,
+                    description: `Project "${project.name}" has ${overdueTasks.length} tasks past their deadline. Immediate action required.`,
+                    projectId: project.id,
+                    projectName: project.name,
+                    impact: 'critical',
+                    effort: 'high',
+                    aiConfidence: 98,
+                    suggestedActions: [
+                        'Prioritize overdue tasks',
+                        'Assign additional resources',
+                        'Stakeholder communication required'
+                    ],
+                    potentialSavings: '1-2 weeks',
+                    category: 'risk'
+                });
+            }
+            
+            if (teamSize > 5) {
+                recs.push({
+                    id: Date.now() + Math.random(),
+                    type: 'team',
+                    priority: 'medium',
+                    title: 'Team Coordination Opportunity',
+                    description: `Project "${project.name}" has ${teamSize} team members. Consider implementing daily stand-ups and improved communication protocols.`,
+                    projectId: project.id,
+                    projectName: project.name,
+                    impact: 'medium',
+                    effort: 'low',
+                    aiConfidence: 85,
+                    suggestedActions: [
+                        'Implement daily stand-up meetings',
+                        'Set up team communication channels',
+                        'Define clear roles and responsibilities'
+                    ],
+                    potentialSavings: '20% time efficiency',
+                    category: 'optimization'
+                });
+            }
+            
+            return recs;
+        }
+
+        // Generate general recommendations
+        function generateGeneralRecommendations() {
+            return [
+                {
+                    id: Date.now() + Math.random(),
+                    type: 'ai',
+                    priority: 'high',
+                    title: 'AI Learning Opportunity',
+                    description: 'Based on your project patterns, implementing automated task prioritization could improve efficiency by 35%.',
+                    projectId: null,
+                    projectName: 'System-wide',
+                    impact: 'high',
+                    effort: 'medium',
+                    aiConfidence: 88,
+                    suggestedActions: [
+                        'Enable AI-powered task prioritization',
+                        'Set up automated progress tracking',
+                        'Configure AI-driven deadline optimization'
+                    ],
+                    potentialSavings: '35% efficiency gain',
+                    category: 'ai'
+                },
+                {
+                    id: Date.now() + Math.random(),
+                    type: 'resource',
+                    priority: 'medium',
+                    title: 'Resource Pool Optimization',
+                    description: 'Cross-project resource sharing could reduce overhead by 15% while maintaining quality.',
+                    projectId: null,
+                    projectName: 'Portfolio-wide',
+                    impact: 'medium',
+                    effort: 'medium',
+                    aiConfidence: 82,
+                    suggestedActions: [
+                        'Create shared resource pool',
+                        'Implement resource booking system',
+                        'Set up cross-project collaboration protocols'
+                    ],
+                    potentialSavings: '15% cost reduction',
+                    category: 'optimization'
+                }
+            ];
+        }
+
+        // Update UI
+        function updateUI() {
+            updateAIInsights();
+            displayRecommendations();
+            updatePerformanceChart();
+            displayRiskPredictions();
+            displayTaskBreakdown();
+            displayResourceOptimization();
+        }
+
+        // Update AI insights
+        function updateAIInsights() {
+            const criticalCount = recommendations.filter(r => r.priority === 'critical').length;
+            const optimizationScore = Math.round(85 + Math.random() * 10); // Simulated score
+            const timeSaved = recommendations.reduce((total, r) => {
+                if (r.potentialSavings.includes('weeks')) {
+                    const weeks = parseInt(r.potentialSavings) || 1;
+                    return total + (weeks * 40); // Assume 40 hours per week
+                }
+                return total;
+            }, 0);
+            
+            document.getElementById('totalRecommendations').textContent = recommendations.length;
+            document.getElementById('criticalIssues').textContent = criticalCount;
+            document.getElementById('optimizationScore').textContent = optimizationScore + '%';
+            document.getElementById('timeSaved').textContent = timeSaved + 'h';
+        }
+
+        // Display recommendations
+        function displayRecommendations() {
+            const container = document.getElementById('priorityRecommendations');
+            container.innerHTML = '';
+            
+            let filteredRecs = recommendations;
+            if (currentFilter !== 'all') {
+                filteredRecs = recommendations.filter(r => 
+                    currentFilter === 'critical' ? r.priority === 'critical' :
+                    currentFilter === 'optimization' ? r.category === 'optimization' : true
+                );
+            }
+            
+            filteredRecs.slice(0, 5).forEach((rec, index) => {
+                const recCard = document.createElement('div');
+                recCard.className = `recommendation-card bg-gray-50 rounded-lg p-4 ${rec.priority === 'critical' ? 'priority-high' : rec.priority === 'medium' ? 'priority-medium' : 'priority-low'}`;
+                recCard.style.animationDelay = `${index * 0.1}s`;
+                
+                const priorityColor = rec.priority === 'critical' ? 'red' :
+                                    rec.priority === 'high' ? 'orange' :
+                                    rec.priority === 'medium' ? 'yellow' : 'green';
+                
+                recCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                                <h4 class="font-semibold text-gray-800">${rec.title}</h4>
+                                <span class="ml-2 px-2 py-1 bg-${priorityColor}-100 text-${priorityColor}-800 text-xs rounded">
+                                    ${rec.priority}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-2">${rec.description}</p>
+                            <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                <span><i class="fas fa-project-diagram mr-1"></i>${rec.projectName}</span>
+                                <span><i class="fas fa-bolt mr-1"></i>${rec.aiConfidence}% AI confidence</span>
+                                <span><i class="fas fa-clock mr-1"></i>${rec.effort} effort</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-green-600">${rec.potentialSavings}</p>
+                            <button onclick="showRecommendationDetails(${rec.id})" class="mt-2 text-blue-600 hover:text-blue-800 text-sm">
+                                View Details →
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(recCard);
+            });
+            
+            if (filteredRecs.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">No recommendations found for current filter.</p>';
+            }
+        }
+
+        // Update performance chart
+        function updatePerformanceChart() {
+            const ctx = document.getElementById('aiPerformanceChart').getContext('2d');
+            
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+            
+            performanceChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Accuracy', 'Applied Rate', 'Satisfaction', 'Speed', 'Learning'],
+                    datasets: [{
+                        label: 'AI Performance',
+                        data: [aiMetrics.accuracy, aiMetrics.appliedRate, aiMetrics.satisfaction, 89, 78],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Display risk predictions
+        function displayRiskPredictions() {
+            const container = document.getElementById('riskPredictions');
+            const risks = [
+                { type: 'Timeline', level: 'Medium', probability: '65%', impact: '2 weeks delay' },
+                { type: 'Budget', level: 'Low', probability: '25%', impact: '5% over budget' },
+                { type: 'Resource', level: 'High', probability: '80%', impact: 'Team burnout risk' }
+            ];
+            
+            container.innerHTML = '';
+            risks.forEach(risk => {
+                const levelColor = risk.level === 'High' ? 'red' : risk.level === 'Medium' ? 'amber' : 'green';
+                const riskCard = document.createElement('div');
+                riskCard.className = `bg-${levelColor}-50 rounded-lg p-3 border border-${levelColor}-200`;
+                riskCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-${levelColor}-800">${risk.type} Risk</span>
+                        <span class="text-xs px-2 py-1 bg-${levelColor}-100 text-${levelColor}-800 rounded">
+                            ${risk.level}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-700">${risk.probability} probability</p>
+                    <p class="text-xs text-gray-600">Potential impact: ${risk.impact}</p>
+                `;
+                container.appendChild(riskCard);
+            });
+        }
+
+        // Display task breakdown
+        function displayTaskBreakdown() {
+            const container = document.getElementById('taskBreakdown');
+            
+            // Get a sample task for breakdown
+            const allTasks = projects.flatMap(p => p.tasks || []);
+            if (allTasks.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-4">No tasks available for breakdown.</p>';
+                return;
+            }
+            
+            const sampleTask = allTasks[0];
+            const subtasks = [
+                { name: 'Research & Planning', duration: '2 days', progress: 100 },
+                { name: 'Design & Architecture', duration: '3 days', progress: 80 },
+                { name: 'Implementation', duration: '5 days', progress: 40 },
+                { name: 'Testing & QA', duration: '2 days', progress: 0 },
+                { name: 'Documentation', duration: '1 day', progress: 0 }
+            ];
+            
+            let html = `
+                <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                    <h4 class="font-semibold text-blue-800 mb-2">AI-Generated Breakdown</h4>
+                    <p class="text-sm text-gray-700">Task: "${sampleTask.name || sampleTask.title}"</p>
+                    <p class="text-xs text-gray-600">Estimated total duration: 13 days</p>
+                </div>
+            `;
+            
+            subtasks.forEach(subtask => {
+                const progressColor = subtask.progress === 100 ? 'green' : subtask.progress > 0 ? 'blue' : 'gray';
+                html += `
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-medium text-gray-800">${subtask.name}</span>
+                            <span class="text-sm text-gray-600">${subtask.duration}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                <div class="bg-${progressColor}-500 h-2 rounded-full" style="width: ${subtask.progress}%"></div>
+                            </div>
+                            <span class="text-xs text-gray-500">${subtask.progress}%</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Display resource optimization
+        function displayResourceOptimization() {
+            const container = document.getElementById('resourceOptimization');
+            
+            const optimizations = [
+                {
+                    type: 'Workload Balancing',
+                    description: 'Redistribute tasks to balance team workload',
+                    impact: '25% efficiency improvement',
+                    status: 'ready'
+                },
+                {
+                    type: 'Skill-Based Assignment',
+                    description: 'Assign tasks based on team member expertise',
+                    impact: '40% quality improvement',
+                    status: 'ready'
+                },
+                {
+                    type: 'Capacity Planning',
+                    description: 'Optimize resource allocation for upcoming projects',
+                    impact: '30% cost savings',
+                    status: 'analyzing'
+                }
+            ];
+            
+            container.innerHTML = '';
+            optimizations.forEach(opt => {
+                const statusColor = opt.status === 'ready' ? 'green' : 'amber';
+                const optCard = document.createElement('div');
+                optCard.className = 'bg-gray-50 rounded-lg p-4 border border-gray-200';
+                optCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-semibold text-gray-800">${opt.type}</h4>
+                        <span class="text-xs px-2 py-1 bg-${statusColor}-100 text-${statusColor}-800 rounded">
+                            ${opt.status}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2">${opt.description}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-green-600">${opt.impact}</span>
+                        <button class="text-blue-600 hover:text-blue-800 text-sm">
+                            Apply →
+                        </button>
+                    </div>
+                `;
+                container.appendChild(optCard);
+            });
+        }
+
+        // Interaction functions
+        function filterRecommendations(filter) {
+            currentFilter = filter;
+            displayRecommendations();
+            
+            // Update filter button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-blue-500');
+            });
+            event.target.classList.add('ring-2', 'ring-blue-500');
+        }
+
+        function showRecommendationDetails(recId) {
+            selectedRecommendation = recommendations.find(r => r.id === recId);
+            if (!selectedRecommendation) return;
+            
+            const content = document.getElementById('recommendationDetailsContent');
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 mb-2">${selectedRecommendation.title}</h4>
+                        <p class="text-gray-600">${selectedRecommendation.description}</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-3 rounded">
+                            <p class="text-sm text-gray-600">Priority</p>
+                            <p class="font-semibold capitalize">${selectedRecommendation.priority}</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded">
+                            <p class="text-sm text-gray-600">AI Confidence</p>
+                            <p class="font-semibold">${selectedRecommendation.aiConfidence}%</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded">
+                            <p class="text-sm text-gray-600">Effort Required</p>
+                            <p class="font-semibold capitalize">${selectedRecommendation.effort}</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded">
+                            <p class="text-sm text-gray-600">Potential Savings</p>
+                            <p class="font-semibold text-green-600">${selectedRecommendation.potentialSavings}</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h5 class="font-semibold text-gray-800 mb-2">Suggested Actions</h5>
+                        <ul class="space-y-1">
+                            ${selectedRecommendation.suggestedActions.map(action => 
+                                `<li class="flex items-start text-sm text-gray-600">
+                                    <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
+                                    ${action}
+                                </li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-blue-50 p-3 rounded">
+                        <div class="flex items-center">
+                            <i class="fas fa-brain text-blue-600 mr-2"></i>
+                            <span class="text-sm text-blue-800">
+                                AI Analysis: This recommendation is based on patterns from ${projects.length} projects and ${aiMetrics.patternsIdentified} identified patterns.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('recommendationModal').classList.remove('hidden');
+        }
+
+        function dismissRecommendation() {
+            if (selectedRecommendation) {
+                recommendations = recommendations.filter(r => r.id !== selectedRecommendation.id);
+                updateUI();
+            }
+            closeRecommendationModal();
+        }
+
+        function applyRecommendation() {
+            // In a real implementation, this would apply the recommendation
+            alert('Recommendation applied successfully! This would update the project data and implement the suggested changes.');
+            dismissRecommendation();
+        }
+
+        function closeRecommendationModal() {
+            document.getElementById('recommendationModal').classList.add('hidden');
+            selectedRecommendation = null;
+        }
+
+        function refreshRecommendations() {
+            // Show loading state
+            const container = document.getElementById('priorityRecommendations');
+            container.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i><p class="text-gray-600 mt-2">AI is analyzing your projects...</p></div>';
+            
+            // Simulate AI processing
+            setTimeout(() => {
+                generateAIRecommendations();
+                updateUI();
+            }, 2000);
+        }
+
+        function generateTaskBreakdown() {
+            refreshRecommendations();
+        }
+
+        function optimizeResources() {
+            refreshRecommendations();
+        }
+
+        function goToDashboard() {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeData();
+        });
+    </script>
+</body>
+</html>

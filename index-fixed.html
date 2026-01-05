@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Project Planning - Full Features</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
+    <style>
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Drag and Drop Styles */
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #f3f4f6;
+        }
+        
+        .sortable-drag {
+            opacity: 1;
+            cursor: move;
+        }
+        
+        .drag-handle {
+            cursor: move;
+            color: #9ca3af;
+        }
+        
+        .drag-handle:hover {
+            color: #6b7280;
+        }
+        
+        /* Task Row Styles */
+        .task-row {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .task-row:hover {
+            background: #f9fafb;
+            transform: translateX(4px);
+        }
+        
+        /* Dependency Line Styles */
+        .dependency-line {
+            position: absolute;
+            height: 2px;
+            background: #8b5cf6;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .dependency-arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 6px solid #8b5cf6;
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+            right: -6px;
+            top: -3px;
+        }
+        
+        /* Milestone Styles */
+        .milestone-marker {
+            width: 20px;
+            height: 20px;
+            background: #f59e0b;
+            transform: rotate(45deg);
+            position: absolute;
+        }
+        
+        /* Form Styles */
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 2000;
+            animation: slideInRight 0.3s ease;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Undo/Redo Buttons */
+        .history-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .history-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Multi-select */
+        .task-row.selected {
+            background: #ede9fe;
+            border-color: #8b5cf6;
+        }
+        
+        /* Gantt Bar Styles */
+        .gantt-bar {
+            cursor: move;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .gantt-bar:hover {
+            filter: brightness(1.1);
+            transform: scaleY(1.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 shadow-lg">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-project-diagram text-3xl"></i>
+                <div>
+                    <h1 class="text-3xl font-bold">Enhanced Project Planning</h1>
+                    <p class="text-purple-100 text-sm">Drag-Drop • Dependencies • Milestones • Import/Export • Undo/Redo</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <!-- Undo/Redo -->
+                <button onclick="undo()" id="undo-btn" class="history-btn px-3 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors" disabled>
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button onclick="redo()" id="redo-btn" class="history-btn px-3 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors" disabled>
+                    <i class="fas fa-redo"></i>
+                </button>
+                
+                <!-- Import/Export -->
+                <button onclick="exportToCSV()" class="px-4 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors font-semibold">
+                    <i class="fas fa-download mr-2"></i>Export CSV
+                </button>
+                <button onclick="document.getElementById('import-file').click()" class="px-4 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors font-semibold">
+                    <i class="fas fa-upload mr-2"></i>Import CSV
+                </button>
+                <input type="file" id="import-file" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
+                
+                <!-- Save -->
+                <button onclick="saveProject()" class="px-4 py-2 bg-white text-purple-600 rounded-lg hover:bg-purple-50 transition-colors font-semibold">
+                    <i class="fas fa-save mr-2"></i>Save
+                </button>
+                
+                <!-- New Project -->
+                <button onclick="openProjectWizard()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold">
+                    <i class="fas fa-plus mr-2"></i>New
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto p-6">
+        
+        <!-- Project Info Bar -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 id="project-name" class="text-2xl font-bold text-gray-800 cursor-pointer hover:text-purple-600" onclick="editProjectName()">
+                        Click to create a project
+                    </h2>
+                    <p id="project-description" class="text-gray-600 mt-1 cursor-pointer hover:text-purple-600" onclick="editProjectDescription()">
+                        Click to add description
+                    </p>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600" id="task-count">0</div>
+                        <div class="text-sm text-gray-600">Tasks</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-orange-600" id="milestone-count">0</div>
+                        <div class="text-sm text-gray-600">Milestones</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600" id="progress-percent">0%</div>
+                        <div class="text-sm text-gray-600">Complete</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600" id="team-size">0</div>
+                        <div class="text-sm text-gray-600">Team</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+            <button onclick="openTaskModal()" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all text-left">
+                <i class="fas fa-plus-circle text-3xl text-purple-600 mb-3"></i>
+                <h3 class="font-bold text-lg">Add Task</h3>
+                <p class="text-gray-600 text-sm">Create new task</p>
+            </button>
+            
+            <button onclick="openMilestoneModal()" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all text-left">
+                <i class="fas fa-flag text-3xl text-orange-600 mb-3"></i>
+                <h3 class="font-bold text-lg">Add Milestone</h3>
+                <p class="text-gray-600 text-sm">Set milestone</p>
+            </button>
+            
+            <button onclick="openDependencyModal()" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all text-left">
+                <i class="fas fa-link text-3xl text-blue-600 mb-3"></i>
+                <h3 class="font-bold text-lg">Dependencies</h3>
+                <p class="text-gray-600 text-sm">Link tasks</p>
+            </button>
+            
+            <button onclick="bulkDelete()" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all text-left">
+                <i class="fas fa-trash-alt text-3xl text-red-600 mb-3"></i>
+                <h3 class="font-bold text-lg">Bulk Delete</h3>
+                <p class="text-gray-600 text-sm">Delete selected</p>
+            </button>
+            
+            <button onclick="exportToExcel()" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all text-left">
+                <i class="fas fa-file-excel text-3xl text-green-600 mb-3"></i>
+                <h3 class="font-bold text-lg">Export Excel</h3>
+                <p class="text-gray-600 text-sm">Download XLSX</p>
+            </button>
+        </div>
+
+        <!-- Task List with Drag & Drop -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-tasks text-purple-600 mr-2"></i>
+                    Task List
+                    <span class="text-sm text-gray-500 font-normal ml-2">(Drag to reorder)</span>
+                </h3>
+                <div class="flex items-center space-x-3">
+                    <button onclick="selectAll()" class="px-3 py-2 text-sm bg-gray-100 rounded-lg hover:bg-gray-200">
+                        <i class="fas fa-check-square mr-1"></i>Select All
+                    </button>
+                    <input type="text" id="task-search" placeholder="Search tasks..." 
+                           class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                           oninput="filterTasks()">
+                    <select id="task-filter" onchange="filterTasks()" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="all">All Tasks</option>
+                        <option value="todo">To Do</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="task-list" class="space-y-2">
+                <div class="text-center py-12 text-gray-400">
+                    <i class="fas fa-inbox text-6xl mb-4"></i>
+                    <p class="text-lg">No tasks yet. Click "Add Task" to get started!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Milestones Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-flag text-orange-600 mr-2"></i>
+                    Milestones
+                </h3>
+                <button onclick="openMilestoneModal()" class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Add Milestone
+                </button>
+            </div>
+            
+            <div id="milestone-list" class="space-y-3">
+                <div class="text-center py-8 text-gray-400">
+                    <i class="fas fa-flag text-4xl mb-3"></i>
+                    <p>No milestones yet. Add your first milestone!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gantt Chart with Dependencies -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-chart-gantt text-purple-600 mr-2"></i>
+                    Gantt Chart with Dependencies
+                </h3>
+                <div class="flex items-center space-x-3">
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="show-dependencies" checked onchange="renderGantt()">
+                        <span class="text-sm">Show Dependencies</span>
+                    </label>
+                    <button onclick="zoomGantt('in')" class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button onclick="zoomGantt('out')" class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="gantt-container" class="overflow-x-auto custom-scrollbar relative" style="height: 500px;">
+                <div class="text-center py-12 text-gray-400">
+                    <i class="fas fa-chart-bar text-6xl mb-4"></i>
+                    <p class="text-lg">Add tasks to see them on the Gantt chart</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Task Modal -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-tasks text-purple-600 mr-2"></i>
+                    <span id="modal-title">Add New Task</span>
+                </h2>
+                <button onclick="closeTaskModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="task-form" onsubmit="saveTask(event)">
+                <input type="hidden" id="task-id">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Task Name *</label>
+                    <input type="text" id="task-name" class="form-input" placeholder="Enter task name" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                    <textarea id="task-description" class="form-input" rows="3" placeholder="Enter task description"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Start Date *</label>
+                        <input type="date" id="task-start" class="form-input" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">End Date *</label>
+                        <input type="date" id="task-end" class="form-input" required>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                        <select id="task-status" class="form-input">
+                            <option value="todo">To Do</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Priority</label>
+                        <select id="task-priority" class="form-input">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Assigned To</label>
+                    <select id="task-assignee" class="form-input">
+                        <option value="">Unassigned</option>
+                        <option value="John Smith">John Smith</option>
+                        <option value="Sarah Johnson">Sarah Johnson</option>
+                        <option value="Mike Wilson">Mike Wilson</option>
+                        <option value="Emily Chen">Emily Chen</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Dependencies (Predecessors)</label>
+                    <select id="task-dependencies" class="form-input" multiple size="4">
+                        <!-- Will be populated dynamically -->
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple tasks</p>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Progress (%)</label>
+                    <input type="range" id="task-progress" class="w-full" min="0" max="100" value="0" 
+                           oninput="document.getElementById('progress-value').textContent = this.value + '%'">
+                    <div class="text-center text-sm text-gray-600 mt-2">
+                        <span id="progress-value">0%</span>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeTaskModal()" class="btn-secondary">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save mr-2"></i>Save Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Milestone Modal -->
+    <div id="milestone-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-flag text-orange-600 mr-2"></i>
+                    <span id="milestone-modal-title">Add Milestone</span>
+                </h2>
+                <button onclick="closeMilestoneModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="milestone-form" onsubmit="saveMilestone(event)">
+                <input type="hidden" id="milestone-id">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Milestone Name *</label>
+                    <input type="text" id="milestone-name" class="form-input" placeholder="Enter milestone name" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                    <textarea id="milestone-description" class="form-input" rows="3" placeholder="Enter description"></textarea>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Target Date *</label>
+                    <input type="date" id="milestone-date" class="form-input" required>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <select id="milestone-status" class="form-input">
+                        <option value="upcoming">Upcoming</option>
+                        <option value="at-risk">At Risk</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeMilestoneModal()" class="btn-secondary">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save mr-2"></i>Save Milestone
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dependency Modal -->
+    <div id="dependency-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-link text-blue-600 mr-2"></i>
+                    Manage Dependencies
+                </h2>
+                <button onclick="closeDependencyModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Select Task</label>
+                <select id="dep-task-select" class="form-input" onchange="updateDependencyList()">
+                    <option value="">Choose a task...</option>
+                </select>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Dependencies (Tasks that must finish first)</label>
+                <select id="dep-predecessor-select" class="form-input" multiple size="6">
+                    <!-- Will be populated dynamically -->
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeDependencyModal()" class="btn-secondary">
+                    Cancel
+                </button>
+                <button onclick="saveDependencies()" class="btn-primary">
+                    <i class="fas fa-save mr-2"></i>Save Dependencies
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app-fixed.js"></script>
+    <script>
+        // Ensure functions are available globally
+        window.openTaskModal = openTaskModal;
+        window.openMilestoneModal = openMilestoneModal;
+        window.openDependencyModal = openDependencyModal;
+        window.closeTaskModal = closeTaskModal;
+        window.closeMilestoneModal = closeMilestoneModal;
+        window.closeDependencyModal = closeDependencyModal;
+        window.bulkDelete = bulkDelete;
+        window.editProjectName = editProjectName;
+        console.log('Functions exposed to window object');
+    </script>
+</body>
+</html>

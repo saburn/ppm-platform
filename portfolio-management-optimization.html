@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Optimization - Portfolio Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .recommendation-card {
+            transition: all 0.3s ease;
+        }
+        .recommendation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .impact-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .impact-high { background: #fee2e2; color: #991b1b; }
+        .impact-medium { background: #fef3c7; color: #92400e; }
+        .impact-low { background: #dbeafe; color: #1e40af; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="gradient-bg text-white p-6 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">🤖 Portfolio Optimization</h1>
+                    <p class="text-purple-100">AI-powered recommendations for portfolio improvement</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="runOptimization()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Run Optimization
+                    </button>
+                    <button onclick="applyAll()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-check mr-2"></i>Apply All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- AI Optimization Banner -->
+        <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-brain text-3xl mr-3"></i>
+                        <h2 class="text-2xl font-bold">AI Portfolio Optimizer</h2>
+                    </div>
+                    <p class="text-purple-100 mb-4">Analyzed 42 projects, 156 resources, and $8.4M budget allocation</p>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                            <p class="text-sm text-purple-100">Optimization Score</p>
+                            <p class="text-2xl font-bold">83%</p>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                            <p class="text-sm text-purple-100">Recommendations</p>
+                            <p class="text-2xl font-bold">12</p>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                            <p class="text-sm text-purple-100">Potential Savings</p>
+                            <p class="text-2xl font-bold">$1.2M</p>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                            <p class="text-sm text-purple-100">ROI Improvement</p>
+                            <p class="text-2xl font-bold">+42%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Optimization Metrics -->
+        <div class="grid grid-cols-3 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Current vs Optimized</h3>
+                <canvas id="comparisonChart" height="200"></canvas>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">💰 Budget Efficiency</h3>
+                <canvas id="efficiencyChart" height="200"></canvas>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">👥 Resource Utilization</h3>
+                <canvas id="utilizationChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- High Priority Recommendations -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">🔥 High Priority Recommendations</h2>
+            <div class="space-y-4">
+                <!-- Recommendation 1 -->
+                <div class="recommendation-card p-6 bg-gradient-to-r from-red-50 to-transparent border-l-4 border-red-500 rounded-lg">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-bold text-gray-800 text-lg">Reallocate Resources from Project Zeta</h3>
+                                <span class="impact-badge impact-high">High Impact</span>
+                            </div>
+                            <p class="text-gray-600 mb-3">Project Zeta is 68% behind schedule with only 32% completion. Recommend reallocating 4 developers to higher-priority projects.</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 mb-4">
+                        <div class="p-3 bg-white rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-500">Potential Savings</p>
+                            <p class="text-lg font-bold text-green-600">$340K</p>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-500">ROI Improvement</p>
+                            <p class="text-lg font-bold text-green-600">+28%</p>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-500">Resources Freed</p>
+                            <p class="text-lg font-bold text-blue-600">4 devs</p>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-500">Implementation</p>
+                            <p class="text-lg font-bold text-gray-800">2 weeks</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="applyRecommendation(1)" class="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700">
+                            <i class="fas fa-check mr-2"></i>Apply Recommendation
+                        </button>
+                        <button onclick="viewDetails(1)" class="border border-gray-300 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50">
+                            View Details
+                        </button>
+                        <button onclick="dismiss(1)" class="text-gray-600 hover:text-red-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recommendation 2 -->
+                <div class="recommendation-card p-6 bg-gradient-to-r from-orange-50 to-transparent border-l-4 border-orange-500 rounded-lg">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-bold text-gray-800 text-lg">Increase Budget for Project Delta</h3>
+                                <span class="impact-badge impact-high">High Impact</span>
+                            </div>
+                            <p class="text-gray-600 mb-3">Project Delta shows 425% ROI potential but is underfunded. Recommend increasing budget by $300K to accelerate delivery.</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 mb-4">
+                        <div class="p-3 bg-white rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-500">Additional ROI</p>
+                            <p class="text-lg font-bold text-green-600">$1.28M</p>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-500">Time Saved</p>
+                            <p class="text-lg font-bold text-green-600">3 months</p>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-500">Investment</p>
+                            <p class="text-lg font-bold text-blue-600">$300K</p>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-500">Payback</p>
+                            <p class="text-lg font-bold text-gray-800">4 months</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="applyRecommendation(2)" class="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700">
+                            <i class="fas fa-check mr-2"></i>Apply Recommendation
+                        </button>
+                        <button onclick="viewDetails(2)" class="border border-gray-300 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50">
+                            View Details
+                        </button>
+                        <button onclick="dismiss(2)" class="text-gray-600 hover:text-red-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recommendation 3 -->
+                <div class="recommendation-card p-6 bg-gradient-to-r from-yellow-50 to-transparent border-l-4 border-yellow-500 rounded-lg">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-bold text-gray-800 text-lg">Merge Projects Gamma and Epsilon</h3>
+                                <span class="impact-badge impact-high">High Impact</span>
+                            </div>
+                            <p class="text-gray-600 mb-3">Both projects share 60% of technical requirements. Merging would reduce costs by 35% and accelerate delivery by 2 months.</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 mb-4">
+                        <div class="p-3 bg-white rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-500">Cost Savings</p>
+                            <p class="text-lg font-bold text-green-600">$420K</p>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-500">Time Saved</p>
+                            <p class="text-lg font-bold text-green-600">2 months</p>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-500">Synergy Score</p>
+                            <p class="text-lg font-bold text-blue-600">92%</p>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-500">Risk Level</p>
+                            <p class="text-lg font-bold text-yellow-600">Medium</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="applyRecommendation(3)" class="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700">
+                            <i class="fas fa-check mr-2"></i>Apply Recommendation
+                        </button>
+                        <button onclick="viewDetails(3)" class="border border-gray-300 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50">
+                            View Details
+                        </button>
+                        <button onclick="dismiss(3)" class="text-gray-600 hover:text-red-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medium Priority Recommendations -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">⚡ Medium Priority Recommendations</h2>
+            <div class="space-y-4">
+                <!-- Recommendation 4 -->
+                <div class="recommendation-card p-4 bg-gradient-to-r from-blue-50 to-transparent border-l-4 border-blue-500 rounded-lg">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-bold text-gray-800">Adjust Project Beta Timeline</h3>
+                                <span class="impact-badge impact-medium">Medium Impact</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Extend deadline by 2 weeks to improve quality and reduce technical debt by 40%.</p>
+                            <div class="flex gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Quality Improvement:</span>
+                                    <span class="font-bold text-green-600"> +40%</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Cost Impact:</span>
+                                    <span class="font-bold text-gray-800"> $45K</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="applyRecommendation(4)" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                                Apply
+                            </button>
+                            <button onclick="dismiss(4)" class="text-gray-600 hover:text-red-600">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendation 5 -->
+                <div class="recommendation-card p-4 bg-gradient-to-r from-green-50 to-transparent border-l-4 border-green-500 rounded-lg">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-bold text-gray-800">Optimize Resource Allocation</h3>
+                                <span class="impact-badge impact-medium">Medium Impact</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Balance workload across teams to improve utilization from 73% to 85%.</p>
+                            <div class="flex gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Utilization Gain:</span>
+                                    <span class="font-bold text-green-600"> +12%</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Capacity Freed:</span>
+                                    <span class="font-bold text-gray-800"> 18 FTE</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="applyRecommendation(5)" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                                Apply
+                            </button>
+                            <button onclick="dismiss(5)" class="text-gray-600 hover:text-red-600">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendation 6 -->
+                <div class="recommendation-card p-4 bg-gradient-to-r from-purple-50 to-transparent border-l-4 border-purple-500 rounded-lg">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-bold text-gray-800">Consolidate Vendor Contracts</h3>
+                                <span class="impact-badge impact-medium">Medium Impact</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Negotiate bulk contracts with 3 vendors to reduce costs by 18%.</p>
+                            <div class="flex gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Annual Savings:</span>
+                                    <span class="font-bold text-green-600"> $156K</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Implementation:</span>
+                                    <span class="font-bold text-gray-800"> 1 month</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="applyRecommendation(6)" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                                Apply
+                            </button>
+                            <button onclick="dismiss(6)" class="text-gray-600 hover:text-red-600">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Priority Recommendations -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">💡 Low Priority Recommendations</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="p-4 border border-gray-200 rounded-lg hover:border-purple-500 cursor-pointer">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="font-semibold text-gray-800">Standardize Tools</h3>
+                        <span class="impact-badge impact-low">Low Impact</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2">Reduce tool sprawl from 12 to 6 platforms</p>
+                    <p class="text-xs text-green-600 font-semibold">Savings: $48K/year</p>
+                </div>
+
+                <div class="p-4 border border-gray-200 rounded-lg hover:border-purple-500 cursor-pointer">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="font-semibold text-gray-800">Automate Reporting</h3>
+                        <span class="impact-badge impact-low">Low Impact</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2">Save 20 hours/week on manual reports</p>
+                    <p class="text-xs text-green-600 font-semibold">Time Saved: 1,040 hrs/year</p>
+                </div>
+
+                <div class="p-4 border border-gray-200 rounded-lg hover:border-purple-500 cursor-pointer">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="font-semibold text-gray-800">Training Program</h3>
+                        <span class="impact-badge impact-low">Low Impact</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2">Improve team productivity by 8%</p>
+                    <p class="text-xs text-green-600 font-semibold">ROI: 3.2x investment</p>
+                </div>
+
+                <div class="p-4 border border-gray-200 rounded-lg hover:border-purple-500 cursor-pointer">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="font-semibold text-gray-800">Process Documentation</h3>
+                        <span class="impact-badge impact-low">Low Impact</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2">Reduce onboarding time by 30%</p>
+                    <p class="text-xs text-green-600 font-semibold">Efficiency: +12%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Charts
+        function initCharts() {
+            // Comparison Chart
+            const ctx1 = document.getElementById('comparisonChart');
+            if (ctx1) {
+                new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: ['ROI', 'Efficiency', 'Utilization'],
+                        datasets: [{
+                            label: 'Current',
+                            data: [287, 73, 73],
+                            backgroundColor: '#93c5fd'
+                        }, {
+                            label: 'Optimized',
+                            data: [408, 89, 85],
+                            backgroundColor: '#8b5cf6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            // Efficiency Chart
+            const ctx2 = document.getElementById('efficiencyChart');
+            if (ctx2) {
+                new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Optimized', 'Waste'],
+                        datasets: [{
+                            data: [89, 11],
+                            backgroundColor: ['#10b981', '#ef4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            // Utilization Chart
+            const ctx3 = document.getElementById('utilizationChart');
+            if (ctx3) {
+                new Chart(ctx3, {
+                    type: 'line',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [{
+                            label: 'Current',
+                            data: [71, 73, 72, 73],
+                            borderColor: '#93c5fd',
+                            tension: 0.4
+                        }, {
+                            label: 'Projected',
+                            data: [73, 78, 82, 85],
+                            borderColor: '#8b5cf6',
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+        });
+
+        // Actions
+        function runOptimization() {
+            showToast('Running AI optimization analysis...');
+            setTimeout(() => {
+                showToast('Optimization complete! 12 recommendations generated.');
+            }, 2500);
+        }
+
+        function applyRecommendation(id) {
+            showToast(`Applying recommendation #${id}...`);
+            setTimeout(() => {
+                showToast(`Recommendation #${id} applied successfully!`);
+            }, 1500);
+        }
+
+        function applyAll() {
+            if (confirm('Apply all 12 recommendations? This will affect multiple projects.')) {
+                showToast('Applying all recommendations...');
+                setTimeout(() => {
+                    showToast('All recommendations applied! Portfolio optimized.');
+                }, 2000);
+            }
+        }
+
+        function viewDetails(id) {
+            showToast(`Opening detailed analysis for recommendation #${id}...`);
+        }
+
+        function dismiss(id) {
+            showToast(`Recommendation #${id} dismissed.`);
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

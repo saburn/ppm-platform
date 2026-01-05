@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PPM Pro - Luxury Project Portfolio Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366F1;
+            --secondary: #8B5CF6;
+            --accent: #EC4899;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .luxury-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border-radius: 20px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(31, 38, 135, 0.4);
+        }
+
+        .luxury-button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .luxury-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .sidebar-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid transparent;
+            border-radius: 12px;
+            margin: 4px 0;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .sidebar-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            border-left-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .hidden { display: none !important; }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            margin: 20px 0;
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="flex h-screen luxury-gradient">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-gray-900 bg-opacity-90 backdrop-filter backdrop-blur-lg text-white p-6">
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">AI PPM Pro</h1>
+                <p class="text-gray-300 text-sm mt-1">Luxury Portfolio Management</p>
+            </div>
+            
+            <nav class="space-y-2">
+                <div class="sidebar-item p-4 rounded-xl cursor-pointer active" onclick="showModule('dashboard')">
+                    <i class="fas fa-chart-line mr-3"></i>
+                    <span>Executive Dashboard</span>
+                </div>
+                <div class="sidebar-item p-4 rounded-xl cursor-pointer" onclick="showModule('gantt')">
+                    <i class="fas fa-project-diagram mr-3"></i>
+                    <span>Gantt Charts</span>
+                </div>
+                <div class="sidebar-item p-4 rounded-xl cursor-pointer" onclick="showModule('projects')">
+                    <i class="fas fa-tasks mr-3"></i>
+                    <span>Projects & Programs</span>
+                </div>
+                <div class="sidebar-item p-4 rounded-xl cursor-pointer" onclick="showModule('resources')">
+                    <i class="fas fa-users mr-3"></i>
+                    <span>Resource Management</span>
+                </div>
+                <div class="sidebar-item p-4 rounded-xl cursor-pointer" onclick="showModule('portfolio')">
+                    <i class="fas fa-briefcase mr-3"></i>
+                    <span>Strategic Portfolio</span>
+                </div>
+                <div class="sidebar-item p-4 rounded-xl cursor-pointer" onclick="showModule('financial')">
+                    <i class="fas fa-dollar-sign mr-3"></i>
+                    <span>Financial Management</span>
+                </div>
+                <div class="sidebar-item p-4 rounded-xl cursor-pointer" onclick="showModule('raid')">
+                    <i class="fas fa-shield-alt mr-3"></i>
+                    <span>RAID Management</span>
+                </div>
+                <div class="sidebar-item p-4 rounded-xl cursor-pointer" onclick="showModule('ai')">
+                    <i class="fas fa-brain mr-3"></i>
+                    <span>AI & Analytics</span>
+                </div>
+                <div class="sidebar-item p-4 rounded-xl cursor-pointer" onclick="showModule('reports')">
+                    <i class="fas fa-file-alt mr-3"></i>
+                    <span>Reports & Insights</span>
+                </div>
+                <div class="sidebar-item p-4 rounded-xl cursor-pointer" onclick="showModule('collaboration')">
+                    <i class="fas fa-comments mr-3"></i>
+                    <span>Team Collaboration</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-hidden p-6">
+            
+            <!-- Executive Dashboard Module -->
+            <div id="dashboard" class="module-content h-full overflow-auto fade-in">
+                <div class="mb-8">
+                    <h2 class="text-4xl font-bold text-white mb-2">Executive Dashboard</h2>
+                    <p class="text-white/80">Real-time portfolio intelligence powered by AI</p>
+                </div>
+
+                <!-- Key Performance Indicators -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card p-6 rounded-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <i class="fas fa-rocket text-3xl"></i>
+                            <span class="text-sm font-bold">+12.5%</span>
+                        </div>
+                        <h3 class="text-3xl font-bold" id="portfolioHealth">87%</h3>
+                        <p class="text-white/80">Portfolio Health Score</p>
+                    </div>
+                    
+                    <div class="stat-card p-6 rounded-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <i class="fas fa-users text-3xl"></i>
+                            <span class="text-sm font-bold">+8.3%</span>
+                        </div>
+                        <h3 class="text-3xl font-bold" id="resourceUtil">92%</h3>
+                        <p class="text-white/80">Resource Utilization</p>
+                    </div>
+                    
+                    <div class="stat-card p-6 rounded-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <i class="fas fa-chart-line text-3xl"></i>
+                            <span class="text-sm font-bold">+15.7%</span>
+                        </div>
+                        <h3 class="text-3xl font-bold" id="portfolioValue">$2.4M</h3>
+                        <p class="text-white/80">Portfolio Value</p>
+                    </div>
+                    
+                    <div class="stat-card p-6 rounded-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <i class="fas fa-shield-alt text-3xl"></i>
+                            <span class="text-sm font-bold">-5.2%</span>
+                        </div>
+                        <h3 class="text-3xl font-bold" id="criticalRisks">3</h3>
+                        <p class="text-white/80">Critical Risks</p>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card p-6 rounded-xl">
+                        <h3 class="text-xl font-semibold mb-4">Portfolio Performance</h3>
+                        <div class="chart-container">
+                            <canvas id="portfolioChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-xl">
+                        <h3 class="text-xl font-semibold mb-4">Resource Allocation</h3>
+                        <div class="chart-container">
+                            <canvas id="resourceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Insights -->
+                <div class="mt-8 glass-card p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4">
+                        <i class="fas fa-brain mr-2 text-purple-500"></i>AI Insights & Recommendations
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-blue-50 rounded-xl border-l-4 border-blue-500">
+                            <h4 class="font-semibold text-blue-900 mb-2">Portfolio Optimization Opportunity</h4>
+                            <p class="text-blue-700 mb-3">AI analysis identifies 3 projects that can be fast-tracked, potentially delivering $450K additional value this quarter.</p>
+                            <button class="luxury-button text-sm" onclick="showAIInsight('optimization')">View Details</button>
+                        </div>
+                        
+                        <div class="p-4 bg-yellow-50 rounded-xl border-l-4 border-yellow-500">
+                            <h4 class="font-semibold text-yellow-900 mb-2">Resource Capacity Alert</h4>
+                            <p class="text-yellow-700 mb-3">Development team reaching 95% capacity in Q4. Consider hiring 2 additional developers or deferring Project Alpha.</p>
+                            <button class="luxury-button text-sm" onclick="showAIInsight('capacity')">Take Action</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gantt Charts Module -->
+            <div id="gantt" class="module-content hidden h-full overflow-auto fade-in">
+                <div class="mb-8">
+                    <h2 class="text-4xl font-bold text-white mb-2">Interactive Gantt Charts</h2>
+                    <p class="text-white/80">Drag-and-drop timeline management with AI optimization</p>
+                </div>
+
+                <!-- Gantt Controls -->
+                <div class="glass-card p-4 rounded-xl mb-6">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <select class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" onchange="changeGanttView(this.value)">
+                            <option value="gantt">Gantt View</option>
+                            <option value="timeline">Timeline View</option>
+                            <option value="kanban">Kanban Board</option>
+                        </select>
+                        
+                        <button class="luxury-button" onclick="addGanttTask()">
+                            <i class="fas fa-plus mr-2"></i>Add Task
+                        </button>
+                        
+                        <button class="luxury-button" onclick="optimizeSchedule()">
+                            <i class="fas fa-magic mr-2"></i>AI Optimize
+                        </button>
+                        
+                        <button class="luxury-button" onclick="exportGantt()">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Gantt Chart Container -->
+                <div class="glass-card p-6 rounded-xl">
+                    <div id="ganttChart" class="overflow-x-auto">
+                        <!-- Gantt chart will be rendered here -->
+                        <div class="min-w-[800px]">
+                            <div class="grid grid-cols-12 gap-2 mb-4 text-sm font-semibold text-gray-700">
+                                <div class="col-span-3">Task Name</div>
+                                <div class="col-span-2">Jan</div>
+                                <div class="col-span-2">Feb</div>
+                                <div class="col-span-2">Mar</div>
+                                <div class="col-span-2">Apr</div>
+                                <div class="col-span-1">Actions</div>
+                            </div>
+                            <div id="ganttTasks"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects & Programs Module -->
+            <div id="projects" class="module-content hidden h-full overflow-auto fade-in">
+                <div class="mb-8">
+                    <h2 class="text-4xl font-bold text-white mb-2">Projects & Programs</h2>
+                    <p class="text-white/80">Complete project lifecycle management with AI insights</p>
+                </div>
+
+                <!-- Project Actions -->
+                <div class="glass-card p-4 rounded-xl mb-6">
+                    <div class="flex flex-wrap gap-4">
+                        <button class="luxury-button" onclick="createNewProject()">
+                            <i class="fas fa-plus mr-2"></i>New Project
+                        </button>
+                        <button class="luxury-button" onclick="createProgram()">
+                            <i class="fas fa-layer-group mr-2"></i>New Program
+                        </button>
+                        <input type="text" id="projectSearch" placeholder="Search projects..." class="px-4 py-2 border rounded-lg flex-1 max-w-md focus:ring-2 focus:ring-purple-500" onkeyup="searchProjects(this.value)">
+                    </div>
+                </div>
+
+                <!-- Projects Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="projectsGrid">
+                    <!-- Projects will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Resource Management Module -->
+            <div id="resources" class="module-content hidden h-full overflow-auto fade-in">
+                <div class="mb-8">
+                    <h2 class="text-4xl font-bold text-white mb-2">Resource Management</h2>
+                    <p class="text-white/80">Intelligent resource allocation and capacity planning</p>
+                </div>
+
+                <!-- Resource Overview -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="glass-card p-6 rounded-xl">
+                        <h3 class="text-xl font-semibold mb-4">Resource Utilization</h3>
+                        <div class="chart-container">
+                            <canvas id="resourceUtilChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-xl">
+                        <h3 class="text-xl font-semibold mb-4">Skills Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="skillsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resource Pool -->
+                <div class="glass-card p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4">Resource Pool</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full" id="resourceTable">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left p-3">Name</th>
+                                    <th class="text-left p-3">Role</th>
+                                    <th class="text-left p-3">Skills</th>
+                                    <th class="text-left p-3">Utilization</th>
+                                    <th class="text-left p-3">Availability</th>
+                                    <th class="text-left p-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resourceTableBody">
+                                <!-- Resources will be rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategic Portfolio Module -->
+            <div id="portfolio" class="module-content hidden h-full overflow-auto fade-in">
+                <div class="mb-8">
+                    <h2 class="text-4xl font-bold text-white mb-2">Strategic Portfolio Management</h2>
+                    <p class="text-white/80">Align projects with strategic objectives and optimize portfolio value</p>
+                </div>
+
+                <!-- Strategic Alignment Matrix -->
+                <div class="glass-card p-6 rounded-xl mb-6">
+                    <h3 class="text-xl font-semibold mb-4">Strategic Alignment Matrix</h3>
+                    <div class="chart-container">
+                        <canvas id="alignmentMatrix"></canvas>
+                    </div>
+                </div>
+
+                <!-- Portfolio Optimization -->
+                <div class="glass-card p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4">Portfolio Optimization</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-500 mb-2" id="portfolioValueMetric">$2.4M</div>
+                            <div class="text-gray-600">Portfolio Value</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-green-500 mb-2" id="strategicAlignment">87%</div>
+                            <div class="text-gray-600">Strategic Alignment</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-purple-500 mb-2" id="expectedROI">15%</div>
+                            <div class="text-gray-600">Expected ROI</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RAID Management Module -->
+            <div id="raid" class="module-content hidden h-full overflow-auto fade-in">
+                <div class="mb-8">
+                    <h2 class="text-4xl font-bold text-white mb-2">RAID Management</h2>
+                    <p class="text-white/80">Risk, Assumptions, Issues, and Dependencies tracking with AI intelligence</p>
+                </div>
+
+                <!-- RAID Matrix -->
+                <div class="glass-card p-6 rounded-xl mb-6">
+                    <h3 class="text-xl font-semibold mb-4">Interactive Risk Matrix</h3>
+                    <div class="chart-container">
+                        <canvas id="riskMatrix"></canvas>
+                    </div>
+                </div>
+
+                <!-- RAID Items -->
+                <div class="glass-card p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4">RAID Items</h3>
+                    <div class="space-y-4" id="raidItems">
+                        <!-- RAID items will be rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI & Analytics Module -->
+            <div id="ai" class="module-content hidden h-full overflow-auto fade-in">
+                <div class="mb-8">
+                    <h2 class="text-4xl font-bold text-white mb-2">AI & Analytics</h2>
+                    <p class="text-white/80">Predictive analytics and intelligent insights</p>
+                </div>
+
+                <!-- AI Insights -->
+                <div class="glass-card p-6 rounded-xl mb-6">
+                    <h3 class="text-xl font-semibold mb-4">
+                        <i class="fas fa-brain mr-2 text-purple-500"></i>AI-Powered Insights
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="p-4 bg-purple-50 rounded-xl">
+                            <h4 class="font-semibold text-purple-900 mb-2">Success Prediction</h4>
+                            <div class="text-2xl font-bold text-purple-600 mb-2" id="successPrediction">94%</div>
+                            <p class="text-purple-700 text-sm">Current portfolio success probability based on AI analysis</p>
+                        </div>
+                        <div class="p-4 bg-blue-50 rounded-xl">
+                            <h4 class="font-semibold text-blue-900 mb-2">Risk Detection</h4>
+                            <div class="text-2xl font-bold text-blue-600 mb-2" id="riskDetection">3 Risks</div>
+                            <p class="text-blue-700 text-sm">Potential risks identified for proactive mitigation</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Predictive Analytics -->
+                <div class="glass-card p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4">Predictive Analytics</h3>
+                    <div class="chart-container">
+                        <canvas id="predictiveChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports & Insights Module -->
+            <div id="reports" class="module-content hidden h-full overflow-auto fade-in">
+                <div class="mb-8">
+                    <h2 class="text-4xl font-bold text-white mb-2">Reports & Insights</h2>
+                    <p class="text-white/80">Comprehensive reporting and business intelligence</p>
+                </div>
+
+                <!-- Report Templates -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="glass-card p-6 rounded-xl text-center cursor-pointer hover:scale-105 transition-transform" onclick="generateReport('executive')">
+                        <i class="fas fa-file-alt text-4xl text-blue-500 mb-4"></i>
+                        <h3 class="text-lg font-semibold mb-2">Executive Report</h3>
+                        <p class="text-gray-600 text-sm">High-level portfolio overview for executives</p>
+                    </div>
+                    <div class="glass-card p-6 rounded-xl text-center cursor-pointer hover:scale-105 transition-transform" onclick="generateReport('progress')">
+                        <i class="fas fa-chart-bar text-4xl text-green-500 mb-4"></i>
+                        <h3 class="text-lg font-semibold mb-2">Progress Report</h3>
+                        <p class="text-gray-600 text-sm">Detailed project progress and milestones</p>
+                    </div>
+                    <div class="glass-card p-6 rounded-xl text-center cursor-pointer hover:scale-105 transition-transform" onclick="generateReport('financial')">
+                        <i class="fas fa-dollar-sign text-4xl text-yellow-500 mb-4"></i>
+                        <h3 class="text-lg font-semibold mb-2">Financial Report</h3>
+                        <p class="text-gray-600 text-sm">Budget tracking and financial analysis</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collaboration Module -->
+            <div id="collaboration" class="module-content hidden h-full overflow-auto fade-in">
+                <div class="mb-8">
+                    <h2 class="text-4xl font-bold text-white mb-2">Team Collaboration</h2>
+                    <p class="text-white/80">Real-time communication and document sharing</p>
+                </div>
+
+                <!-- Collaboration Tools -->
+                <div class="glass-card p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4">Team Hub</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-semibold mb-3">Recent Activity</h4>
+                            <div class="space-y-3" id="recentActivity">
+                                <!-- Activity will be rendered here -->
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-3">Quick Actions</h4>
+                            <div class="space-y-2">
+                                <button class="w-full luxury-button" onclick="startMeeting()">
+                                    <i class="fas fa-video mr-2"></i>Start Meeting
+                                </button>
+                                <button class="w-full luxury-button" onclick="openTeamChat()">
+                                    <i class="fas fa-comment mr-2"></i>Team Chat
+                                </button>
+                                <button class="w-full luxury-button" onclick="openDocumentLibrary()">
+                                    <i class="fas fa-folder mr-2"></i>Document Library
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Data Management System
+        class PPMDataManager {
+            constructor() {
+                this.initializeData();
+            }
+
+            initializeData() {
+                if (!localStorage.getItem('ppmData')) {
+                    const initialData = {
+                        projects: [
+                            {
+                                id: 1,
+                                name: 'Digital Transformation',
+                                status: 'On Track',
+                                progress: 67,
+                                budget: 1200000,
+                                spent: 850000,
+                                team: 12,
+                                dueDate: '2024-06-30',
+                                description: 'Complete digital transformation of core business processes'
+                            },
+                            {
+                                id: 2,
+                                name: 'Mobile App Launch',
+                                status: 'At Risk',
+                                progress: 45,
+                                budget: 500000,
+                                spent: 320000,
+                                team: 8,
+                                dueDate: '2024-05-15',
+                                description: 'Launch new mobile application for customer engagement'
+                            },
+                            {
+                                id: 3,
+                                name: 'Cloud Migration',
+                                status: 'Completed',
+                                progress: 100,
+                                budget: 450000,
+                                spent: 450000,
+                                team: 6,
+                                dueDate: '2024-03-31',
+                                description: 'Migrate infrastructure to cloud platform'
+                            }
+                        ],
+                        resources: [
+                            {
+                                id: 1,
+                                name: 'Sarah Johnson',
+                                role: 'Senior Developer',
+                                skills: 'React, Node.js, Python',
+                                utilization: 85,
+                                availability: 'Available',
+                                projects: ['Digital Transformation', 'Mobile App Launch']
+                            },
+                            {
+                                id: 2,
+                                name: 'Mike Chen',
+                                role: 'UX Designer',
+                                skills: 'Figma, Adobe XD, Prototyping',
+                                utilization: 95,
+                                availability: 'Limited',
+                                projects: ['Mobile App Launch']
+                            },
+                            {
+                                id: 3,
+                                name: 'Emily Davis',
+                                role: 'Project Manager',
+                                skills: 'PMP, Agile, Scrum',
+                                utilization: 70,
+                                availability: 'Available',
+                                projects: ['Digital Transformation', 'Cloud Migration']
+                            },
+                            {
+                                id: 4,
+                                name: 'David Kim',
+                                role: 'DevOps Engineer',
+                                skills: 'AWS, Docker, Kubernetes',
+                                utilization: 88,
+                                availability: 'Limited',
+                                projects: ['Cloud Migration']
+                            }
+                        ],
+                        ganttTasks: [
+                            {
+                                id: 1,
+                                name: 'Project Initiation',
+                                start: '2024-01-01',
+                                end: '2024-01-15',
+                                progress: 100,
+                                assignee: 'Emily Davis',
+                                dependencies: []
+                            },
+                            {
+                                id: 2,
+                                name: 'Requirements Analysis',
+                                start: '2024-01-10',
+                                end: '2024-02-05',
+                                progress: 75,
+                                assignee: 'Sarah Johnson',
+                                dependencies: [1]
+                            },
+                            {
+                                id: 3,
+                                name: 'System Design',
+                                start: '2024-02-01',
+                                end: '2024-03-01',
+                                progress: 50,
+                                assignee: 'Mike Chen',
+                                dependencies: [2]
+                            },
+                            {
+                                id: 4,
+                                name: 'Development Phase',
+                                start: '2024-02-15',
+                                end: '2024-05-01',
+                                progress: 25,
+                                assignee: 'Sarah Johnson',
+                                dependencies: [3]
+                            },
+                            {
+                                id: 5,
+                                name: 'Testing & QA',
+                                start: '2024-04-15',
+                                end: '2024-05-30',
+                                progress: 0,
+                                assignee: 'David Kim',
+                                dependencies: [4]
+                            }
+                        ],
+                        raidItems: [
+                            {
+                                id: 1,
+                                type: 'Risk',
+                                title: 'Budget Overrun on Mobile App',
+                                description: 'Current spending rate may exceed budget by 15%',
+                                probability: 70,
+                                impact: 80,
+                                mitigation: 'Implement weekly budget reviews and scope validation',
+                                status: 'Active'
+                            },
+                            {
+                                id: 2,
+                                type: 'Issue',
+                                title: 'Resource Capacity Constraints',
+                                description: 'Development team at 95% utilization affecting delivery timelines',
+                                probability: 85,
+                                impact: 75,
+                                mitigation: 'Hire 2 additional developers or defer non-critical features',
+                                status: 'Active'
+                            },
+                            {
+                                id: 3,
+                                type: 'Assumption',
+                                title: 'Third-party API Availability',
+                                description: 'Assuming payment gateway API will be available by Q2',
+                                probability: 60,
+                                impact: 90,
+                                mitigation: 'Develop fallback integration and contact vendor for timeline confirmation',
+                                status: 'Monitoring'
+                            }
+                        ]
+                    };
+                    localStorage.setItem('ppmData', JSON.stringify(initialData));
+                }
+                this.data = JSON.parse(localStorage.getItem('ppmData'));
+            }
+
+            saveData() {
+                localStorage.setItem('ppmData', JSON.stringify(this.data));
+            }
+
+            getProjects() {
+                return this.data.projects;
+            }
+
+            getResources() {
+                return this.data.resources;
+            }
+
+            getGanttTasks() {
+                return this.data.ganttTasks;
+            }
+
+            getRAIDItems() {
+                return this.data.raidItems;
+            }
+
+            addProject(project) {
+                project.id = Date.now();
+                this.data.projects.push(project);
+                this.saveData();
+                return project;
+            }
+
+            updateProject(id, updates) {
+                const index = this.data.projects.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    this.data.projects[index] = { ...this.data.projects[index], ...updates };
+                    this.saveData();
+                    return this.data.projects[index];
+                }
+                return null;
+            }
+
+            addGanttTask(task) {
+                task.id = Date.now();
+                this.data.ganttTasks.push(task);
+                this.saveData();
+                return task;
+            }
+
+            updateGanttTask(id, updates) {
+                const index = this.data.ganttTasks.findIndex(t => t.id === id);
+                if (index !== -1) {
+                    this.data.ganttTasks[index] = { ...this.data.ganttTasks[index], ...updates };
+                    this.saveData();
+                    return this.data.ganttTasks[index];
+                }
+                return null;
+            }
+        }
+
+        // Initialize Data Manager
+        const dataManager = new PPMDataManager();
+
+        // Module Navigation
+        function showModule(moduleId) {
+            // Hide all modules
+            document.querySelectorAll('.module-content').forEach(module => {
+                module.classList.add('hidden');
+            });
+            
+            // Show selected module
+            const selectedModule = document.getElementById(moduleId);
+            selectedModule.classList.remove('hidden');
+            selectedModule.classList.add('fade-in');
+            
+            // Update sidebar active state
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.sidebar-item').classList.add('active');
+
+            // Initialize module-specific content
+            initializeModuleContent(moduleId);
+        }
+
+        // Initialize Module Content
+        function initializeModuleContent(moduleId) {
+            switch(moduleId) {
+                case 'dashboard':
+                    updateDashboardMetrics();
+                    break;
+                case 'projects':
+                    renderProjects();
+                    break;
+                case 'resources':
+                    renderResources();
+                    break;
+                case 'gantt':
+                    renderGanttTasks();
+                    break;
+                case 'raid':
+                    renderRAIDItems();
+                    break;
+                case 'collaboration':
+                    renderRecentActivity();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Update Dashboard Metrics
+        function updateDashboardMetrics() {
+            const projects = dataManager.getProjects();
+            const resources = dataManager.getResources();
+            
+            // Calculate metrics
+            const avgProgress = projects.reduce((sum, p) => sum + p.progress, 0) / projects.length;
+            const avgUtilization = resources.reduce((sum, r) => sum + r.utilization, 0) / resources.length;
+            const totalBudget = projects.reduce((sum, p) => sum + p.budget, 0);
+            const totalSpent = projects.reduce((sum, p) => sum + p.spent, 0);
+            const criticalRisks = dataManager.getRAIDItems().filter(item => item.type === 'Risk' && item.status === 'Active').length;
+            
+            // Update UI
+            document.getElementById('portfolioHealth').textContent = Math.round(avgProgress) + '%';
+            document.getElementById('resourceUtil').textContent = Math.round(avgUtilization) + '%';
+            document.getElementById('portfolioValue').textContent = '$' + (totalBudget / 1000000).toFixed(1) + 'M';
+            document.getElementById('criticalRisks').textContent = criticalRisks;
+        }
+
+        // Render Projects
+        function renderProjects() {
+            const projects = dataManager.getProjects();
+            const projectsGrid = document.getElementById('projectsGrid');
+            
+            projectsGrid.innerHTML = projects.map(project => `
+                <div class="glass-card p-6 rounded-xl">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-semibold">${project.name}</h3>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${
+                            project.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                            project.status === 'At Risk' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-blue-100 text-blue-800'
+                        }">${project.status}</span>
+                    </div>
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-600">Progress:</span>
+                                <span class="font-semibold">${project.progress}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500" style="width: ${project.progress}%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Budget:</span>
+                            <span class="font-semibold">$${(project.spent/1000).toFixed(0)}K / $${(project.budget/1000).toFixed(0)}K</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Team:</span>
+                            <span class="font-semibold">${project.team} members</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Due:</span>
+                            <span class="font-semibold">${new Date(project.dueDate).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="luxury-button text-sm flex-1" onclick="viewProjectDetails(${project.id})">View Details</button>
+                        <button class="luxury-button text-sm flex-1" onclick="editProject(${project.id})">Edit</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Resources
+        function renderResources() {
+            const resources = dataManager.getResources();
+            const resourceTableBody = document.getElementById('resourceTableBody');
+            
+            resourceTableBody.innerHTML = resources.map(resource => `
+                <tr class="border-b hover:bg-gray-50 transition-colors">
+                    <td class="p-3 font-medium">${resource.name}</td>
+                    <td class="p-3">${resource.role}</td>
+                    <td class="p-3">${resource.skills}</td>
+                    <td class="p-3">
+                        <div class="flex items-center">
+                            <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" style="width: ${resource.utilization}%"></div>
+                            </div>
+                            <span class="text-sm font-semibold">${resource.utilization}%</span>
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${
+                            resource.availability === 'Available' ? 'bg-green-100 text-green-800' :
+                            'bg-yellow-100 text-yellow-800'
+                        }">${resource.availability}</span>
+                    </td>
+                    <td class="p-3">
+                        <button class="luxury-button text-sm" onclick="assignResource(${resource.id})">Assign</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Render Gantt Tasks
+        function renderGanttTasks() {
+            const tasks = dataManager.getGanttTasks();
+            const ganttTasks = document.getElementById('ganttTasks');
+            
+            ganttTasks.innerHTML = tasks.map(task => `
+                <div class="grid grid-cols-12 gap-2 p-3 border-b hover:bg-gray-50 transition-colors" data-task-id="${task.id}">
+                    <div class="col-span-3">
+                        <div class="font-medium">${task.name}</div>
+                        <div class="text-sm text-gray-500">${task.assignee}</div>
+                    </div>
+                    <div class="col-span-8 flex items-center">
+                        <div class="flex-1 bg-gray-100 rounded-lg h-8 relative">
+                            <div class="absolute top-1 left-1 bottom-1 rounded bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300" 
+                                 style="width: ${task.progress}%; left: ${getTaskPosition(task.start, task.end) * 100}%">
+                                <div class="text-xs text-white font-medium flex items-center justify-center h-full">${task.progress}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-span-1">
+                        <button class="luxury-button text-xs" onclick="editGanttTask(${task.id})">Edit</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Get task position for Gantt chart
+        function getTaskPosition(start, end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            const totalDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
+            const quarterStart = new Date('2024-01-01');
+            const daysSinceQuarterStart = (startDate - quarterStart) / (1000 * 60 * 60 * 24);
+            return daysSinceQuarterStart / 90; // Approximate position in quarter
+        }
+
+        // Render RAID Items
+        function renderRAIDItems() {
+            const raidItems = dataManager.getRAIDItems();
+            const raidItemsContainer = document.getElementById('raidItems');
+            
+            raidItemsContainer.innerHTML = raidItems.map(item => `
+                <div class="p-4 border rounded-xl hover:shadow-lg transition-shadow ${
+                    item.type === 'Risk' ? 'border-red-200 bg-red-50' :
+                    item.type === 'Issue' ? 'border-yellow-200 bg-yellow-50' :
+                    'border-blue-200 bg-blue-50'
+                }">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-semibold">${item.title}</h4>
+                        <span class="px-2 py-1 rounded text-xs font-medium ${
+                            item.status === 'Active' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                        }">${item.status}</span>
+                    </div>
+                    <p class="text-gray-700 mb-3">${item.description}</p>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="font-medium">Probability:</span> ${item.probability}%
+                        </div>
+                        <div>
+                            <span class="font-medium">Impact:</span> ${item.impact}%
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t">
+                        <div class="text-sm font-medium mb-1">Mitigation:</div>
+                        <p class="text-gray-600 text-sm">${item.mitigation}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Recent Activity
+        function renderRecentActivity() {
+            const activities = [
+                { user: 'Sarah Johnson', action: 'completed requirements analysis', time: '2 hours ago', avatar: 'SJ' },
+                { user: 'Mike Chen', action: 'updated UI designs', time: '4 hours ago', avatar: 'MC' },
+                { user: 'Emily Davis', action: 'created new project milestone', time: '6 hours ago', avatar: 'ED' },
+                { user: 'David Kim', action: 'deployed cloud infrastructure', time: '1 day ago', avatar: 'DK' }
+            ];
+            
+            const recentActivity = document.getElementById('recentActivity');
+            recentActivity.innerHTML = activities.map(activity => `
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                        ${activity.avatar}
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm"><strong>${activity.user}</strong> ${activity.action}</p>
+                        <p class="text-xs text-gray-500">${activity.time}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Action Functions
+        function createNewProject() {
+            alert('Opening project creation wizard...');
+            // Implementation would open a modal for project creation
+        }
+
+        function viewProjectDetails(projectId) {
+            const project = dataManager.getProjects().find(p => p.id === projectId);
+            alert(`Viewing details for: ${project.name}\n\n${project.description}`);
+            // Implementation would open detailed project view
+        }
+
+        function editProject(projectId) {
+            const project = dataManager.getProjects().find(p => p.id === projectId);
+            alert(`Editing project: ${project.name}`);
+            // Implementation would open edit modal
+        }
+
+        function assignResource(resourceId) {
+            const resource = dataManager.getResources().find(r => r.id === resourceId);
+            alert(`Assigning ${resource.name} to project...`);
+            // Implementation would open assignment modal
+        }
+
+        function addGanttTask() {
+            const newTask = {
+                name: prompt('Enter task name:'),
+                start: prompt('Enter start date (YYYY-MM-DD):'),
+                end: prompt('Enter end date (YYYY-MM-DD):'),
+                assignee: prompt('Enter assignee:'),
+                progress: 0,
+                dependencies: []
+            };
+            
+            if (newTask.name && newTask.start && newTask.end && newTask.assignee) {
+                dataManager.addGanttTask(newTask);
+                renderGanttTasks();
+                alert('Task added successfully!');
+            }
+        }
+
+        function editGanttTask(taskId) {
+            const task = dataManager.getGanttTasks().find(t => t.id === taskId);
+            const newProgress = prompt(`Update progress for "${task.name}" (current: ${task.progress}%):`, task.progress);
+            
+            if (newProgress !== null && !isNaN(newProgress)) {
+                dataManager.updateGanttTask(taskId, { progress: parseInt(newProgress) });
+                renderGanttTasks();
+                alert('Task updated successfully!');
+            }
+        }
+
+        function optimizeSchedule() {
+            alert('AI is analyzing your schedule and optimizing resources...');
+            // Implementation would run AI optimization
+        }
+
+        function exportGantt() {
+            alert('Exporting Gantt chart to PDF...');
+            // Implementation would export to PDF/Excel
+        }
+
+        function generateReport(type) {
+            alert(`Generating ${type} report with AI insights...`);
+            // Implementation would generate and download report
+        }
+
+        function searchProjects(query) {
+            const projects = dataManager.getProjects();
+            const filteredProjects = query ? 
+                projects.filter(p => p.name.toLowerCase().includes(query.toLowerCase())) : 
+                projects;
+            
+            const projectsGrid = document.getElementById('projectsGrid');
+            if (filteredProjects.length === 0) {
+                projectsGrid.innerHTML = '<div class="col-span-3 text-center text-gray-500">No projects found matching your search.</div>';
+            } else {
+                // Re-render with filtered projects
+                renderProjectsFiltered(filteredProjects);
+            }
+        }
+
+        function renderProjectsFiltered(projects) {
+            const projectsGrid = document.getElementById('projectsGrid');
+            projectsGrid.innerHTML = projects.map(project => `
+                <div class="glass-card p-6 rounded-xl">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-semibold">${project.name}</h3>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${
+                            project.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                            project.status === 'At Risk' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-blue-100 text-blue-800'
+                        }">${project.status}</span>
+                    </div>
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-600">Progress:</span>
+                                <span class="font-semibold">${project.progress}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500" style="width: ${project.progress}%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Budget:</span>
+                            <span class="font-semibold">$${(project.spent/1000).toFixed(0)}K / $${(project.budget/1000).toFixed(0)}K</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Team:</span>
+                            <span class="font-semibold">${project.team} members</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Due:</span>
+                            <span class="font-semibold">${new Date(project.dueDate).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="luxury-button text-sm flex-1" onclick="viewProjectDetails(${project.id})">View Details</button>
+                        <button class="luxury-button text-sm flex-1" onclick="editProject(${project.id})">Edit</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function startMeeting() {
+            alert('Starting video meeting with team...');
+            // Implementation would integrate with video conferencing
+        }
+
+        function openTeamChat() {
+            alert('Opening team chat interface...');
+            // Implementation would open chat interface
+        }
+
+        function openDocumentLibrary() {
+            alert('Opening document library...');
+            // Implementation would open file management
+        }
+
+        function changeGanttView(view) {
+            alert(`Switching to ${view}...`);
+            // Implementation would change Gantt view
+        }
+
+        function showAIInsight(type) {
+            const insights = {
+                optimization: 'AI analysis shows that fast-tracking Project Alpha and Project Beta could deliver $450K additional value this quarter with minimal risk.',
+                capacity: 'AI predicts development team will reach 95% capacity by week 8. Recommended actions: hire 2 senior developers or defer non-critical features in Project Gamma.'
+            };
+            alert(insights[type] || 'AI insight details...');
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Portfolio Performance Chart
+            const portfolioCtx = document.getElementById('portfolioChart');
+            if (portfolioCtx) {
+                new Chart(portfolioCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Portfolio Health',
+                            data: [82, 84, 85, 83, 86, 87],
+                            borderColor: '#6366F1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+
+            // Resource Allocation Chart
+            const resourceCtx = document.getElementById('resourceChart');
+            if (resourceCtx) {
+                new Chart(resourceCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Development', 'Design', 'Management', 'QA', 'Marketing'],
+                        datasets: [{
+                            data: [35, 20, 15, 20, 10],
+                            backgroundColor: ['#6366F1', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            updateDashboardMetrics();
+            renderProjects();
+            renderResources();
+            renderGanttTasks();
+            renderRAIDItems();
+            renderRecentActivity();
+        });
+    </script>
+</body>
+</html>

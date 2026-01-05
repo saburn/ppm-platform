@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Automated Reports - AI PPM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar {
+            background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+        }
+        .report-card {
+            transition: all 0.3s ease;
+        }
+        .report-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            max-height: 200px;
+            position: relative;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full w-64 text-white z-40">
+        <div class="p-6">
+            <div class="flex items-center mb-8">
+                <i class="fas fa-chart-line text-2xl mr-3"></i>
+                <h1 class="text-xl font-bold">AI PPM Pro</h1>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="dashboard-beautiful.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="project-management-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-project-diagram mr-3"></i>
+                    Projects
+                </a>
+                <a href="gantt-chart-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-chart-gantt mr-3"></i>
+                    Gantt Charts
+                </a>
+                <a href="resource-allocation-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-users-cog mr-3"></i>
+                    Resources
+                </a>
+                <a href="raid-management-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-shield-alt mr-3"></i>
+                    RAID
+                </a>
+                <a href="automated-reports-enterprise.html" class="flex items-center p-3 rounded-lg bg-white bg-opacity-10">
+                    <i class="fas fa-file-alt mr-3"></i>
+                    Reports
+                </a>
+            </nav>
+        </div>
+        
+        <div class="absolute bottom-6 left-6 right-6">
+            <button onclick="logout()" class="w-full flex items-center justify-center p-3 rounded-lg bg-red-600 hover:bg-red-700 transition">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-64">
+        <!-- Header -->
+        <header class="bg-white shadow-sm px-8 py-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Enterprise Automated Reports</h2>
+                    <p class="text-gray-600">AI-powered intelligence and automated report generation</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="generateAIReport()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-brain mr-2"></i>AI Analysis
+                    </button>
+                    <button onclick="createCustomReport()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-plus mr-2"></i>Custom Report
+                    </button>
+                    <div class="flex items-center">
+                        <img src="https://picsum.photos/seed/avatar1/40/40.jpg" alt="User" class="w-10 h-10 rounded-full mr-3">
+                        <div>
+                            <div class="font-semibold">Demo User</div>
+                            <div class="text-sm text-gray-600">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="p-8">
+            <!-- Report Overview Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-blue-100 rounded-lg">
+                            <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm text-green-600 font-semibold">+12%</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">156</h3>
+                    <p class="text-gray-600">Reports Generated</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-green-100 rounded-lg">
+                            <i class="fas fa-clock text-green-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm text-green-600 font-semibold">98%</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">24/7</h3>
+                    <p class="text-gray-600">Automated Schedule</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-purple-100 rounded-lg">
+                            <i class="fas fa-users text-purple-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm text-blue-600 font-semibold">42</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">89</h3>
+                    <p class="text-gray-600">Stakeholders</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-orange-100 rounded-lg">
+                            <i class="fas fa-chart-line text-orange-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm text-green-600 font-semibold">94%</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">AI</h3>
+                    <p class="text-gray-600">Accuracy Rate</p>
+                </div>
+            </div>
+
+            <!-- Quick Report Templates -->
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Quick Report Templates</h3>
+                    <div class="flex items-center space-x-4">
+                        <select class="px-3 py-2 border rounded-lg">
+                            <option>All Departments</option>
+                            <option>IT</option>
+                            <option>Marketing</option>
+                            <option>Finance</option>
+                        </select>
+                        <button onclick="refreshTemplates()" class="p-2 bg-gray-100 rounded hover:bg-gray-200 transition">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="report-card border rounded-lg p-4 hover:border-blue-300 cursor-pointer" onclick="generateReport('executive')">
+                        <div class="flex items-center mb-3">
+                            <div class="p-2 bg-blue-100 rounded-lg mr-3">
+                                <i class="fas fa-briefcase text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Executive Dashboard</h4>
+                                <p class="text-sm text-gray-600">High-level strategic overview</p>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-3">Portfolio performance, KPIs, ROI analysis, strategic recommendations</div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">Last run: 2 hours ago</span>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Automated</span>
+                        </div>
+                    </div>
+
+                    <div class="report-card border rounded-lg p-4 hover:border-green-300 cursor-pointer" onclick="generateReport('progress')">
+                        <div class="flex items-center mb-3">
+                            <div class="p-2 bg-green-100 rounded-lg mr-3">
+                                <i class="fas fa-tasks text-green-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Progress Report</h4>
+                                <p class="text-sm text-gray-600">Project status and milestones</p>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-3">Timeline progress, budget tracking, resource utilization, issue analysis</div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">Last run: 1 day ago</span>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Automated</span>
+                        </div>
+                    </div>
+
+                    <div class="report-card border rounded-lg p-4 hover:border-purple-300 cursor-pointer" onclick="generateReport('financial')">
+                        <div class="flex items-center mb-3">
+                            <div class="p-2 bg-purple-100 rounded-lg mr-3">
+                                <i class="fas fa-dollar-sign text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Financial Analysis</h4>
+                                <p class="text-sm text-gray-600">Budget and cost breakdown</p>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-3">Spend analysis, variance reporting, ROI calculation, forecast models</div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">Last run: 3 days ago</span>
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Weekly</span>
+                        </div>
+                    </div>
+
+                    <div class="report-card border rounded-lg p-4 hover:border-orange-300 cursor-pointer" onclick="generateReport('resource')">
+                        <div class="flex items-center mb-3">
+                            <div class="p-2 bg-orange-100 rounded-lg mr-3">
+                                <i class="fas fa-users text-orange-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Resource Performance</h4>
+                                <p class="text-sm text-gray-600">Team efficiency analysis</p>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-3">Utilization metrics, productivity trends, capacity planning, skill gaps</div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">Last run: 1 week ago</span>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Automated</span>
+                        </div>
+                    </div>
+
+                    <div class="report-card border rounded-lg p-4 hover:border-red-300 cursor-pointer" onclick="generateReport('risk')">
+                        <div class="flex items-center mb-3">
+                            <div class="p-2 bg-red-100 rounded-lg mr-3">
+                                <i class="fas fa-exclamation-triangle text-red-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Risk Assessment</h4>
+                                <p class="text-sm text-gray-600">RAID analysis and mitigation</p>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-3">Risk register, probability analysis, mitigation tracking, trend monitoring</div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">Last run: 4 days ago</span>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Automated</span>
+                        </div>
+                    </div>
+
+                    <div class="report-card border rounded-lg p-4 hover:border-indigo-300 cursor-pointer" onclick="generateReport('custom')">
+                        <div class="flex items-center mb-3">
+                            <div class="p-2 bg-indigo-100 rounded-lg mr-3">
+                                <i class="fas fa-cog text-indigo-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Custom Builder</h4>
+                                <p class="text-sm text-gray-600">Build your own report</p>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-3">Drag-and-drop interface, custom metrics, flexible formatting, scheduled delivery</div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">Create new</span>
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Interactive</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Intelligence Dashboard -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">AI-Powered Insights</h3>
+                    <div class="space-y-4">
+                        <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-brain text-blue-600 mr-2"></i>
+                                <span class="font-semibold text-blue-800">Predictive Analytics</span>
+                                <span class="ml-auto text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">94% Confidence</span>
+                            </div>
+                            <p class="text-sm text-gray-700 mb-2">Portfolio performance projected to exceed targets by 12% in Q4</p>
+                            <div class="text-xs text-gray-600">
+                                <p>• 3 projects ahead of schedule</p>
+                                <p>• Budget variance improving by 8%</p>
+                                <p>• Resource efficiency up 15%</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                                <span class="font-semibold text-green-800">Trend Analysis</span>
+                                <span class="ml-auto text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">6-Month View</span>
+                            </div>
+                            <p class="text-sm text-gray-700 mb-2">Consistent improvement in delivery metrics across all departments</p>
+                            <div class="text-xs text-gray-600">
+                                <p>• On-time delivery: 87% → 92%</p>
+                                <p>• Quality scores: 78% → 85%</p>
+                                <p>• Stakeholder satisfaction: 82% → 91%</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-lightbulb text-yellow-600 mr-2"></i>
+                                <span class="font-semibold text-yellow-800">Recommendations</span>
+                                <span class="ml-auto text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">AI Generated</span>
+                            </div>
+                            <p class="text-sm text-gray-700 mb-2">Strategic opportunities identified for portfolio optimization</p>
+                            <div class="text-xs text-gray-600">
+                                <p>• Consolidate 2 similar projects for $75K savings</p>
+                                <p>• Reallocate resources from low-impact initiatives</p>
+                                <p>• Accelerate high-ROI projects by 3 weeks</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">Report Analytics</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold mb-3">Report Generation Trends</h4>
+                            <div class="chart-container">
+                                <canvas id="reportTrendsChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-3">Department Usage</h4>
+                            <div class="chart-container">
+                                <canvas id="departmentUsageChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduled Reports Management -->
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Scheduled Reports</h3>
+                    <button onclick="addSchedule()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-plus mr-2"></i>Add Schedule
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left border-b">
+                                <th class="pb-3">Report Name</th>
+                                <th class="pb-3">Type</th>
+                                <th class="pb-3">Frequency</th>
+                                <th class="pb-3">Recipients</th>
+                                <th class="pb-3">Next Run</th>
+                                <th class="pb-3">Status</th>
+                                <th class="pb-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="py-3 font-semibold">Weekly Executive Summary</td>
+                                <td class="py-3">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Executive</span>
+                                </td>
+                                <td class="py-3">Weekly (Mon 9AM)</td>
+                                <td class="py-3">12 recipients</td>
+                                <td class="py-3">Tomorrow, 9:00 AM</td>
+                                <td class="py-3">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>
+                                </td>
+                                <td class="py-3">
+                                    <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-800">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-3 font-semibold">Monthly Financial Report</td>
+                                <td class="py-3">
+                                    <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">Financial</span>
+                                </td>
+                                <td class="py-3">Monthly (1st day)</td>
+                                <td class="py-3">8 recipients</td>
+                                <td class="py-3">Jan 1, 2025</td>
+                                <td class="py-3">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>
+                                </td>
+                                <td class="py-3">
+                                    <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-800">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-3 font-semibold">Daily Risk Assessment</td>
+                                <td class="py-3">
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Risk</span>
+                                </td>
+                                <td class="py-3">Daily (8AM)</td>
+                                <td class="py-3">15 recipients</td>
+                                <td class="py-3">Today, 8:00 AM</td>
+                                <td class="py-3">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>
+                                </td>
+                                <td class="py-3">
+                                    <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-800">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Reports -->
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold mb-4">Recently Generated Reports</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-semibold">Q3 Portfolio Review</h4>
+                            <span class="text-xs text-gray-500">2 hours ago</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Comprehensive Q3 analysis with AI insights</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex space-x-2">
+                                <button class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-eye mr-1"></i>View
+                                </button>
+                                <button class="text-green-600 hover:text-green-800 text-sm">
+                                    <i class="fas fa-download mr-1"></i>Export
+                                </button>
+                            </div>
+                            <span class="text-xs text-green-600">AI Enhanced</span>
+                        </div>
+                    </div>
+
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-semibold">Resource Utilization</h4>
+                            <span class="text-xs text-gray-500">1 day ago</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Team efficiency and capacity analysis</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex space-x-2">
+                                <button class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-eye mr-1"></i>View
+                                </button>
+                                <button class="text-green-600 hover:text-green-800 text-sm">
+                                    <i class="fas fa-download mr-1"></i>Export
+                                </button>
+                            </div>
+                            <span class="text-xs text-blue-600">Automated</span>
+                        </div>
+                    </div>
+
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-semibold">Risk Assessment Update</h4>
+                            <span class="text-xs text-gray-500">2 days ago</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Latest risk matrix and mitigation status</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex space-x-2">
+                                <button class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-eye mr-1"></i>View
+                                </button>
+                                <button class="text-green-600 hover:text-green-800 text-sm">
+                                    <i class="fas fa-download mr-1"></i>Export
+                                </button>
+                            </div>
+                            <span class="text-xs text-green-600">AI Enhanced</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Report Trends Chart
+        const trendsCtx = document.getElementById('reportTrendsChart').getContext('2d');
+        new Chart(trendsCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Reports Generated',
+                    data: [120, 135, 142, 158, 165, 178],
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'AI-Generated',
+                    data: [45, 62, 78, 95, 112, 134],
+                    borderColor: 'rgb(147, 51, 234)',
+                    backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // Department Usage Chart
+        const usageCtx = document.getElementById('departmentUsageChart').getContext('2d');
+        new Chart(usageCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Executive', 'IT', 'Finance', 'Marketing', 'Operations', 'HR'],
+                datasets: [{
+                    data: [25, 30, 15, 12, 10, 8],
+                    backgroundColor: [
+                        'rgb(59, 130, 246)',
+                        'rgb(16, 185, 129)',
+                        'rgb(251, 146, 60)',
+                        'rgb(147, 51, 234)',
+                        'rgb(239, 68, 68)',
+                        'rgb(156, 163, 175)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        function generateReport(type) {
+            const reports = {
+                executive: 'Executive Dashboard Report',
+                progress: 'Project Progress Report',
+                financial: 'Financial Analysis Report',
+                resource: 'Resource Performance Report',
+                risk: 'Risk Assessment Report',
+                custom: 'Custom Report Builder'
+            };
+            
+            alert(`Generating ${reports[type]}...\n\n• Collecting real-time data from all sources\n• Applying AI analytics and insights\n• Creating visualizations and charts\n• Formatting for stakeholder delivery\n\nEstimated completion: 30 seconds`);
+        }
+
+        function generateAIReport() {
+            alert('AI Analysis Report Generation:\n\nAnalyzing:\n• Portfolio performance trends\n• Predictive risk factors\n• Resource optimization opportunities\n• Financial variance patterns\n• Strategic alignment metrics\n\nAI Confidence Score: 96%\nReport will include actionable recommendations and trend projections.');
+        }
+
+        function createCustomReport() {
+            alert('Opening Custom Report Builder...\n\nFeatures:\n• Drag-and-drop interface\n• 50+ data metrics available\n• Custom visualization options\n• Flexible scheduling\n• Multi-format export\n• Real-time collaboration');
+        }
+
+        function refreshTemplates() {
+            alert('Report templates refreshed with latest AI optimizations and user feedback patterns.');
+        }
+
+        function addSchedule() {
+            alert('Opening Report Scheduler...\n\nConfigure:\n• Report type and template\n• Frequency and timing\n• Distribution list\n• Export format\n• Notification preferences');
+        }
+
+        // Advanced Reporting Engine
+        let reportEngine = {
+            templates: [],
+            customReports: [],
+            scheduledReports: [],
+            aiInsights: {},
+            reportCache: new Map()
+        };
+
+        function initializeAdvancedReporting() {
+            loadReportTemplates();
+            initializeCustomReportBuilder();
+            setupAIGeneration();
+            initializeScheduledReports();
+            startRealTimeReportUpdates();
+        }
+
+        function loadReportTemplates() {
+            reportEngine.templates = [
+                {
+                    id: 'executive_summary',
+                    name: 'Executive Summary',
+                    description: 'High-level strategic overview for executive leadership',
+                    category: 'Executive',
+                    sections: ['portfolio_health', 'kpi_summary', 'strategic_initiatives', 'risk_overview', 'financial_summary'],
+                    aiEnhanced: true,
+                    visualizations: ['performance_charts', 'trend_analysis', 'benchmarking'],
+                    delivery: ['email', 'dashboard', 'pdf'],
+                    frequency: 'weekly'
+                },
+                {
+                    id: 'project_performance',
+                    name: 'Project Performance Analysis',
+                    description: 'Detailed project-by-project performance metrics',
+                    category: 'Operations',
+                    sections: ['project_status', 'timeline_analysis', 'budget_tracking', 'resource_utilization', 'quality_metrics'],
+                    aiEnhanced: true,
+                    visualizations: ['gantt_charts', 'burn_down_charts', 'resource_charts', 'variance_analysis'],
+                    delivery: ['dashboard', 'pdf', 'excel'],
+                    frequency: 'bi_weekly'
+                },
+                {
+                    id: 'financial_deep_dive',
+                    name: 'Financial Deep Dive',
+                    description: 'Comprehensive financial analysis and forecasting',
+                    category: 'Finance',
+                    sections: ['budget_analysis', 'spend_trends', 'roi_calculation', 'forecast_accuracy', 'cost_optimization'],
+                    aiEnhanced: true,
+                    visualizations: ['financial_charts', 'budget_variance', 'roi_analysis', 'forecast_models'],
+                    delivery: ['email', 'pdf', 'excel'],
+                    frequency: 'monthly'
+                },
+                {
+                    id: 'resource_analytics',
+                    name: 'Resource Analytics Dashboard',
+                    description: 'Resource utilization and optimization insights',
+                    category: 'HR',
+                    sections: ['utilization_metrics', 'capacity_planning', 'skill_gap_analysis', 'performance_trends', 'optimization_opportunities'],
+                    aiEnhanced: true,
+                    visualizations: ['utilization_heatmaps', 'capacity_charts', 'skill_matrices', 'optimization_models'],
+                    delivery: ['dashboard', 'pdf'],
+                    frequency: 'weekly'
+                },
+                {
+                    id: 'risk_intelligence',
+                    name: 'Risk Intelligence Report',
+                    description: 'Advanced risk analysis and predictive insights',
+                    category: 'Risk Management',
+                    sections: ['risk_landscape', 'predictive_analysis', 'mitigation_effectiveness', 'trending_risks', 'risk_maturity'],
+                    aiEnhanced: true,
+                    visualizations: ['risk_matrices', 'trend_charts', 'prediction_models', 'mitigation_tracking'],
+                    delivery: ['email', 'dashboard', 'pdf'],
+                    frequency: 'weekly'
+                }
+            ];
+            
+            console.log('Advanced report templates loaded:', reportEngine.templates.length);
+        }
+
+        function initializeCustomReportBuilder() {
+            // Initialize drag-and-drop report builder
+            setupReportBuilderInterface();
+            loadDataSourceConnections();
+            initializeVisualizationBuilder();
+        }
+
+        function setupReportBuilderInterface() {
+            // Add custom report builder button
+            const customButton = document.querySelector('button[onclick="createCustomReport()"]');
+            if (customButton) {
+                customButton.addEventListener('click', showCustomReportBuilder);
+            }
+        }
+
+        function showCustomReportBuilder() {
+            const builderModal = document.createElement('div');
+            builderModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            builderModal.innerHTML = `
+                <div class="bg-white rounded-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                    <div class="p-6 border-b">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-2xl font-bold">AI-Powered Custom Report Builder</h3>
+                            <button onclick="closeReportBuilder()" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                            <!-- Data Sources Panel -->
+                            <div class="lg:col-span-1">
+                                <h4 class="font-semibold mb-4">Data Sources</h4>
+                                <div class="space-y-2" id="dataSources">
+                                    <div class="p-3 bg-gray-50 rounded cursor-pointer hover:bg-gray-100" draggable="true" data-source="projects">
+                                        <i class="fas fa-project-diagram mr-2"></i>Projects
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded cursor-pointer hover:bg-gray-100" draggable="true" data-source="resources">
+                                        <i class="fas fa-users mr-2"></i>Resources
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded cursor-pointer hover:bg-gray-100" draggable="true" data-source="financials">
+                                        <i class="fas fa-dollar-sign mr-2"></i>Financials
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded cursor-pointer hover:bg-gray-100" draggable="true" data-source="risks">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i>Risks
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded cursor-pointer hover:bg-gray-100" draggable="true" data-source="timeline">
+                                        <i class="fas fa-clock mr-2"></i>Timeline
+                                    </div>
+                                </div>
+                                
+                                <h4 class="font-semibold mt-6 mb-4">Visualizations</h4>
+                                <div class="space-y-2" id="visualizations">
+                                    <div class="p-3 bg-blue-50 rounded cursor-pointer hover:bg-blue-100" draggable="true" data-viz="chart">
+                                        <i class="fas fa-chart-line mr-2"></i>Charts
+                                    </div>
+                                    <div class="p-3 bg-blue-50 rounded cursor-pointer hover:bg-blue-100" draggable="true" data-viz="table">
+                                        <i class="fas fa-table mr-2"></i>Tables
+                                    </div>
+                                    <div class="p-3 bg-blue-50 rounded cursor-pointer hover:bg-blue-100" draggable="true" data-viz="heatmap">
+                                        <i class="fas fa-th mr-2"></i>Heatmaps
+                                    </div>
+                                    <div class="p-3 bg-blue-50 rounded cursor-pointer hover:bg-blue-100" draggable="true" data-viz="gauge">
+                                        <i class="fas fa-tachometer-alt mr-2"></i>Gauges
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Report Canvas -->
+                            <div class="lg:col-span-2">
+                                <h4 class="font-semibold mb-4">Report Canvas</h4>
+                                <div id="reportCanvas" class="min-h-[500px] bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-4">
+                                    <div class="text-center text-gray-500">
+                                        <i class="fas fa-mouse-pointer text-4xl mb-2"></i>
+                                        <p>Drag and drop data sources and visualizations here</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Configuration Panel -->
+                            <div class="lg:col-span-1">
+                                <h4 class="font-semibold mb-4">Configuration</h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Report Name</label>
+                                        <input type="text" id="reportName" class="w-full p-2 border rounded" placeholder="My Custom Report">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Description</label>
+                                        <textarea id="reportDescription" class="w-full p-2 border rounded" rows="3" placeholder="Report description..."></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Frequency</label>
+                                        <select id="reportFrequency" class="w-full p-2 border rounded">
+                                            <option>Once</option>
+                                            <option>Daily</option>
+                                            <option>Weekly</option>
+                                            <option>Monthly</option>
+                                            <option>Quarterly</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Delivery</label>
+                                        <select id="reportDelivery" class="w-full p-2 border rounded">
+                                            <option>Email</option>
+                                            <option>Dashboard</option>
+                                            <option>PDF Download</option>
+                                            <option>Multiple</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="aiEnhanced" class="mr-2" checked>
+                                            <span class="text-sm">Enable AI Insights</span>
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="realTime" class="mr-2">
+                                            <span class="text-sm">Real-time Updates</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6 space-y-2">
+                                    <button onclick="previewCustomReport()" class="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                        <i class="fas fa-eye mr-2"></i>Preview Report
+                                    </button>
+                                    <button onclick="saveCustomReport()" class="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                                        <i class="fas fa-save mr-2"></i>Save Report
+                                    </button>
+                                    <button onclick="generateCustomReport()" class="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+                                        <i class="fas fa-magic mr-2"></i>AI Generate
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(builderModal);
+            initializeDragAndDropForBuilder();
+        }
+
+        function initializeDragAndDropForBuilder() {
+            // Initialize drag and drop for report builder
+            const dataSources = document.querySelectorAll('#dataSources > div');
+            const visualizations = document.querySelectorAll('#visualizations > div');
+            const canvas = document.getElementById('reportCanvas');
+            
+            [...dataSources, ...visualizations].forEach(item => {
+                item.addEventListener('dragstart', handleBuilderDragStart);
+            });
+            
+            canvas.addEventListener('dragover', handleBuilderDragOver);
+            canvas.addEventListener('drop', handleBuilderDrop);
+        }
+
+        function handleBuilderDragStart(e) {
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData('type', e.target.closest('[data-source], [data-viz]').getAttribute('data-source') || e.target.closest('[data-viz]').getAttribute('data-viz'));
+            e.dataTransfer.setData('content', e.target.textContent.trim());
+        }
+
+        function handleBuilderDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+
+        function handleBuilderDrop(e) {
+            e.preventDefault();
+            
+            const type = e.dataTransfer.getData('type');
+            const content = e.dataTransfer.getData('content');
+            const canvas = document.getElementById('reportCanvas');
+            
+            // Create report element
+            const reportElement = createReportElement(type, content);
+            canvas.appendChild(reportElement);
+            
+            // Clear placeholder text
+            const placeholder = canvas.querySelector('.text-center');
+            if (placeholder) {
+                placeholder.remove();
+            }
+        }
+
+        function createReportElement(type, content) {
+            const element = document.createElement('div');
+            element.className = 'bg-white p-4 rounded border mb-3 cursor-move';
+            
+            if (type === 'projects' || type === 'resources' || type === 'financials' || type === 'risks' || type === 'timeline') {
+                element.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">${content}</span>
+                        <button onclick="this.closest('.bg-white').remove()" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded">
+                        <p class="text-sm text-gray-600">Data source: ${type}</p>
+                        <p class="text-xs text-gray-500 mt-1">Metrics: Revenue, Profit, Expenses, ROI</p>
+                    </div>
+                `;
+            } else {
+                element.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">${content}</span>
+                        <button onclick="this.closest('.bg-white').remove()" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="bg-blue-50 p-3 rounded">
+                        <canvas id="chart_${Date.now()}" width="200" height="100"></canvas>
+                    </div>
+                `;
+                
+                // Initialize mini chart
+                setTimeout(() => {
+                    const canvas = element.querySelector('canvas');
+                    if (canvas) {
+                        createMiniChart(canvas, type);
+                    }
+                }, 100);
+            }
+            
+            return element;
+        }
+
+        function createMiniChart(canvas, type) {
+            const ctx = canvas.getContext('2d');
+            
+            // Create sample data based on type
+            const data = {
+                'chart': [65, 59, 80, 81, 56, 55],
+                'table': [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                'heatmap': [[1, 2], [3, 4]],
+                'gauge': [75]
+            };
+            
+            // Simple visualization
+            ctx.fillStyle = '#3b82f6';
+            const values = data[type] || [50, 60, 70];
+            
+            if (type === 'gauge') {
+                // Draw gauge
+                ctx.beginPath();
+                ctx.arc(50, 50, 30, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Draw bars
+                values.forEach((value, index) => {
+                    const barWidth = 20;
+                    const barHeight = value;
+                    const x = index * 25 + 10;
+                    const y = 100 - barHeight;
+                    
+                    ctx.fillRect(x, y, barWidth, barHeight);
+                });
+            }
+        }
+
+        function closeReportBuilder() {
+            const builderModal = document.querySelector('.fixed.inset-0');
+            if (builderModal) {
+                document.body.removeChild(builderModal);
+            }
+        }
+
+        function previewCustomReport() {
+            const reportName = document.getElementById('reportName').value || 'Untitled Report';
+            const canvas = document.getElementById('reportCanvas');
+            const elements = canvas.querySelectorAll('.bg-white');
+            
+            if (elements.length === 0) {
+                alert('Please add data sources and visualizations to preview the report.');
+                return;
+            }
+            
+            alert(`Previewing: ${reportName}\n\nReport contains ${elements.length} elements:\n${Array.from(elements).map(el => el.querySelector('.font-semibold').textContent).join('\n')}\n\nGenerating preview with real data...`);
+        }
+
+        function saveCustomReport() {
+            const reportConfig = {
+                name: document.getElementById('reportName').value || 'Untitled Report',
+                description: document.getElementById('reportDescription').value,
+                frequency: document.getElementById('reportFrequency').value,
+                delivery: document.getElementById('reportDelivery').value,
+                aiEnhanced: document.getElementById('aiEnhanced').checked,
+                realTime: document.getElementById('realTime').checked,
+                elements: getReportElements(),
+                createdAt: new Date(),
+                id: 'custom_' + Date.now()
+            };
+            
+            reportEngine.customReports.push(reportConfig);
+            
+            alert(`Report "${reportConfig.name}" saved successfully!\n\nConfiguration:\n• Frequency: ${reportConfig.frequency}\n• Delivery: ${reportConfig.delivery}\n• AI Enhanced: ${reportConfig.aiEnhanced}\n• Real-time: ${reportConfig.realTime}\n• Elements: ${reportConfig.elements.length}`);
+        }
+
+        function getReportElements() {
+            const canvas = document.getElementById('reportCanvas');
+            const elements = canvas.querySelectorAll('.bg-white');
+            
+            return Array.from(elements).map(el => ({
+                type: el.querySelector('.font-semibold').textContent,
+                content: el.querySelector('.p-3').textContent
+            }));
+        }
+
+        function generateCustomReport() {
+            const reportName = document.getElementById('reportName').value || 'AI Generated Report';
+            
+            // Use AI to generate report configuration
+            const aiConfig = generateAIReportConfiguration(reportName);
+            
+            // Apply AI configuration to form
+            document.getElementById('reportName').value = aiConfig.name;
+            document.getElementById('reportDescription').value = aiConfig.description;
+            document.getElementById('reportFrequency').value = aiConfig.frequency;
+            document.getElementById('reportDelivery').value = aiConfig.delivery;
+            document.getElementById('aiEnhanced').checked = aiConfig.aiEnhanced;
+            document.getElementById('realTime').checked = aiConfig.realTime;
+            
+            // Add AI-suggested elements to canvas
+            const canvas = document.getElementById('reportCanvas');
+            canvas.innerHTML = ''; // Clear existing
+            
+            aiConfig.suggestedElements.forEach(element => {
+                const reportElement = createReportElement(element.type, element.content);
+                canvas.appendChild(reportElement);
+            });
+            
+            alert(`AI Report Generated: ${aiConfig.name}\n\nAI Analysis:\n• Optimal layout for ${aiConfig.targetAudience}\n• ${aiConfig.suggestedElements.length} data visualizations\n• ${aiConfig.insights.length} key insights identified\n• Confidence: ${aiConfig.confidence}%\n\nReview and customize as needed.`);
+        }
+
+        function generateAIReportConfiguration(reportName) {
+            // Simulate AI report generation
+            const configurations = {
+                'Executive Dashboard': {
+                    name: 'Executive Performance Dashboard',
+                    description: 'AI-optimized executive overview with predictive insights',
+                    frequency: 'weekly',
+                    delivery: 'Email',
+                    targetAudience: 'Executive Leadership',
+                    aiEnhanced: true,
+                    realTime: true,
+                    confidence: 94,
+                    suggestedElements: [
+                        { type: 'projects', content: 'Portfolio Overview' },
+                        { type: 'chart', content: 'Performance Trends' },
+                        { type: 'gauge', content: 'KPI Dashboard' }
+                    ],
+                    insights: [
+                        'Portfolio performance exceeding targets by 12%',
+                        '3 projects requiring executive attention',
+                        'Resource optimization opportunity: $45K savings'
+                    ]
+                },
+                'Project Health': {
+                    name: 'Project Health Intelligence',
+                    description: 'Comprehensive project health analysis with AI predictions',
+                    frequency: 'bi_weekly',
+                    delivery: 'Dashboard',
+                    targetAudience: 'Project Managers',
+                    aiEnhanced: true,
+                    realTime: true,
+                    confidence: 91,
+                    suggestedElements: [
+                        { type: 'timeline', content: 'Project Timeline Analysis' },
+                        { type: 'resources', content: 'Resource Allocation' },
+                        { type: 'risks', content: 'Risk Assessment' }
+                    ],
+                    insights: [
+                        '2 projects at risk of delay',
+                        'Resource bottleneck identified in Q4',
+                        'Timeline optimization opportunity: 3 weeks'
+                    ]
+                }
+            };
+            
+            // Determine best configuration based on name
+            let bestConfig = configurations['Executive Dashboard'];
+            
+            Object.keys(configurations).forEach(key => {
+                if (reportName.toLowerCase().includes(key.toLowerCase())) {
+                    bestConfig = configurations[key];
+                }
+            });
+            
+            return bestConfig;
+        }
+
+        function setupAIGeneration() {
+            // Initialize AI report generation
+            reportEngine.aiInsights = {
+                predictiveAnalytics: true,
+                naturalLanguageProcessing: true,
+                trendAnalysis: true,
+                anomalyDetection: true,
+                recommendations: true
+            };
+        }
+
+        function generateAIReport() {
+            // Enhanced AI report generation
+            const reportType = selectOptimalReportType();
+            const insights = generateAdvancedAIInsights();
+            const visualizations = generateAIVisualizations();
+            const narrative = generateAINarrative();
+            
+            alert(`AI Report Generation Complete:\n\nReport Type: ${reportType}\nAI Insights Generated: ${insights.length}\nVisualizations Created: ${visualizations.length}\nNarrative Confidence: ${narrative.confidence}%\n\nKey Insights:\n${insights.slice(0, 3).map(i => `• ${i.text}`).join('\n')}\n\nReport ready for executive review and distribution.`);
+        }
+
+        function selectOptimalReportType() {
+            // AI determines optimal report type based on current data and user role
+            const factors = {
+                timeOfDay: new Date().getHours(),
+                dayOfWeek: new Date().getDay(),
+                recentActivity: 'high',
+                userRole: 'Administrator'
+            };
+            
+            // Simulate AI decision making
+            if (factors.timeOfDay >= 9 && factors.timeOfDay <= 17 && factors.dayOfWeek >= 1 && factors.dayOfWeek <= 5) {
+                return 'Executive Daily Brief';
+            } else if (factors.recentActivity === 'high') {
+                return 'Activity Impact Analysis';
+            } else {
+                return 'Strategic Portfolio Review';
+            }
+        }
+
+        function generateAdvancedAIInsights() {
+            // Generate advanced AI insights using multiple algorithms
+            const insights = [];
+            
+            // Predictive analytics insights
+            insights.push({
+                type: 'predictive',
+                category: 'performance',
+                text: 'Portfolio performance projected to improve by 15% in Q4 based on current trends',
+                confidence: 92,
+                actionItems: ['Accelerate high-ROI projects', 'Allocate additional resources to bottleneck areas'],
+                dataPoints: ['Historical performance data', 'Team capacity metrics', 'Market conditions']
+            });
+            
+            // Risk analysis insights
+            insights.push({
+                type: 'risk',
+                category: 'operational',
+                text: 'Resource shortage risk detected in 3 projects with 87% probability of impact',
+                confidence: 87,
+                actionItems: ['Implement cross-training program', 'Engage contingency resources', 'Adjust project timelines'],
+                dataPoints: ['Resource utilization data', 'Skill gap analysis', 'Project dependencies']
+            });
+            
+            // Optimization insights
+            insights.push({
+                type: 'optimization',
+                category: 'efficiency',
+                text: 'Process automation opportunities identified for 25% efficiency improvement',
+                confidence: 78,
+                actionItems: ['Implement workflow automation', 'Standardize reporting processes', 'Adopt AI-powered scheduling'],
+                dataPoints: ['Process analysis', 'Time tracking data', 'Technology assessment']
+            });
+            
+            // Financial insights
+            insights.push({
+                type: 'financial',
+                category: 'cost',
+                text: 'Budget variance trends indicate potential $120K savings through resource optimization',
+                confidence: 85,
+                actionItems: ['Review resource allocation', 'Negotiate vendor contracts', 'Implement cost controls'],
+                dataPoints: ['Budget tracking', 'Spend analysis', 'Vendor performance']
+            });
+            
+            return insights;
+        }
+
+        function generateAIVisualizations() {
+            // Generate AI-powered visualizations
+            const visualizations = [];
+            
+            visualizations.push({
+                type: 'predictive_chart',
+                title: 'Portfolio Performance Forecast',
+                description: 'AI-powered prediction of portfolio performance based on current trends',
+                data: generatePredictiveData(),
+                aiEnhancements: ['confidence_intervals', 'scenario_modeling', 'anomaly_detection']
+            });
+            
+            visualizations.push({
+                type: 'risk_heatmap',
+                title: 'Intelligent Risk Matrix',
+                description: 'Dynamic risk assessment with predictive escalation indicators',
+                data: generateRiskData(),
+                aiEnhancements: ['predictive_scoring', 'mitigation_recommendations', 'trend_analysis']
+            });
+            
+            visualizations.push({
+                type: 'optimization_model',
+                title: 'Resource Optimization Model',
+                description: 'AI-driven resource allocation optimization',
+                data: generateOptimizationData(),
+                aiEnhancements: ['what_if_scenarios', 'cost_benefit_analysis', 'efficiency_metrics']
+            });
+            
+            return visualizations;
+        }
+
+        function generatePredictiveData() {
+            // Generate predictive data based on historical patterns
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const actualData = [85, 88, 92, 89, 91, 94, 87, 89, 93, 88, 90, null];
+            const predictedData = [null, null, null, null, null, null, null, null, null, 88, 90, 93];
+            const confidenceInterval = [null, null, null, null, null, null, null, null, null, [85, 91], [87, 93], [90, 96]];
+            
+            return {
+                labels: months,
+                datasets: [
+                    { label: 'Actual Performance', data: actualData },
+                    { label: 'Predicted Performance', data: predictedData },
+                    { label: 'Confidence Interval', data: confidenceInterval }
+                ]
+            };
+        }
+
+        function generateRiskData() {
+            // Generate intelligent risk assessment data
+            return {
+                categories: ['Technical', 'Resource', 'Schedule', 'Budget', 'Quality', 'External'],
+                currentRisk: [65, 78, 82, 45, 58, 71],
+                predictedRisk: [72, 85, 88, 52, 63, 76],
+                mitigationEffectiveness: [0.8, 0.7, 0.6, 0.9, 0.75, 0.65],
+                riskTrends: ['increasing', 'stable', 'increasing', 'decreasing', 'stable', 'increasing']
+            };
+        }
+
+        function generateOptimizationData() {
+            // Generate resource optimization data
+            return {
+                currentAllocation: {
+                    'Development': 35,
+                    'Design': 20,
+                    'Project Management': 25,
+                    'QA': 15,
+                    'DevOps': 5
+                },
+                optimalAllocation: {
+                    'Development': 30,
+                    'Design': 18,
+                    'Project Management': 28,
+                    'QA': 18,
+                    'DevOps': 6
+                },
+                efficiencyGains: {
+                    'Productivity': '+15%',
+                    'Quality': '+12%',
+                    'Delivery': '+18%',
+                    'Cost': '-22%'
+                }
+            };
+        }
+
+        function generateAINarrative() {
+            // Generate natural language narrative for reports
+            const narratives = [
+                {
+                    type: 'executive_summary',
+                    confidence: 94,
+                    text: 'The portfolio demonstrates strong performance with 92% of projects on track and a projected ROI improvement of 15% in Q4. Key risks have been identified and mitigation strategies are showing 85% effectiveness. Resource optimization opportunities present potential savings of $120K through strategic reallocation and process automation.',
+                    keyMetrics: ['On-track projects: 92%', 'ROI projection: +15%', 'Risk mitigation: 85%', 'Potential savings: $120K'],
+                    recommendations: ['Accelerate high-ROI initiatives', 'Implement resource optimization', 'Strengthen risk monitoring']
+                }
+            ];
+            
+            return narratives[0];
+        }
+
+        function initializeScheduledReports() {
+            // Initialize advanced scheduling system
+            reportEngine.scheduledReports = [
+                {
+                    id: 'exec_daily',
+                    name: 'Executive Daily Brief',
+                    template: 'executive_summary',
+                    frequency: 'daily',
+                    time: '08:00',
+                    recipients: ['executive@company.com', 'cio@company.com'],
+                    active: true,
+                    nextRun: calculateNextRun('daily', '08:00'),
+                    aiEnhanced: true,
+                    distribution: ['email', 'dashboard', 'slack']
+                },
+                {
+                    id: 'pm_weekly',
+                    name: 'Project Manager Weekly',
+                    template: 'project_performance',
+                    frequency: 'weekly',
+                    time: '09:00',
+                    day: 'Monday',
+                    recipients: ['pm-team@company.com'],
+                    active: true,
+                    nextRun: calculateNextRun('weekly', '09:00', 'Monday'),
+                    aiEnhanced: true,
+                    distribution: ['email', 'dashboard']
+                }
+            ];
+            
+            // Start scheduling engine
+            startSchedulingEngine();
+        }
+
+        function calculateNextRun(frequency, time, day = null) {
+            const now = new Date();
+            let nextRun = new Date();
+            
+            if (frequency === 'daily') {
+                const [hours, minutes] = time.split(':').map(Number);
+                nextRun.setHours(hours, minutes, 0, 0);
+                
+                if (nextRun <= now) {
+                    nextRun.setDate(nextRun.getDate() + 1);
+                }
+            } else if (frequency === 'weekly' && day) {
+                const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const targetDay = daysOfWeek.indexOf(day);
+                const currentDay = now.getDay();
+                
+                let daysToAdd = targetDay - currentDay;
+                if (daysToAdd <= 0) {
+                    daysToAdd += 7;
+                }
+                
+                nextRun.setDate(now.getDate() + daysToAdd);
+                const [hours, minutes] = time.split(':').map(Number);
+                nextRun.setHours(hours, minutes, 0, 0);
+            }
+            
+            return nextRun;
+        }
+
+        function startSchedulingEngine() {
+            // Check every minute for scheduled reports
+            setInterval(() => {
+                checkScheduledReports();
+            }, 60000);
+        }
+
+        function checkScheduledReports() {
+            const now = new Date();
+            
+            reportEngine.scheduledReports.forEach(report => {
+                if (report.active && report.nextRun <= now) {
+                    generateScheduledReport(report);
+                    
+                    // Calculate next run time
+                    report.nextRun = calculateNextRun(
+                        report.frequency,
+                        report.time,
+                        report.day
+                    );
+                }
+            });
+        }
+
+        function generateScheduledReport(report) {
+            console.log(`Generating scheduled report: ${report.name}`);
+            
+            // Generate report with AI enhancement
+            const reportData = generateReportContent(report.template, report.aiEnhanced);
+            
+            // Distribute report
+            distributeReport(report, reportData);
+            
+            // Log generation
+            logReportGeneration(report);
+        }
+
+        function generateReportContent(templateId, aiEnhanced) {
+            const template = reportEngine.templates.find(t => t.id === templateId);
+            
+            if (!template) {
+                return { error: 'Template not found' };
+            }
+            
+            const content = {
+                template: template,
+                generatedAt: new Date(),
+                aiEnhanced: aiEnhanced,
+                sections: generateReportSections(template.sections, aiEnhanced),
+                insights: aiEnhanced ? generateAdvancedAIInsights() : [],
+                visualizations: generateAIVisualizations()
+            };
+            
+            return content;
+        }
+
+        function generateReportSections(sections, aiEnhanced) {
+            return sections.map(section => ({
+                id: section,
+                title: formatSectionTitle(section),
+                content: generateSectionContent(section, aiEnhanced),
+                aiAnalysis: aiEnhanced ? generateAIAnalysis(section) : null
+            }));
+        }
+
+        function formatSectionTitle(section) {
+            return section.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+
+        function generateSectionContent(section, aiEnhanced) {
+            // Generate section content based on section type
+            const contentGenerators = {
+                'portfolio_health': () => ({
+                    summary: 'Portfolio health is strong with 92% overall success rate',
+                    metrics: ['On-time delivery: 89%', 'Budget adherence: 94%', 'Quality score: 87%', 'Stakeholder satisfaction: 91%'],
+                    trends: 'Improving across all key performance indicators'
+                }),
+                'kpi_summary': () => ({
+                    summary: 'Key performance indicators show positive trajectory',
+                    metrics: ['Efficiency gain: +15%', 'Cost reduction: -12%', 'Productivity: +18%', 'Risk reduction: -22%'],
+                    trends: 'Consistent improvement over the last 6 months'
+                }),
+                'project_status': () => ({
+                    summary: 'Project portfolio status overview',
+                    totalProjects: 24,
+                    onTrack: 18,
+                    atRisk: 4,
+                    delayed: 2,
+                    completed: 0
+                })
+            };
+            
+            const generator = contentGenerators[section] || (() => ({ summary: 'Section content generated' }));
+            return generator();
+        }
+
+        function generateAIAnalysis(section) {
+            return {
+                confidence: Math.floor(Math.random() * 20) + 80,
+                keyFindings: [`AI analysis of ${section} reveals optimization opportunities`, 
+                             `Predictive models suggest continued improvement trajectory`,
+                             `Anomaly detection identifies areas requiring attention`],
+                recommendations: [`Implement AI-driven optimization for ${section}`,
+                                 `Monitor predictive indicators for proactive management`]
+            };
+        }
+
+        function distributeReport(report, reportData) {
+            // Distribute report through configured channels
+            report.distribution.forEach(channel => {
+                if (channel === 'email') {
+                    sendEmailReport(report, reportData);
+                } else if (channel === 'dashboard') {
+                    updateDashboardReport(report, reportData);
+                } else if (channel === 'slack') {
+                    sendSlackNotification(report, reportData);
+                }
+            });
+        }
+
+        function sendEmailReport(report, reportData) {
+            console.log(`Email report sent to ${report.recipients.join(', ')}`);
+        }
+
+        function updateDashboardReport(report, reportData) {
+            console.log(`Dashboard updated with ${report.name}`);
+        }
+
+        function sendSlackNotification(report, reportData) {
+            console.log(`Slack notification sent for ${report.name}`);
+        }
+
+        function logReportGeneration(report) {
+            console.log(`Report generation logged: ${report.name} at ${new Date()}`);
+        }
+
+        function startRealTimeReportUpdates() {
+            // Start real-time report data updates
+            setInterval(() => {
+                updateReportData();
+            }, 300000); // Update every 5 minutes
+        }
+
+        function updateReportData() {
+            // Update report data with latest information
+            console.log('Real-time report data updated');
+        }
+
+        // Initialize advanced reporting on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                initializeAdvancedReporting();
+                console.log('Advanced reporting engine initialized');
+            }, 1000);
+        });
+
+        function logout() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

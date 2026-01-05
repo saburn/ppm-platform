@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Gantt Charts - AI PPM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar {
+            background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+        }
+        .gantt-container {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        .gantt-task {
+            cursor: move;
+            transition: all 0.2s ease;
+        }
+        .gantt-task:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .critical-path {
+            background: linear-gradient(90deg, #ef4444, #dc2626) !important;
+        }
+        .task-details {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            min-width: 250px;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full w-64 text-white z-40">
+        <div class="p-6">
+            <div class="flex items-center mb-8">
+                <i class="fas fa-chart-line text-2xl mr-3"></i>
+                <h1 class="text-xl font-bold">AI PPM Pro</h1>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="dashboard-beautiful.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="project-management-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-project-diagram mr-3"></i>
+                    Projects
+                </a>
+                <a href="gantt-chart-enterprise.html" class="flex items-center p-3 rounded-lg bg-white bg-opacity-10">
+                    <i class="fas fa-chart-gantt mr-3"></i>
+                    Gantt Charts
+                </a>
+                <a href="resource-allocation-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-users-cog mr-3"></i>
+                    Resources
+                </a>
+                <a href="raid-management-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-shield-alt mr-3"></i>
+                    RAID
+                </a>
+                <a href="automated-reports-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-file-alt mr-3"></i>
+                    Reports
+                </a>
+            </nav>
+        </div>
+        
+        <div class="absolute bottom-6 left-6 right-6">
+            <button onclick="logout()" class="w-full flex items-center justify-center p-3 rounded-lg bg-red-600 hover:bg-red-700 transition">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-64">
+        <!-- Header -->
+        <header class="bg-white shadow-sm px-8 py-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Enterprise Gantt Charts</h2>
+                    <p class="text-gray-600">Interactive timeline management with critical path analysis</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="optimizeTimeline()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-magic mr-2"></i>AI Optimize
+                    </button>
+                    <button onclick="exportGantt()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                    <div class="flex items-center">
+                        <img src="https://picsum.photos/seed/avatar1/40/40.jpg" alt="User" class="w-10 h-10 rounded-full mr-3">
+                        <div>
+                            <div class="font-semibold">Demo User</div>
+                            <div class="text-sm text-gray-600">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="p-8">
+            <!-- Controls -->
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <select id="projectSelect" onchange="loadProject()" class="px-4 py-2 border rounded-lg">
+                            <option>Website Redesign</option>
+                            <option>Mobile App Launch</option>
+                            <option>Data Migration</option>
+                        </select>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="zoomIn()" class="p-2 bg-gray-100 rounded hover:bg-gray-200 transition">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button onclick="zoomOut()" class="p-2 bg-gray-100 rounded hover:bg-gray-200 transition">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button onclick="resetZoom()" class="p-2 bg-gray-100 rounded hover:bg-gray-200 transition">
+                                <i class="fas fa-compress"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="criticalPath" onchange="toggleCriticalPath()" class="mr-2">
+                            <span>Show Critical Path</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="showMilestones" onchange="toggleMilestones()" class="mr-2">
+                            <span>Show Milestones</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="showDependencies" checked onchange="toggleDependencies()" class="mr-2">
+                            <span>Show Dependencies</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gantt Chart -->
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+                <div class="gantt-container">
+                    <div class="min-w-max">
+                        <!-- Header Timeline -->
+                        <div class="grid grid-cols-12 gap-px bg-gray-200 mb-4">
+                            <div class="col-span-2 p-3 bg-gray-100 font-semibold">Task</div>
+                            <div class="col-span-10 grid grid-cols-12 bg-gray-100">
+                                <div class="p-2 text-center text-xs">Week 1</div>
+                                <div class="p-2 text-center text-xs">Week 2</div>
+                                <div class="p-2 text-center text-xs">Week 3</div>
+                                <div class="p-2 text-center text-xs">Week 4</div>
+                                <div class="p-2 text-center text-xs">Week 5</div>
+                                <div class="p-2 text-center text-xs">Week 6</div>
+                                <div class="p-2 text-center text-xs">Week 7</div>
+                                <div class="p-2 text-center text-xs">Week 8</div>
+                                <div class="p-2 text-center text-xs">Week 9</div>
+                                <div class="p-2 text-center text-xs">Week 10</div>
+                                <div class="p-2 text-center text-xs">Week 11</div>
+                                <div class="p-2 text-center text-xs">Week 12</div>
+                            </div>
+                        </div>
+
+                        <!-- Tasks -->
+                        <div class="space-y-2">
+                            <!-- Task 1 -->
+                            <div class="grid grid-cols-12 gap-px bg-gray-200">
+                                <div class="col-span-2 p-3 bg-white">
+                                    <div class="font-semibold">Requirements</div>
+                                    <div class="text-sm text-gray-600">John Doe</div>
+                                </div>
+                                <div class="col-span-10 grid grid-cols-12 bg-white relative">
+                                    <div class="col-span-2 m-1 bg-blue-500 rounded h-8 gantt-task flex items-center justify-center text-white text-xs"
+                                         draggable="true" onmouseover="showTaskDetails(event, 'requirements')"
+                                         onmouseout="hideTaskDetails()">
+                                        Requirements (2w)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Task 2 -->
+                            <div class="grid grid-cols-12 gap-px bg-gray-200">
+                                <div class="col-span-2 p-3 bg-white">
+                                    <div class="font-semibold">Design Phase</div>
+                                    <div class="text-sm text-gray-600">Jane Smith</div>
+                                </div>
+                                <div class="col-span-10 grid grid-cols-12 bg-white relative">
+                                    <div class="col-start-3 col-span-3 m-1 bg-green-500 rounded h-8 gantt-task flex items-center justify-center text-white text-xs critical-path"
+                                         draggable="true" onmouseover="showTaskDetails(event, 'design')"
+                                         onmouseout="hideTaskDetails()">
+                                        Design (3w)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Task 3 -->
+                            <div class="grid grid-cols-12 gap-px bg-gray-200">
+                                <div class="col-span-2 p-3 bg-white">
+                                    <div class="font-semibold">Development</div>
+                                    <div class="text-sm text-gray-600">Dev Team</div>
+                                </div>
+                                <div class="col-span-10 grid grid-cols-12 bg-white relative">
+                                    <div class="col-start-6 col-span-4 m-1 bg-purple-500 rounded h-8 gantt-task flex items-center justify-center text-white text-xs"
+                                         draggable="true" onmouseover="showTaskDetails(event, 'development')"
+                                         onmouseout="hideTaskDetails()">
+                                        Development (4w)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Task 4 -->
+                            <div class="grid grid-cols-12 gap-px bg-gray-200">
+                                <div class="col-span-2 p-3 bg-white">
+                                    <div class="font-semibold">Testing</div>
+                                    <div class="text-sm text-gray-600">QA Team</div>
+                                </div>
+                                <div class="col-span-10 grid grid-cols-12 bg-white relative">
+                                    <div class="col-start-10 col-span-2 m-1 bg-yellow-500 rounded h-8 gantt-task flex items-center justify-center text-white text-xs critical-path"
+                                         draggable="true" onmouseover="showTaskDetails(event, 'testing')"
+                                         onmouseout="hideTaskDetails()">
+                                        Testing (2w)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Milestone -->
+                            <div class="grid grid-cols-12 gap-px bg-gray-200">
+                                <div class="col-span-2 p-3 bg-white">
+                                    <div class="font-semibold">Launch</div>
+                                    <div class="text-sm text-gray-600">Milestone</div>
+                                </div>
+                                <div class="col-span-10 grid grid-cols-12 bg-white relative">
+                                    <div class="col-start-12 m-1 bg-red-500 rounded h-8 flex items-center justify-center text-white text-xs"
+                                         style="width: 40px;">
+                                        <i class="fas fa-flag"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Details Panel -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">Task Analysis</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-blue-800 mb-2">Timeline Analysis</h4>
+                            <p class="text-sm text-blue-600">Total Duration: 12 weeks</p>
+                            <p class="text-sm text-blue-600">Critical Path: 7 weeks</p>
+                            <p class="text-sm text-blue-600">Buffer Time: 3 weeks</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-green-800 mb-2">Resource Allocation</h4>
+                            <p class="text-sm text-green-600">Team Members: 8</p>
+                            <p class="text-sm text-green-600">Budget Used: $125K</p>
+                            <p class="text-sm text-green-600">Efficiency: 87%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">AI Recommendations</h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-purple-50 rounded-lg">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-lightbulb text-purple-600 mr-2"></i>
+                                <span class="font-semibold text-purple-800">Optimization</span>
+                            </div>
+                            <p class="text-sm text-purple-600">Design phase can be parallelized with requirements for 2-week savings</p>
+                        </div>
+                        <div class="p-3 bg-yellow-50 rounded-lg">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                                <span class="font-semibold text-yellow-800">Risk Alert</span>
+                            </div>
+                            <p class="text-sm text-yellow-600">Testing phase has no buffer - consider adding contingency time</p>
+                        </div>
+                        <div class="p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                <span class="font-semibold text-green-800">Success Factor</span>
+                            </div>
+                            <p class="text-sm text-green-600">Strong team alignment increases completion probability to 94%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Task Details Tooltip -->
+    <div id="taskDetails" class="task-details"></div>
+
+    <script>
+        let zoomLevel = 1;
+
+        function showTaskDetails(event, taskId) {
+            const details = document.getElementById('taskDetails');
+            const tasks = {
+                requirements: {
+                    title: 'Requirements Gathering',
+                    duration: '2 weeks',
+                    progress: '100%',
+                    resources: 'John Doe',
+                    dependencies: 'None',
+                    risk: 'Low'
+                },
+                design: {
+                    title: 'Design Phase',
+                    duration: '3 weeks',
+                    progress: '75%',
+                    resources: 'Jane Smith, Design Team',
+                    dependencies: 'Requirements',
+                    risk: 'Medium'
+                },
+                development: {
+                    title: 'Development',
+                    duration: '4 weeks',
+                    progress: '40%',
+                    resources: 'Dev Team (5 members)',
+                    dependencies: 'Design Approval',
+                    risk: 'High'
+                },
+                testing: {
+                    title: 'Testing & QA',
+                    duration: '2 weeks',
+                    progress: '0%',
+                    resources: 'QA Team (3 members)',
+                    dependencies: 'Development',
+                    risk: 'Medium'
+                }
+            };
+
+            const task = tasks[taskId];
+            details.innerHTML = `
+                <h4 class="font-bold mb-2">${task.title}</h4>
+                <div class="space-y-1 text-sm">
+                    <p><strong>Duration:</strong> ${task.duration}</p>
+                    <p><strong>Progress:</strong> ${task.progress}</p>
+                    <p><strong>Resources:</strong> ${task.resources}</p>
+                    <p><strong>Dependencies:</strong> ${task.dependencies}</p>
+                    <p><strong>Risk Level:</strong> <span class="text-${task.risk === 'High' ? 'red' : task.risk === 'Medium' ? 'yellow' : 'green'}-600">${task.risk}</span></p>
+                </div>
+            `;
+            
+            details.style.display = 'block';
+            details.style.left = event.pageX + 10 + 'px';
+            details.style.top = event.pageY + 10 + 'px';
+        }
+
+        function hideTaskDetails() {
+            document.getElementById('taskDetails').style.display = 'none';
+        }
+
+        function optimizeTimeline() {
+            alert('AI Timeline Optimization: \n\nRecommended changes:\n• Parallelize Requirements + Design (saves 2 weeks)\n• Add buffer to Testing phase\n• Resource leveling for Development team\n\nEstimated savings: 3 weeks timeline, $25K budget');
+        }
+
+        function exportGantt() {
+            alert('Export options:\n• PDF with timeline view\n• MS Project file\n• Excel spreadsheet\n• Image (PNG/SVG)\n\nChoose format and destination');
+        }
+
+        function toggleCriticalPath() {
+            const criticalTasks = document.querySelectorAll('.critical-path');
+            criticalTasks.forEach(task => {
+                task.style.display = document.getElementById('criticalPath').checked ? 'flex' : 'none';
+            });
+        }
+
+        function toggleMilestones() {
+            // Implementation for milestone toggle
+        }
+
+        function toggleDependencies() {
+            // Implementation for dependency toggle
+        }
+
+        function zoomIn() {
+            zoomLevel *= 1.2;
+            applyZoom();
+        }
+
+        function zoomOut() {
+            zoomLevel /= 1.2;
+            applyZoom();
+        }
+
+        function resetZoom() {
+            zoomLevel = 1;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            document.querySelector('.gantt-container').style.transform = `scale(${zoomLevel})`;
+        }
+
+        function loadProject() {
+            const project = document.getElementById('projectSelect').value;
+            console.log('Loading project:', project);
+            // Implementation for project loading
+        }
+
+        function logout() {
+            window.location.href = 'index.html';
+        }
+
+        // Enhanced Interactive Features
+        let draggedTask = null;
+        let originalPosition = null;
+        let dependencies = [];
+        let timelineData = {};
+
+        function initializeEnhancedInteractions() {
+            initializeDragAndDrop();
+            initializeDependencyManagement();
+            initializeCollaborativeEditing();
+            initializeRealTimeUpdates();
+        }
+
+        function initializeDragAndDrop() {
+            const tasks = document.querySelectorAll('.gantt-task');
+            
+            tasks.forEach(task => {
+                task.draggable = true;
+                
+                task.addEventListener('dragstart', handleDragStart);
+                task.addEventListener('dragend', handleDragEnd);
+                task.addEventListener('dragover', handleDragOver);
+                task.addEventListener('drop', handleDrop);
+                task.addEventListener('dragenter', handleDragEnter);
+                task.addEventListener('dragleave', handleDragLeave);
+                
+                // Add resize handles
+                addResizeHandles(task);
+                
+                // Add context menu
+                task.addEventListener('contextmenu', showTaskContextMenu);
+            });
+            
+            // Make timeline cells droppable
+            const timelineCells = document.querySelectorAll('.bg-white .grid .col-span-10 .relative');
+            timelineCells.forEach(cell => {
+                cell.addEventListener('dragover', handleDragOver);
+                cell.addEventListener('drop', handleTimelineDrop);
+            });
+        }
+
+        function handleDragStart(e) {
+            draggedTask = e.target;
+            originalPosition = {
+                parent: e.target.parentElement,
+                index: Array.from(e.target.parentElement.children).indexOf(e.target)
+            };
+            
+            e.target.style.opacity = '0.5';
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', e.target.innerHTML);
+            e.dataTransfer.setData('taskId', e.target.getAttribute('data-task-id') || 'unknown');
+            
+            console.log('Started dragging:', e.target.textContent);
+        }
+
+        function handleDragEnd(e) {
+            e.target.style.opacity = '';
+            
+            // Remove all drag-over highlights
+            document.querySelectorAll('.drag-over').forEach(elem => {
+                elem.classList.remove('drag-over');
+            });
+            
+            draggedTask = null;
+            originalPosition = null;
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            
+            e.dataTransfer.dropEffect = 'move';
+            
+            // Add visual feedback
+            if (e.target.classList.contains('gantt-task') || e.target.closest('.gantt-task')) {
+                e.target.classList.add('drag-over');
+            }
+            
+            return false;
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            
+            e.preventDefault();
+            
+            const dropTarget = e.target.closest('.gantt-task');
+            
+            if (dropTarget && draggedTask && dropTarget !== draggedTask) {
+                // Swap tasks or reorder
+                const draggedParent = draggedTask.parentElement;
+                const targetParent = dropTarget.parentElement;
+                const targetIndex = Array.from(targetParent.children).indexOf(dropTarget);
+                
+                if (draggedParent === targetParent) {
+                    // Reorder within same row
+                    const draggedIndex = Array.from(draggedParent.children).indexOf(draggedTask);
+                    
+                    if (draggedIndex < targetIndex) {
+                        targetParent.insertBefore(draggedTask, dropTarget.nextSibling);
+                    } else {
+                        targetParent.insertBefore(draggedTask, dropTarget);
+                    }
+                } else {
+                    // Move to different row/resource
+                    targetParent.insertBefore(draggedTask, dropTarget);
+                    updateTaskAssignment(draggedTask, targetParent);
+                }
+                
+                // Update timeline and dependencies
+                updateTimelineAfterChange();
+                checkAndUpdateDependencies();
+                
+                console.log('Task reordered:', draggedTask.textContent);
+            }
+            
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            if (e.target.classList.contains('gantt-task')) {
+                e.target.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            if (e.target.classList.contains('gantt-task')) {
+                e.target.classList.remove('drag-over');
+            }
+        }
+
+        function handleTimelineDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            
+            e.preventDefault();
+            
+            const timelineCell = e.target.closest('.relative');
+            
+            if (timelineCell && draggedTask) {
+                // Calculate new position and dates
+                const cellRect = timelineCell.getBoundingClientRect();
+                const offsetX = e.clientX - cellRect.left;
+                const weekWidth = cellRect.width / 12; // 12 weeks
+                const newWeek = Math.floor(offsetX / weekWidth);
+                
+                // Update task position
+                updateTaskPosition(draggedTask, newWeek, timelineCell);
+                
+                // Recalculate timeline
+                recalculateProjectTimeline();
+                
+                // Show update notification
+                showTimelineUpdateNotification(draggedTask, newWeek);
+            }
+            
+            return false;
+        }
+
+        function addResizeHandles(task) {
+            // Add resize handles to tasks for duration adjustment
+            const resizeLeft = document.createElement('div');
+            resizeLeft.className = 'resize-handle resize-left';
+            resizeLeft.style.cssText = 'position: absolute; left: 0; top: 0; width: 8px; height: 100%; cursor: ew-resize; background: rgba(255,255,255,0.3);';
+            
+            const resizeRight = document.createElement('div');
+            resizeRight.className = 'resize-handle resize-right';
+            resizeRight.style.cssText = 'position: absolute; right: 0; top: 0; width: 8px; height: 100%; cursor: ew-resize; background: rgba(255,255,255,0.3);';
+            
+            task.style.position = 'relative';
+            task.appendChild(resizeLeft);
+            task.appendChild(resizeRight);
+            
+            // Add resize event listeners
+            resizeLeft.addEventListener('mousedown', (e) => startResize(e, task, 'left'));
+            resizeRight.addEventListener('mousedown', (e) => startResize(e, task, 'right'));
+        }
+
+        function startResize(e, task, direction) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const startX = e.clientX;
+            const startWidth = task.offsetWidth;
+            const taskData = getTaskData(task);
+            
+            function handleMouseMove(e) {
+                const deltaX = e.clientX - startX;
+                let newWidth;
+                
+                if (direction === 'left') {
+                    newWidth = Math.max(40, startWidth - deltaX);
+                } else {
+                    newWidth = Math.max(40, startWidth + deltaX);
+                }
+                
+                task.style.width = newWidth + 'px';
+                updateTaskDuration(task, newWidth);
+            }
+            
+            function handleMouseUp() {
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+                
+                // Update timeline and dependencies
+                recalculateProjectTimeline();
+                checkAndUpdateDependencies();
+                
+                console.log('Task resized:', task.textContent);
+            }
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+
+        function showTaskContextMenu(e) {
+            e.preventDefault();
+            
+            // Create context menu
+            const menu = document.createElement('div');
+            menu.className = 'context-menu';
+            menu.style.cssText = `
+                position: absolute;
+                left: ${e.pageX}px;
+                top: ${e.pageY}px;
+                background: white;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                z-index: 1000;
+                min-width: 200px;
+            `;
+            
+            const menuItems = [
+                { text: 'Edit Details', action: () => editTaskDetails(e.target.closest('.gantt-task')) },
+                { text: 'Set Dependency', action: () => setTaskDependency(e.target.closest('.gantt-task')) },
+                { text: 'Add Milestone', action: () => addMilestone(e.target.closest('.gantt-task')) },
+                { text: 'Assign Resource', action: () => assignResource(e.target.closest('.gantt-task')) },
+                { text: 'Delete Task', action: () => deleteTask(e.target.closest('.gantt-task')) },
+                { text: 'Duplicate Task', action: () => duplicateTask(e.target.closest('.gantt-task')) }
+            ];
+            
+            menuItems.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.textContent = item.text;
+                menuItem.style.cssText = 'padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee;';
+                menuItem.addEventListener('click', () => {
+                    item.action();
+                    document.body.removeChild(menu);
+                });
+                menuItem.addEventListener('mouseenter', () => menuItem.style.background = '#f0f0f0');
+                menuItem.addEventListener('mouseleave', () => menuItem.style.background = 'white');
+                
+                menu.appendChild(menuItem);
+            });
+            
+            document.body.appendChild(menu);
+            
+            // Close menu when clicking elsewhere
+            setTimeout(() => {
+                document.addEventListener('click', function closeMenu() {
+                    if (document.body.contains(menu)) {
+                        document.body.removeChild(menu);
+                    }
+                    document.removeEventListener('click', closeMenu);
+                });
+            }, 100);
+        }
+
+        function editTaskDetails(task) {
+            const taskData = getTaskData(task);
+            
+            alert(`Edit Task Details:\n\nTask: ${taskData.name}\nDuration: ${taskData.duration}\nAssigned: ${taskData.resource}\nProgress: ${taskData.progress}\n\nOpening detailed task editor...`);
+        }
+
+        function setTaskDependency(task) {
+            const taskData = getTaskData(task);
+            
+            alert(`Set Dependency for: ${taskData.name}\n\nSelect predecessor task from the timeline:\n• Click on the task that must complete before this task\n• Visual dependency line will be drawn\n• Critical path will be recalculated automatically`);
+            
+            // In real implementation, this would enable dependency selection mode
+        }
+
+        function addMilestone(task) {
+            const taskData = getTaskData(task);
+            
+            alert(`Add Milestone for: ${taskData.name}\n\nMilestone options:\n• Task completion milestone\n• Phase gate milestone\n• Deliverable milestone\n• Review checkpoint milestone\n\nMilestone will be added to timeline with automatic notifications.`);
+        }
+
+        function assignResource(task) {
+            const taskData = getTaskData(task);
+            
+            alert(`Assign Resource to: ${taskData.name}\n\nAvailable resources:\n• John Doe (Developer) - Available\n• Jane Smith (Designer) - Partially available\n• Mike Johnson (PM) - Overloaded\n• Sarah Chen (Analyst) - Available\n\nAI recommendations based on skills and workload will be provided.`);
+        }
+
+        function deleteTask(task) {
+            const taskData = getTaskData(task);
+            
+            if (confirm(`Delete task "${taskData.name}"?\n\nThis will:\n• Remove task from timeline\n• Update dependencies\n• Reassign resources\n• Recalculate project timeline`)) {
+                task.remove();
+                recalculateProjectTimeline();
+                checkAndUpdateDependencies();
+                console.log('Task deleted:', taskData.name);
+            }
+        }
+
+        function duplicateTask(task) {
+            const taskData = getTaskData(task);
+            const newTask = task.cloneNode(true);
+            
+            // Update new task properties
+            newTask.querySelector('span').textContent = taskData.name + ' (Copy)';
+            newTask.setAttribute('data-task-id', 'task_' + Date.now());
+            
+            // Add to timeline
+            task.parentElement.appendChild(newTask);
+            
+            // Reinitialize drag and drop for new task
+            initializeDragAndDropForTask(newTask);
+            
+            console.log('Task duplicated:', taskData.name);
+        }
+
+        function getTaskData(task) {
+            return {
+                id: task.getAttribute('data-task-id') || 'unknown',
+                name: task.textContent.trim(),
+                duration: task.style.width || 'auto',
+                resource: task.getAttribute('data-resource') || 'Unassigned',
+                progress: task.getAttribute('data-progress') || '0%',
+                startDate: task.getAttribute('data-start-date') || 'TBD',
+                endDate: task.getAttribute('data-end-date') || 'TBD'
+            };
+        }
+
+        function updateTaskAssignment(task, newParent) {
+            const oldResource = task.getAttribute('data-resource') || 'Unassigned';
+            const newResource = getResourceFromParent(newParent);
+            
+            task.setAttribute('data-resource', newResource);
+            
+            console.log(`Task reassigned from ${oldResource} to ${newResource}`);
+            
+            // Update resource allocation
+            updateResourceAllocation(oldResource, newResource, task);
+        }
+
+        function getResourceFromParent(parentElement) {
+            // Extract resource name from parent row
+            const row = parentElement.closest('.border-b');
+            if (row) {
+                const resourceCell = row.querySelector('.font-semibold');
+                return resourceCell ? resourceCell.textContent : 'Unassigned';
+            }
+            return 'Unassigned';
+        }
+
+        function updateResourceAllocation(oldResource, newResource, task) {
+            // Update resource allocation metrics
+            console.log(`Updating allocation: ${oldResource} -> ${newResource} for task ${task.textContent}`);
+            
+            // In real implementation, this would update the resource allocation system
+        }
+
+        function updateTaskPosition(task, newWeek, timelineCell) {
+            const taskData = getTaskData(task);
+            const newStartDate = calculateStartDateFromWeek(newWeek);
+            
+            task.setAttribute('data-start-date', newStartDate);
+            task.setAttribute('data-week-position', newWeek);
+            
+            console.log(`Task ${taskData.name} moved to week ${newWeek} (${newStartDate})`);
+        }
+
+        function updateTaskDuration(task, newWidth) {
+            const taskData = getTaskData(task);
+            const newDuration = calculateDurationFromWidth(newWidth);
+            
+            task.setAttribute('data-duration', newDuration);
+            
+            console.log(`Task ${taskData.name} duration updated to ${newDuration}`);
+        }
+
+        function calculateStartDateFromWeek(week) {
+            // Calculate start date from week number
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() + (week * 7));
+            return startDate.toISOString().split('T')[0];
+        }
+
+        function calculateDurationFromWidth(width) {
+            // Calculate duration in weeks from width
+            const weekWidth = 50; // Approximate width of one week
+            return Math.max(1, Math.round(width / weekWidth));
+        }
+
+        function recalculateProjectTimeline() {
+            // Recalculate entire project timeline based on current task positions
+            const tasks = document.querySelectorAll('.gantt-task');
+            
+            timelineData = {
+                totalDuration: 0,
+                criticalPath: [],
+                milestones: [],
+                dependencies: []
+            };
+            
+            tasks.forEach(task => {
+                const taskData = getTaskData(task);
+                const duration = parseFloat(taskData.duration) || 1;
+                const weekPosition = parseInt(task.getAttribute('data-week-position')) || 0;
+                
+                timelineData.totalDuration = Math.max(timelineData.totalDuration, weekPosition + duration);
+            });
+            
+            console.log('Timeline recalculated:', timelineData);
+        }
+
+        function checkAndUpdateDependencies() {
+            // Check and update all task dependencies
+            const tasks = document.querySelectorAll('.gantt-task');
+            
+            tasks.forEach(task => {
+                const taskData = getTaskData(task);
+                const dependencies = task.getAttribute('data-dependencies');
+                
+                if (dependencies) {
+                    // Validate and update dependencies
+                    validateDependency(task, dependencies);
+                }
+            });
+            
+            console.log('Dependencies checked and updated');
+        }
+
+        function validateDependency(task, dependencyList) {
+            // Validate that dependencies are still valid after timeline changes
+            const deps = dependencyList.split(',');
+            
+            deps.forEach(dep => {
+                const predecessorTask = document.querySelector(`[data-task-id="${dep.trim()}"]`);
+                
+                if (predecessorTask) {
+                    // Check if predecessor completes before this task starts
+                    const predEnd = getTaskEndDate(predecessorTask);
+                    const currStart = getTaskStartDate(task);
+                    
+                    if (predEnd > currStart) {
+                        console.warn(`Dependency violation: ${dep} ends after current task starts`);
+                        showDependencyWarning(task, dep);
+                    }
+                }
+            });
+        }
+
+        function getTaskEndDate(task) {
+            const startDate = getTaskStartDate(task);
+            const duration = parseFloat(task.getAttribute('data-duration')) || 1;
+            
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + (duration * 7));
+            
+            return endDate;
+        }
+
+        function getTaskStartDate(task) {
+            const weekPos = parseInt(task.getAttribute('data-week-position')) || 0;
+            return calculateStartDateFromWeek(weekPos);
+        }
+
+        function showDependencyWarning(task, dependency) {
+            // Show warning about dependency violation
+            const warning = document.createElement('div');
+            warning.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #ff6b6b;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 4px;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            warning.textContent = `⚠️ Dependency violation: ${dependency} must complete before this task can start`;
+            
+            document.body.appendChild(warning);
+            
+            setTimeout(() => {
+                if (document.body.contains(warning)) {
+                    document.body.removeChild(warning);
+                }
+            }, 5000);
+        }
+
+        function updateTimelineAfterChange() {
+            // Update timeline visualization after changes
+            recalculateProjectTimeline();
+            updateCriticalPath();
+            updateMilestoneMarkers();
+            
+            console.log('Timeline updated after changes');
+        }
+
+        function updateCriticalPath() {
+            // Calculate and highlight critical path
+            const tasks = document.querySelectorAll('.gantt-task');
+            
+            // Reset critical path highlighting
+            tasks.forEach(task => {
+                task.classList.remove('critical-path-highlight');
+            });
+            
+            // Calculate and highlight new critical path
+            // This is a simplified version - real implementation would use CPM algorithm
+            const criticalTasks = identifyCriticalTasks();
+            
+            criticalTasks.forEach(taskId => {
+                const task = document.querySelector(`[data-task-id="${taskId}"]`);
+                if (task) {
+                    task.classList.add('critical-path-highlight');
+                    task.style.border = '2px solid #ef4444';
+                }
+            });
+        }
+
+        function identifyCriticalTasks() {
+            // Simplified critical path identification
+            // In real implementation, this would use proper CPM algorithm
+            return ['requirements', 'design', 'testing']; // Example task IDs
+        }
+
+        function updateMilestoneMarkers() {
+            // Update milestone markers on timeline
+            const milestones = document.querySelectorAll('.fa-flag');
+            
+            milestones.forEach(milestone => {
+                const parent = milestone.parentElement;
+                if (parent.classList.contains('gantt-task')) {
+                    // Add milestone styling
+                    parent.style.background = 'linear-gradient(45deg, #dc2626, #ef4444)';
+                    parent.style.animation = 'pulse 2s infinite';
+                }
+            });
+        }
+
+        function showTimelineUpdateNotification(task, newWeek) {
+            // Show notification about timeline change
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 4px;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                animation: slideInUp 0.3s ease;
+            `;
+            notification.innerHTML = `
+                ✅ Timeline Updated<br>
+                <small>${task.textContent} moved to week ${newWeek + 1}</small>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    notification.style.animation = 'slideOutDown 0.3s ease';
+                    setTimeout(() => {
+                        if (document.body.contains(notification)) {
+                            document.body.removeChild(notification);
+                        }
+                    }, 300);
+                }
+            }, 3000);
+        }
+
+        function initializeDependencyManagement() {
+            // Initialize interactive dependency creation
+            let dependencyMode = false;
+            let sourceTask = null;
+            
+            // Add keyboard shortcut for dependency mode
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'd') {
+                    e.preventDefault();
+                    toggleDependencyMode();
+                }
+            });
+            
+            function toggleDependencyMode() {
+                dependencyMode = !dependencyMode;
+                
+                if (dependencyMode) {
+                    document.body.style.cursor = 'crosshair';
+                    showDependencyModeInstructions();
+                } else {
+                    document.body.style.cursor = 'default';
+                    hideDependencyModeInstructions();
+                    sourceTask = null;
+                }
+            }
+            
+            function showDependencyModeInstructions() {
+                const instructions = document.createElement('div');
+                instructions.id = 'dependency-instructions';
+                instructions.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0,0,0,0.9);
+                    color: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    z-index: 1000;
+                    text-align: center;
+                `;
+                instructions.innerHTML = `
+                    <h3>Dependency Mode Active</h3>
+                    <p>Click on source task, then click on dependent task</p>
+                    <p>Press ESC to exit dependency mode</p>
+                `;
+                
+                document.body.appendChild(instructions);
+            }
+            
+            function hideDependencyModeInstructions() {
+                const instructions = document.getElementById('dependency-instructions');
+                if (instructions) {
+                    document.body.removeChild(instructions);
+                }
+            }
+        }
+
+        function initializeCollaborativeEditing() {
+            // Initialize real-time collaborative features
+            const collaborationState = {
+                activeUsers: [],
+                edits: [],
+                lastSync: new Date()
+            };
+            
+            // Simulate other users editing
+            setInterval(() => {
+                simulateCollaborativeActivity();
+            }, 10000);
+            
+            function simulateCollaborativeActivity() {
+                const users = ['Alice Johnson', 'Bob Smith', 'Carol Davis'];
+                const activities = ['editing timeline', 'updating dependencies', 'adjusting milestones'];
+                
+                const randomUser = users[Math.floor(Math.random() * users.length)];
+                const randomActivity = activities[Math.floor(Math.random() * activities.length)];
+                
+                console.log(`Collaboration: ${randomUser} is ${randomActivity}`);
+                
+                // Show collaborative activity indicator
+                showCollaborativeIndicator(randomUser, randomActivity);
+            }
+            
+            function showCollaborativeIndicator(user, activity) {
+                const indicator = document.createElement('div');
+                indicator.style.cssText = `
+                    position: fixed;
+                    top: 80px;
+                    right: 20px;
+                    background: rgba(59, 130, 246, 0.9);
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    z-index: 999;
+                    font-size: 12px;
+                    animation: slideInRight 0.3s ease;
+                `;
+                indicator.innerHTML = `👥 ${user} is ${activity}`;
+                
+                document.body.appendChild(indicator);
+                
+                setTimeout(() => {
+                    if (document.body.contains(indicator)) {
+                        indicator.style.animation = 'slideOutRight 0.3s ease';
+                        setTimeout(() => {
+                            if (document.body.contains(indicator)) {
+                                document.body.removeChild(indicator);
+                            }
+                        }, 300);
+                    }
+                }, 4000);
+            }
+        }
+
+        function initializeRealTimeUpdates() {
+            // Initialize real-time timeline updates
+            const updateInterval = 30000; // 30 seconds
+            
+            setInterval(() => {
+                fetchTimelineUpdates();
+            }, updateInterval);
+            
+            function fetchTimelineUpdates() {
+                // Simulate fetching updates from server
+                console.log('Fetching real-time timeline updates...');
+                
+                // In real implementation, this would fetch from server
+                // and update the timeline with changes from other users
+            }
+        }
+
+        function initializeDragAndDropForTask(task) {
+            // Initialize drag and drop for a single task
+            task.draggable = true;
+            
+            task.addEventListener('dragstart', handleDragStart);
+            task.addEventListener('dragend', handleDragEnd);
+            task.addEventListener('dragover', handleDragOver);
+            task.addEventListener('drop', handleDrop);
+            task.addEventListener('dragenter', handleDragEnter);
+            task.addEventListener('dragleave', handleDragLeave);
+            task.addEventListener('contextmenu', showTaskContextMenu);
+            
+            addResizeHandles(task);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            .drag-over {
+                background-color: rgba(59, 130, 246, 0.2) !important;
+                border: 2px dashed #3b82f6 !important;
+            }
+            
+            .resize-handle:hover {
+                background: rgba(255,255,255,0.6) !important;
+            }
+            
+            .critical-path-highlight {
+                box-shadow: 0 0 10px rgba(239, 68, 68, 0.5) !important;
+            }
+            
+            @keyframes slideInUp {
+                from { transform: translateY(100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            
+            @keyframes slideOutDown {
+                from { transform: translateY(0); opacity: 1; }
+                to { transform: translateY(100%); opacity: 0; }
+            }
+            
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize all enhanced interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                initializeEnhancedInteractions();
+                console.log('Enhanced interactive features initialized');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

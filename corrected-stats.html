@@ -1,0 +1,118 @@
+<!-- Interactive AI Stats Grid -->
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 mb-8">
+    <div onclick="showProjectsList()" class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-blue-500 cursor-pointer hover:shadow-lg transition-shadow">
+        <div class="p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    📁
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            Active Projects
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div id="activeProjectsCount" class="text-2xl font-semibold text-gray-900">0</div>
+                            <div class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
+                                📈 Click to view
+                            </div>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div onclick="showAIOptimizedProjects()" class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-green-500 cursor-pointer hover:shadow-lg transition-shadow">
+        <div class="p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    🤖
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            AI Optimized
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div id="aiOptimizedCount" class="text-2xl font-semibold text-gray-900">0</div>
+                            <div class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
+                                ⚡ Click to view
+                            </div>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div onclick="showRiskAlerts()" class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-yellow-500 cursor-pointer hover:shadow-lg transition-shadow">
+        <div class="p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    ⚠️
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            Risk Alerts
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div id="riskAlertsCount" class="text-2xl font-semibold text-gray-900">0</div>
+                            <div class="ml-2 flex items-baseline text-sm font-semibold text-yellow-600">
+                                🎯 Click to view
+                            </div>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div onclick="showPredictiveAnalytics()" class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-orange-500 cursor-pointer hover:shadow-lg transition-shadow">
+        <div class="p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    📈
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            Predictions
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div id="predictionsCount" class="text-2xl font-semibold text-gray-900">0</div>
+                            <div class="ml-2 flex items-baseline text-sm font-semibold text-orange-600">
+                                🔮 Click to view
+                            </div>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div onclick="openAIAssistant()" class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-purple-500 cursor-pointer hover:shadow-lg transition-shadow">
+        <div class="p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    💡
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            AI Assistant
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div id="aiAssistantStatus" class="text-2xl font-semibold text-gray-900">🟢</div>
+                            <div class="ml-2 flex items-baseline text-sm font-semibold text-purple-600">
+                                🤖 Chat now
+                            </div>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PPM Pro - Gantt Charts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-200px);
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 50px;
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: #3b82f6;
+        }
+        
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-left-color: #3b82f6;
+        }
+        
+        .gantt-container {
+            max-height: 400px;
+            overflow: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .gantt-chart {
+            min-height: 350px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .task-bar {
+            cursor: move;
+            transition: all 0.2s ease;
+        }
+        
+        .task-bar:hover {
+            opacity: 0.8;
+            transform: scaleY(1.1);
+        }
+        
+        .view-button {
+            transition: all 0.2s ease;
+        }
+        
+        .view-button:hover {
+            transform: translateY(-1px);
+        }
+        
+        .view-button.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-250px);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <i class="fas fa-brain mr-2 text-blue-400"></i>
+                    AI PPM Pro
+                </h2>
+                <button onclick="toggleSidebar()" class="text-white hover:text-blue-400 transition">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="MAIN-DASHBOARD-FIXED.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="project-management-hub.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-project-diagram w-5 mr-3"></i>
+                    Projects
+                </a>
+                <a href="gantt-chart-fixed.html" class="nav-item active text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-chart-gantt w-5 mr-3"></i>
+                    Gantt Charts
+                </a>
+                <a href="resource-allocation-working.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-users w-5 mr-3"></i>
+                    Resources
+                </a>
+                <a href="raid-management-working.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-shield-alt w-5 mr-3"></i>
+                    RAID Management
+                </a>
+                <a href="automated-reports-fixed.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-chart-line w-5 mr-3"></i>
+                    Reports
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="p-8">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Gantt Charts</h1>
+                    <p class="text-gray-600">Interactive project timelines with drag-and-drop functionality</p>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="addTask()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-plus mr-2"></i>Add Task
+                    </button>
+                    <button onclick="exportGantt()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- View Controls -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold">Project: Website Redesign</h2>
+                    <div class="flex gap-2">
+                        <button onclick="setView('gantt')" class="view-button active px-4 py-2 rounded-lg border" id="ganttViewBtn">
+                            <i class="fas fa-chart-gantt mr-2"></i>Gantt
+                        </button>
+                        <button onclick="setView('timeline')" class="view-button px-4 py-2 rounded-lg border" id="timelineViewBtn">
+                            <i class="fas fa-stream mr-2"></i>Timeline
+                        </button>
+                        <button onclick="setView('calendar')" class="view-button px-4 py-2 rounded-lg border" id="calendarViewBtn">
+                            <i class="fas fa-calendar mr-2"></i>Calendar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Zoom Controls -->
+                <div class="flex items-center gap-4 mb-4">
+                    <span class="text-sm text-gray-600">Zoom:</span>
+                    <button onclick="zoomOut()" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <span class="text-sm font-medium" id="zoomLevel">100%</span>
+                    <button onclick="zoomIn()" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button onclick="fitToScreen()" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 ml-2">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+                
+                <!-- Gantt Chart Container -->
+                <div class="gantt-container">
+                    <div class="gantt-chart">
+                        <canvas id="ganttChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Details -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Task List -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">Task List</h3>
+                    <div class="space-y-3 max-h-96 overflow-y-auto">
+                        <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer" onclick="selectTask('task1')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-medium">Requirements Analysis</div>
+                                    <div class="text-sm text-gray-600">Jan 1 - Jan 7</div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">100%</span>
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer" onclick="selectTask('task2')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-medium">UI/UX Design</div>
+                                    <div class="text-sm text-gray-600">Jan 8 - Jan 21</div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">75%</span>
+                                    <i class="fas fa-spinner text-blue-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer" onclick="selectTask('task3')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-medium">Frontend Development</div>
+                                    <div class="text-sm text-gray-600">Jan 15 - Feb 15</div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">45%</span>
+                                    <i class="fas fa-spinner text-yellow-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer" onclick="selectTask('task4')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-medium">Backend Development</div>
+                                    <div class="text-sm text-gray-600">Jan 20 - Feb 20</div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">30%</span>
+                                    <i class="fas fa-spinner text-yellow-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer" onclick="selectTask('task5')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-medium">Testing & QA</div>
+                                    <div class="text-sm text-gray-600">Feb 10 - Feb 25</div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm">0%</span>
+                                    <i class="fas fa-circle text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task Information -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">Task Information</h3>
+                    <div id="taskInfo">
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-mouse-pointer text-4xl mb-4"></i>
+                            <p>Select a task from the list to view details</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Critical Path Analysis -->
+            <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">
+                    <i class="fas fa-route mr-2 text-red-600"></i>Critical Path Analysis
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium">Critical Path Duration</span>
+                            <i class="fas fa-clock text-red-500"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-red-600">45 days</div>
+                        <div class="text-sm text-gray-600">No buffer available</div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium">Tasks on Critical Path</span>
+                            <i class="fas fa-exclamation-triangle text-orange-500"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-orange-600">3 tasks</div>
+                        <div class="text-sm text-gray-600">Require close monitoring</div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium">Slack Available</span>
+                            <i class="fas fa-cushion text-green-500"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-green-600">5 days</div>
+                        <div class="text-sm text-gray-600">Total project buffer</div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h4 class="font-medium mb-2">Critical Tasks:</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">UI/UX Design</span>
+                        <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">Frontend Development</span>
+                        <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">Testing & QA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button onclick="toggleMobileMenu()" class="fixed top-4 left-4 z-50 bg-blue-600 text-white p-3 rounded-lg md:hidden">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold" id="taskModalTitle">Task Details</h3>
+                <button onclick="closeTaskModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="taskModalBody">
+                <!-- Task details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentView = 'gantt';
+        let zoomLevel = 100;
+        let ganttChart = null;
+        let tasks = [
+            {
+                id: 'task1',
+                name: 'Requirements Analysis',
+                start: '2024-01-01',
+                end: '2024-01-07',
+                progress: 100,
+                dependencies: [],
+                assignee: 'John Doe',
+                priority: 'High'
+            },
+            {
+                id: 'task2',
+                name: 'UI/UX Design',
+                start: '2024-01-08',
+                end: '2024-01-21',
+                progress: 75,
+                dependencies: ['task1'],
+                assignee: 'Alice Smith',
+                priority: 'High'
+            },
+            {
+                id: 'task3',
+                name: 'Frontend Development',
+                start: '2024-01-15',
+                end: '2024-02-15',
+                progress: 45,
+                dependencies: ['task2'],
+                assignee: 'Bob Johnson',
+                priority: 'Medium'
+            },
+            {
+                id: 'task4',
+                name: 'Backend Development',
+                start: '2024-01-20',
+                end: '2024-02-20',
+                progress: 30,
+                dependencies: ['task1'],
+                assignee: 'Carol White',
+                priority: 'Medium'
+            },
+            {
+                id: 'task5',
+                name: 'Testing & QA',
+                start: '2024-02-10',
+                end: '2024-02-25',
+                progress: 0,
+                dependencies: ['task3', 'task4'],
+                assignee: 'David Brown',
+                priority: 'Low'
+            }
+        ];
+
+        // Navigation Functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+        
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('mobile-open');
+        }
+        
+        // View Functions
+        function setView(view) {
+            currentView = view;
+            
+            // Update button states
+            document.querySelectorAll('.view-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(view + 'ViewBtn').classList.add('active');
+            
+            // Update chart based on view
+            updateGanttChart(view);
+        }
+        
+        // Zoom Functions
+        function zoomIn() {
+            if (zoomLevel < 200) {
+                zoomLevel += 25;
+                updateZoomDisplay();
+                updateGanttChart(currentView);
+            }
+        }
+        
+        function zoomOut() {
+            if (zoomLevel > 50) {
+                zoomLevel -= 25;
+                updateZoomDisplay();
+                updateGanttChart(currentView);
+            }
+        }
+        
+        function fitToScreen() {
+            zoomLevel = 100;
+            updateZoomDisplay();
+            updateGanttChart(currentView);
+        }
+        
+        function updateZoomDisplay() {
+            document.getElementById('zoomLevel').textContent = zoomLevel + '%';
+        }
+        
+        // Chart Functions
+        function initializeGanttChart() {
+            const ctx = document.getElementById('ganttChart').getContext('2d');
+            
+            const chartData = {
+                labels: tasks.map(task => task.name),
+                datasets: [{
+                    label: 'Task Duration',
+                    data: tasks.map(task => ({
+                        x: [task.start, task.end],
+                        y: task.name
+                    })),
+                    backgroundColor: tasks.map(task => {
+                        if (task.progress === 100) return '#10b981';
+                        if (task.progress >= 50) return '#3b82f6';
+                        return '#f59e0b';
+                    }),
+                    borderWidth: 2,
+                    borderColor: '#1f2937',
+                    barPercentage: 0.6,
+                    categoryPercentage: 0.8
+                }]
+            };
+            
+            const config = {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const task = tasks[context.dataIndex];
+                                    return [
+                                        `Start: ${task.start}`,
+                                        `End: ${task.end}`,
+                                        `Progress: ${task.progress}%`,
+                                        `Assignee: ${task.assignee}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'MMM dd'
+                                }
+                            },
+                            min: '2024-01-01',
+                            max: '2024-03-01'
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            };
+            
+            ganttChart = new Chart(ctx, config);
+        }
+        
+        function updateGanttChart(view) {
+            if (!ganttChart) {
+                initializeGanttChart();
+                return;
+            }
+            
+            // Update chart based on view type
+            switch(view) {
+                case 'timeline':
+                    // Switch to timeline view
+                    ganttChart.config.type = 'line';
+                    ganttChart.config.options.scales.x.time.unit = 'week';
+                    break;
+                case 'calendar':
+                    // Switch to calendar view
+                    ganttChart.config.type = 'bar';
+                    ganttChart.config.options.scales.x.time.unit = 'day';
+                    break;
+                default:
+                    // Default to Gantt view
+                    ganttChart.config.type = 'bar';
+                    ganttChart.config.options.scales.x.time.unit = 'day';
+            }
+            
+            // Apply zoom
+            const timeRange = (zoomLevel / 100) * 60; // days
+            const startDate = new Date('2024-01-01');
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + timeRange);
+            
+            ganttChart.config.options.scales.x.min = startDate.toISOString().split('T')[0];
+            ganttChart.config.options.scales.x.max = endDate.toISOString().split('T')[0];
+            
+            ganttChart.update();
+        }
+        
+        // Task Functions
+        function selectTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const taskInfo = document.getElementById('taskInfo');
+            taskInfo.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Task Name</label>
+                        <div class="text-lg font-semibold">${task.name}</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Start Date</label>
+                            <div class="font-medium">${task.start}</div>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">End Date</label>
+                            <div class="font-medium">${task.end}</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Progress</label>
+                        <div class="flex items-center gap-2">
+                            <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: ${task.progress}%"></div>
+                            </div>
+                            <span class="font-medium">${task.progress}%</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Assignee</label>
+                        <div class="font-medium">${task.assignee}</div>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Priority</label>
+                        <div>
+                            <span class="px-2 py-1 rounded text-sm ${
+                                task.priority === 'High' ? 'bg-red-100 text-red-800' :
+                                task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-green-100 text-green-800'
+                            }">${task.priority}</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Dependencies</label>
+                        <div>
+                            ${task.dependencies.length > 0 ? 
+                                task.dependencies.map(depId => {
+                                    const depTask = tasks.find(t => t.id === depId);
+                                    return `<span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm mr-2">${depTask.name}</span>`;
+                                }).join('') :
+                                '<span class="text-gray-500">No dependencies</span>'
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 pt-4">
+                        <button onclick="editTask('${taskId}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-edit mr-2"></i>Edit
+                        </button>
+                        <button onclick="deleteTask('${taskId}')" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+                            <i class="fas fa-trash mr-2"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function addTask() {
+            const modalBody = document.getElementById('taskModalBody');
+            modalBody.innerHTML = `
+                <form onsubmit="saveNewTask(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Task Name</label>
+                        <input type="text" name="name" required class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <input type="date" name="start" required class="w-full border rounded-lg px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                            <input type="date" name="end" required class="w-full border rounded-lg px-3 py-2">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Assignee</label>
+                            <input type="text" name="assignee" required class="w-full border rounded-lg px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                            <select name="priority" class="w-full border rounded-lg px-3 py-2">
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Progress (%)</label>
+                        <input type="number" name="progress" min="0" max="100" value="0" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    
+                    <div class="flex justify-end gap-2">
+                        <button type="button" onclick="closeTaskModal()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                            Cancel
+                        </button>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-save mr-2"></i>Save Task
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('taskModalTitle').textContent = 'Add New Task';
+            document.getElementById('taskModal').classList.add('show');
+        }
+        
+        function saveNewTask(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            
+            const newTask = {
+                id: 'task' + (tasks.length + 1),
+                name: formData.get('name'),
+                start: formData.get('start'),
+                end: formData.get('end'),
+                progress: parseInt(formData.get('progress')),
+                dependencies: [],
+                assignee: formData.get('assignee'),
+                priority: formData.get('priority')
+            };
+            
+            tasks.push(newTask);
+            updateGanttChart(currentView);
+            closeTaskModal();
+            
+            // Show success message
+            showNotification('Task added successfully!');
+        }
+        
+        function editTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const modalBody = document.getElementById('taskModalBody');
+            modalBody.innerHTML = `
+                <form onsubmit="updateTask(event, '${taskId}')" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Task Name</label>
+                        <input type="text" name="name" value="${task.name}" required class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <input type="date" name="start" value="${task.start}" required class="w-full border rounded-lg px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                            <input type="date" name="end" value="${task.end}" required class="w-full border rounded-lg px-3 py-2">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Assignee</label>
+                            <input type="text" name="assignee" value="${task.assignee}" required class="w-full border rounded-lg px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                            <select name="priority" class="w-full border rounded-lg px-3 py-2">
+                                <option value="Low" ${task.priority === 'Low' ? 'selected' : ''}>Low</option>
+                                <option value="Medium" ${task.priority === 'Medium' ? 'selected' : ''}>Medium</option>
+                                <option value="High" ${task.priority === 'High' ? 'selected' : ''}>High</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Progress (%)</label>
+                        <input type="number" name="progress" min="0" max="100" value="${task.progress}" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    
+                    <div class="flex justify-end gap-2">
+                        <button type="button" onclick="closeTaskModal()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                            Cancel
+                        </button>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-save mr-2"></i>Update Task
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('taskModalTitle').textContent = 'Edit Task';
+            document.getElementById('taskModal').classList.add('show');
+        }
+        
+        function updateTask(event, taskId) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            
+            const taskIndex = tasks.findIndex(t => t.id === taskId);
+            if (taskIndex !== -1) {
+                tasks[taskIndex] = {
+                    ...tasks[taskIndex],
+                    name: formData.get('name'),
+                    start: formData.get('start'),
+                    end: formData.get('end'),
+                    progress: parseInt(formData.get('progress')),
+                    assignee: formData.get('assignee'),
+                    priority: formData.get('priority')
+                };
+            }
+            
+            updateGanttChart(currentView);
+            closeTaskModal();
+            showNotification('Task updated successfully!');
+        }
+        
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                tasks = tasks.filter(t => t.id !== taskId);
+                updateGanttChart(currentView);
+                document.getElementById('taskInfo').innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-mouse-pointer text-4xl mb-4"></i>
+                        <p>Select a task from the list to view details</p>
+                    </div>
+                `;
+                showNotification('Task deleted successfully!');
+            }
+        }
+        
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('show');
+        }
+        
+        function exportGantt() {
+            showNotification('Gantt chart export functionality would be implemented here. Options include PDF, PNG, and Excel formats.');
+        }
+        
+        function showNotification(message) {
+            // Create a simple notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    ${message}
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('taskModal');
+            if (event.target == modal) {
+                closeTaskModal();
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGanttChart();
+        });
+    </script>
+</body>
+</html>

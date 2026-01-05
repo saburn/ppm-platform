@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Gantt Chart - World Class PPM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <style>
+        .gantt-container {
+            overflow-x: auto;
+            overflow-y: auto;
+            position: relative;
+        }
+        .gantt-grid {
+            background-image: 
+                linear-gradient(to right, #e5e7eb 1px, transparent 1px),
+                linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .gantt-task-bar {
+            cursor: move;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .gantt-task-bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .gantt-task-bar.dragging {
+            opacity: 0.7;
+            z-index: 1000;
+        }
+        .gantt-milestone {
+            cursor: move;
+            transition: all 0.2s ease;
+        }
+        .gantt-milestone:hover {
+            transform: scale(1.1);
+        }
+        .dependency-line {
+            stroke: #6b7280;
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+        .critical-path {
+            stroke: #ef4444;
+            stroke-width: 3;
+        }
+        .resize-handle {
+            cursor: ew-resize;
+            width: 8px;
+            height: 100%;
+            position: absolute;
+            top: 0;
+        }
+        .resize-handle-left {
+            left: 0;
+        }
+        .resize-handle-right {
+            right: 0;
+        }
+        .progress-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(34, 197, 94, 0.3);
+            pointer-events: none;
+        }
+        .resource-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid white;
+            margin-left: -8px;
+            display: inline-block;
+        }
+        .resource-avatar:first-child {
+            margin-left: 0;
+        }
+        .zoom-controls {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .timeline-header {
+            position: sticky;
+            left: 0;
+            z-index: 50;
+            background: #f9fafb;
+        }
+        .task-row {
+            position: sticky;
+            left: 0;
+            z-index: 40;
+            background: white;
+        }
+        .gantt-cell {
+            min-width: 40px;
+            height: 40px;
+            border-right: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .today-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ef4444;
+            z-index: 30;
+            pointer-events: none;
+        }
+        .weekend-column {
+            background: #f9fafb;
+        }
+        .tooltip {
+            position: absolute;
+            background: #1f2937;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 2000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .tooltip.show {
+            opacity: 1;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold flex items-center">
+                        <i class="fas fa-chart-gantt mr-3"></i>
+                        Interactive Gantt Chart
+                    </h1>
+                    <p class="text-indigo-100 text-sm mt-1">Project: Website Redesign • Drag & drop • Real-time updates • Resource allocation</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Project Switcher -->
+                    <select id="projectSelector" class="bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg">
+                        <option value="website-redesign">Website Redesign</option>
+                        <option value="mobile-app">Mobile App Development</option>
+                        <option value="cloud-migration">Cloud Migration</option>
+                    </select>
+                    <!-- View Options -->
+                    <div class="flex space-x-2">
+                        <button onclick="toggleCriticalPath()" class="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg text-sm">
+                            <i class="fas fa-route mr-1"></i> Critical Path
+                        </button>
+                        <button onclick="toggleResources()" class="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg text-sm">
+                            <i class="fas fa-users mr-1"></i> Resources
+                        </button>
+                        <button onclick="toggleDependencies()" class="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg text-sm">
+                            <i class="fas fa-link mr-1"></i> Dependencies
+                        </button>
+                    </div>
+                    <!-- Export -->
+                    <button onclick="exportGantt()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm">
+                        <i class="fas fa-download mr-1"></i> Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Zoom Controls & Timeline -->
+    <div class="zoom-controls bg-white border-b">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm font-medium text-gray-700">Zoom Level:</span>
+                    <div class="flex space-x-1">
+                        <button onclick="setZoom('day')" class="zoom-btn px-3 py-1 text-sm rounded hover:bg-gray-100" data-zoom="day">Day</button>
+                        <button onclick="setZoom('week')" class="zoom-btn px-3 py-1 text-sm rounded bg-indigo-100 text-indigo-700" data-zoom="week">Week</button>
+                        <button onclick="setZoom('month')" class="zoom-btn px-3 py-1 text-sm rounded hover:bg-gray-100" data-zoom="month">Month</button>
+                        <button onclick="setZoom('quarter')" class="zoom-btn px-3 py-1 text-sm rounded hover:bg-gray-100" data-zoom="quarter">Quarter</button>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="zoomIn()" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button onclick="zoomOut()" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button onclick="fitToScreen()" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Bar -->
+    <div class="bg-white border-b">
+        <div class="container mx-auto px-6 py-3">
+            <div class="grid grid-cols-6 gap-4 text-sm">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-tasks text-blue-600"></i>
+                    <span class="text-gray-600">Tasks:</span>
+                    <span class="font-semibold" id="totalTasks">0</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-check-circle text-green-600"></i>
+                    <span class="text-gray-600">Complete:</span>
+                    <span class="font-semibold" id="completedTasks">0</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-route text-red-600"></i>
+                    <span class="text-gray-600">Critical Path:</span>
+                    <span class="font-semibold" id="criticalPathTasks">0</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-users text-purple-600"></i>
+                    <span class="text-gray-600">Resources:</span>
+                    <span class="font-semibold" id="totalResources">0</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-link text-orange-600"></i>
+                    <span class="text-gray-600">Dependencies:</span>
+                    <span class="font-semibold" id="totalDependencies">0</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-chart-line text-indigo-600"></i>
+                    <span class="text-gray-600">Progress:</span>
+                    <span class="font-semibold" id="overallProgress">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Gantt Chart Container -->
+    <main class="container mx-auto px-6 py-6">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <!-- Timeline Header -->
+            <div class="timeline-header border-b border-gray-200">
+                <div class="grid grid-cols-12 gap-0">
+                    <div class="col-span-3 p-4 border-r border-gray-200 bg-gray-50">
+                        <h3 class="font-semibold text-gray-700">Task Details</h3>
+                    </div>
+                    <div class="col-span-9">
+                        <div id="timelineHeader" class="flex">
+                            <!-- Timeline dates will be generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gantt Chart Grid -->
+            <div class="gantt-container" style="height: 600px;">
+                <div class="gantt-grid">
+                    <!-- Today Line -->
+                    <div class="today-line" id="todayLine"></div>
+                    
+                    <!-- Task Rows -->
+                    <div id="ganttTasks">
+                        <!-- Tasks will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Task Detail Modal -->
+    <div id="taskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold">Task Details</h3>
+                    <button onclick="closeTaskModal()" class="text-white hover:text-gray-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <form id="taskForm" class="space-y-4">
+                    <input type="hidden" id="taskId">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Task Name</label>
+                            <input type="text" id="taskName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Assignee</label>
+                            <select id="taskAssignee" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="Sarah Chen">Sarah Chen</option>
+                                <option value="Mike Johnson">Mike Johnson</option>
+                                <option value="David Lee">David Lee</option>
+                                <option value="Emily Wilson">Emily Wilson</option>
+                                <option value="Alex Kumar">Alex Kumar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <input type="date" id="taskStartDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                            <input type="date" id="taskEndDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Progress (%)</label>
+                            <input type="number" id="taskProgress" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                            <select id="taskPriority" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <select id="taskStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="not-started">Not Started</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="on-hold">On Hold</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="taskDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="closeTaskModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="button" onclick="deleteTask()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Save Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <!-- SVG for dependency lines -->
+    <svg id="dependencySvg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25;">
+        <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#6b7280" />
+            </marker>
+        </defs>
+    </svg>
+
+    <script>
+        // Global state
+        let currentProject = 'website-redesign';
+        let currentZoom = 'week';
+        let showCriticalPath = false;
+        let showResources = true;
+        let showDependencies = true;
+        let tasks = [];
+        let dependencies = [];
+        let resources = [];
+        let isDragging = false;
+        let isResizing = false;
+        let draggedTask = null;
+        let resizingTask = null;
+        let resizeDirection = null;
+
+        // Sample data for demonstration
+        const sampleData = {
+            'website-redesign': {
+                tasks: [
+                    {
+                        id: 1,
+                        name: 'Project Planning',
+                        assignee: 'Sarah Chen',
+                        startDate: '2024-01-01',
+                        endDate: '2024-01-15',
+                        progress: 100,
+                        priority: 'high',
+                        status: 'completed',
+                        description: 'Initial project planning and requirements gathering'
+                    },
+                    {
+                        id: 2,
+                        name: 'Design Phase',
+                        assignee: 'Mike Johnson',
+                        startDate: '2024-01-16',
+                        endDate: '2024-02-15',
+                        progress: 85,
+                        priority: 'high',
+                        status: 'in-progress',
+                        description: 'UI/UX design and mockups creation'
+                    },
+                    {
+                        id: 3,
+                        name: 'Frontend Development',
+                        assignee: 'Emily Wilson',
+                        startDate: '2024-02-01',
+                        endDate: '2024-03-15',
+                        progress: 60,
+                        priority: 'critical',
+                        status: 'in-progress',
+                        description: 'React frontend development'
+                    },
+                    {
+                        id: 4,
+                        name: 'Backend Development',
+                        assignee: 'Alex Kumar',
+                        startDate: '2024-02-01',
+                        endDate: '2024-03-20',
+                        progress: 45,
+                        priority: 'critical',
+                        status: 'in-progress',
+                        description: 'Node.js backend API development'
+                    },
+                    {
+                        id: 5,
+                        name: 'Database Setup',
+                        assignee: 'David Lee',
+                        startDate: '2024-01-20',
+                        endDate: '2024-02-10',
+                        progress: 100,
+                        priority: 'high',
+                        status: 'completed',
+                        description: 'Database design and setup'
+                    },
+                    {
+                        id: 6,
+                        name: 'Testing Phase',
+                        assignee: 'Sarah Chen',
+                        startDate: '2024-03-16',
+                        endDate: '2024-04-15',
+                        progress: 0,
+                        priority: 'medium',
+                        status: 'not-started',
+                        description: 'QA testing and bug fixes'
+                    },
+                    {
+                        id: 7,
+                        name: 'Deployment',
+                        assignee: 'Alex Kumar',
+                        startDate: '2024-04-16',
+                        endDate: '2024-04-30',
+                        progress: 0,
+                        priority: 'high',
+                        status: 'not-started',
+                        description: 'Production deployment'
+                    },
+                    {
+                        id: 8,
+                        name: 'Project Launch',
+                        assignee: 'Sarah Chen',
+                        startDate: '2024-05-01',
+                        endDate: '2024-05-01',
+                        progress: 0,
+                        priority: 'critical',
+                        status: 'not-started',
+                        description: 'Website launch milestone',
+                        isMilestone: true
+                    }
+                ],
+                dependencies: [
+                    { from: 1, to: 2 },
+                    { from: 2, to: 3 },
+                    { from: 2, to: 4 },
+                    { from: 5, to: 4 },
+                    { from: 3, to: 6 },
+                    { from: 4, to: 6 },
+                    { from: 6, to: 7 },
+                    { from: 7, to: 8 }
+                ],
+                resources: [
+                    { name: 'Sarah Chen', avatar: 'SC', color: 'bg-blue-500' },
+                    { name: 'Mike Johnson', avatar: 'MJ', color: 'bg-green-500' },
+                    { name: 'David Lee', avatar: 'DL', color: 'bg-purple-500' },
+                    { name: 'Emily Wilson', avatar: 'EW', color: 'bg-pink-500' },
+                    { name: 'Alex Kumar', avatar: 'AK', color: 'bg-yellow-500' }
+                ]
+            }
+        };
+
+        // Initialize the Gantt chart
+        function initGantt() {
+            loadData();
+            renderTimeline();
+            renderTasks();
+            updateStatistics();
+            positionTodayLine();
+            setupEventListeners();
+        }
+
+        // Load project data
+        function loadData() {
+            const projectData = sampleData[currentProject];
+            tasks = projectData.tasks;
+            dependencies = projectData.dependencies;
+            resources = projectData.resources;
+        }
+
+        // Render timeline header
+        function renderTimeline() {
+            const timelineHeader = document.getElementById('timelineHeader');
+            const startDate = new Date('2024-01-01');
+            const endDate = new Date('2024-06-30');
+            const cellWidth = getCellWidth();
+            
+            let html = '';
+            let currentDate = new Date(startDate);
+            
+            while (currentDate <= endDate) {
+                const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
+                const weekendClass = isWeekend ? ' weekend-column' : '';
+                
+                html += `<div class="gantt-cell flex-shrink-0${weekendClass}" style="width: ${cellWidth}px;">
+                    <div class="text-xs text-center py-1">${formatDate(currentDate)}</div>
+                </div>`;
+                
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            timelineHeader.innerHTML = html;
+        }
+
+        // Render tasks
+        function renderTasks() {
+            const container = document.getElementById('ganttTasks');
+            const startDate = new Date('2024-01-01');
+            const cellWidth = getCellWidth();
+            
+            let html = '';
+            
+            tasks.forEach((task, index) => {
+                const taskStart = new Date(task.startDate);
+                const taskEnd = new Date(task.endDate);
+                const startOffset = Math.floor((taskStart - startDate) / (1000 * 60 * 60 * 24));
+                const duration = Math.floor((taskEnd - taskStart) / (1000 * 60 * 60 * 24)) + 1;
+                const leftPosition = startOffset * cellWidth;
+                const taskWidth = duration * cellWidth;
+                
+                const priorityColor = getPriorityColor(task.priority);
+                const statusColor = getStatusColor(task.status);
+                
+                // Task row
+                html += `<div class="task-row grid grid-cols-12 gap-0 border-b border-gray-200 hover:bg-gray-50" data-task-id="${task.id}">
+                    <div class="col-span-3 p-4 border-r border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-medium text-gray-800">${task.name}</div>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <span class="text-xs px-2 py-1 rounded ${priorityColor}">${task.priority}</span>
+                                    <span class="text-xs px-2 py-1 rounded ${statusColor}">${task.status}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                ${showResources ? `<div class="resource-avatar ${getResourceColor(task.assignee)} text-white text-xs flex items-center justify-center">${getResourceInitials(task.assignee)}</div>` : ''}
+                                <button onclick="editTask(${task.id})" class="text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-span-9 relative h-16 flex items-center">
+                        <!-- Task bar -->
+                        <div class="gantt-task-bar absolute rounded-lg ${getTaskBarClass(task)}" 
+                             style="left: ${leftPosition}px; width: ${taskWidth}px; height: 32px;"
+                             data-task-id="${task.id}"
+                             draggable="true">
+                            <div class="resize-handle resize-handle-left"></div>
+                            <div class="resize-handle resize-handle-right"></div>
+                            <div class="progress-overlay rounded-lg" style="width: ${task.progress}%"></div>
+                            <div class="relative h-full flex items-center justify-between px-2">
+                                <span class="text-xs text-white font-medium truncate">${task.name}</span>
+                                <span class="text-xs text-white">${task.progress}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            
+            container.innerHTML = html;
+            setupTaskInteractions();
+            if (showDependencies) {
+                renderDependencies();
+            }
+        }
+
+        // Setup task interactions
+        function setupTaskInteractions() {
+            const taskBars = document.querySelectorAll('.gantt-task-bar');
+            
+            taskBars.forEach(bar => {
+                // Drag functionality
+                bar.addEventListener('dragstart', handleDragStart);
+                bar.addEventListener('dragend', handleDragEnd);
+                
+                // Resize functionality
+                const resizeHandles = bar.querySelectorAll('.resize-handle');
+                resizeHandles.forEach(handle => {
+                    handle.addEventListener('mousedown', handleResizeStart);
+                });
+                
+                // Click functionality
+                bar.addEventListener('click', handleTaskClick);
+                
+                // Hover functionality
+                bar.addEventListener('mouseenter', handleTaskHover);
+                bar.addEventListener('mouseleave', handleTaskLeave);
+            });
+        }
+
+        // Drag and drop handlers
+        function handleDragStart(e) {
+            isDragging = true;
+            draggedTask = parseInt(e.target.dataset.taskId);
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            isDragging = false;
+            e.target.classList.remove('dragging');
+            draggedTask = null;
+        }
+
+        // Resize handlers
+        function handleResizeStart(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            isResizing = true;
+            resizingTask = parseInt(e.target.parentElement.dataset.taskId);
+            resizeDirection = e.target.classList.contains('resize-handle-left') ? 'left' : 'right';
+            
+            document.addEventListener('mousemove', handleResizeMove);
+            document.addEventListener('mouseup', handleResizeEnd);
+        }
+
+        function handleResizeMove(e) {
+            // Implement resize logic here
+        }
+
+        function handleResizeEnd(e) {
+            isResizing = false;
+            resizingTask = null;
+            resizeDirection = null;
+            document.removeEventListener('mousemove', handleResizeMove);
+            document.removeEventListener('mouseup', handleResizeEnd);
+        }
+
+        // Task click handler
+        function handleTaskClick(e) {
+            const taskId = parseInt(e.currentTarget.dataset.taskId);
+            editTask(taskId);
+        }
+
+        // Task hover handlers
+        function handleTaskHover(e) {
+            const taskId = parseInt(e.currentTarget.dataset.taskId);
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                showTooltip(e, task);
+            }
+        }
+
+        function handleTaskLeave(e) {
+            hideTooltip();
+        }
+
+        // Tooltip functions
+        function showTooltip(e, task) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.innerHTML = `
+                <div class="font-semibold">${task.name}</div>
+                <div class="text-xs mt-1">Assignee: ${task.assignee}</div>
+                <div class="text-xs">Duration: ${task.startDate} to ${task.endDate}</div>
+                <div class="text-xs">Progress: ${task.progress}%</div>
+                <div class="text-xs">Priority: ${task.priority}</div>
+            `;
+            
+            tooltip.style.left = e.pageX + 10 + 'px';
+            tooltip.style.top = e.pageY - 30 + 'px';
+            tooltip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.classList.remove('show');
+        }
+
+        // Render dependencies
+        function renderDependencies() {
+            const svg = document.getElementById('dependencySvg');
+            let svgContent = '';
+            
+            dependencies.forEach(dep => {
+                const fromTask = document.querySelector(`[data-task-id="${dep.from}"]`);
+                const toTask = document.querySelector(`[data-task-id="${dep.to}"]`);
+                
+                if (fromTask && toTask) {
+                    const fromRect = fromTask.getBoundingClientRect();
+                    const toRect = toTask.getBoundingClientRect();
+                    const containerRect = svg.getBoundingClientRect();
+                    
+                    const x1 = fromRect.right - containerRect.left;
+                    const y1 = fromRect.top + fromRect.height / 2 - containerRect.top;
+                    const x2 = toRect.left - containerRect.left;
+                    const y2 = toRect.top + toRect.height / 2 - containerRect.top;
+                    
+                    svgContent += `<path class="dependency-line" d="M ${x1} ${y1} C ${x1 + 50} ${y1}, ${x2 - 50} ${y2}, ${x2} ${y2}" />`;
+                }
+            });
+            
+            svg.innerHTML = svgContent;
+        }
+
+        // Edit task
+        function editTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                document.getElementById('taskId').value = task.id;
+                document.getElementById('taskName').value = task.name;
+                document.getElementById('taskAssignee').value = task.assignee;
+                document.getElementById('taskStartDate').value = task.startDate;
+                document.getElementById('taskEndDate').value = task.endDate;
+                document.getElementById('taskProgress').value = task.progress;
+                document.getElementById('taskPriority').value = task.priority;
+                document.getElementById('taskStatus').value = task.status;
+                document.getElementById('taskDescription').value = task.description || '';
+                
+                document.getElementById('taskModal').classList.remove('hidden');
+            }
+        }
+
+        // Close task modal
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.add('hidden');
+        }
+
+        // Delete task
+        function deleteTask() {
+            const taskId = parseInt(document.getElementById('taskId').value);
+            tasks = tasks.filter(t => t.id !== taskId);
+            dependencies = dependencies.filter(d => d.from !== taskId && d.to !== taskId);
+            renderTasks();
+            updateStatistics();
+            closeTaskModal();
+        }
+
+        // Save task
+        document.getElementById('taskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const taskId = parseInt(document.getElementById('taskId').value);
+            const taskIndex = tasks.findIndex(t => t.id === taskId);
+            
+            if (taskIndex !== -1) {
+                tasks[taskIndex] = {
+                    ...tasks[taskIndex],
+                    name: document.getElementById('taskName').value,
+                    assignee: document.getElementById('taskAssignee').value,
+                    startDate: document.getElementById('taskStartDate').value,
+                    endDate: document.getElementById('taskEndDate').value,
+                    progress: parseInt(document.getElementById('taskProgress').value),
+                    priority: document.getElementById('taskPriority').value,
+                    status: document.getElementById('taskStatus').value,
+                    description: document.getElementById('taskDescription').value
+                };
+                
+                renderTasks();
+                updateStatistics();
+                closeTaskModal();
+            }
+        });
+
+        // Update statistics
+        function updateStatistics() {
+            const totalTasks = tasks.length;
+            const completedTasks = tasks.filter(t => t.status === 'completed').length;
+            const criticalPathTasks = showCriticalPath ? 3 : 0; // Simplified calculation
+            const totalResources = new Set(tasks.map(t => t.assignee)).size;
+            const totalDependencies = dependencies.length;
+            const overallProgress = Math.round(tasks.reduce((sum, t) => sum + t.progress, 0) / totalTasks);
+            
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('completedTasks').textContent = completedTasks;
+            document.getElementById('criticalPathTasks').textContent = criticalPathTasks;
+            document.getElementById('totalResources').textContent = totalResources;
+            document.getElementById('totalDependencies').textContent = totalDependencies;
+            document.getElementById('overallProgress').textContent = overallProgress + '%';
+        }
+
+        // Toggle functions
+        function toggleCriticalPath() {
+            showCriticalPath = !showCriticalPath;
+            renderTasks();
+            updateStatistics();
+        }
+
+        function toggleResources() {
+            showResources = !showResources;
+            renderTasks();
+        }
+
+        function toggleDependencies() {
+            showDependencies = !showDependencies;
+            if (showDependencies) {
+                renderDependencies();
+            } else {
+                document.getElementById('dependencySvg').innerHTML = '';
+            }
+        }
+
+        // Zoom functions
+        function setZoom(level) {
+            currentZoom = level;
+            document.querySelectorAll('.zoom-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-100', 'text-indigo-700');
+                if (btn.dataset.zoom === level) {
+                    btn.classList.add('bg-indigo-100', 'text-indigo-700');
+                }
+            });
+            renderTimeline();
+            renderTasks();
+            positionTodayLine();
+        }
+
+        function zoomIn() {
+            const zoomLevels = ['day', 'week', 'month', 'quarter'];
+            const currentIndex = zoomLevels.indexOf(currentZoom);
+            if (currentIndex < zoomLevels.length - 1) {
+                setZoom(zoomLevels[currentIndex + 1]);
+            }
+        }
+
+        function zoomOut() {
+            const zoomLevels = ['day', 'week', 'month', 'quarter'];
+            const currentIndex = zoomLevels.indexOf(currentZoom);
+            if (currentIndex > 0) {
+                setZoom(zoomLevels[currentIndex - 1]);
+            }
+        }
+
+        function fitToScreen() {
+            setZoom('week');
+        }
+
+        // Export function
+        function exportGantt() {
+            alert('Export functionality would generate PDF/Excel/Project file');
+        }
+
+        // Position today line
+        function positionTodayLine() {
+            const today = new Date();
+            const startDate = new Date('2024-01-01');
+            const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+            const cellWidth = getCellWidth();
+            const todayLine = document.getElementById('todayLine');
+            
+            if (daysSinceStart >= 0) {
+                todayLine.style.left = (daysSinceStart * cellWidth + 400) + 'px'; // 400px for task details column
+            }
+        }
+
+        // Helper functions
+        function getCellWidth() {
+            const zoomWidths = {
+                'day': 40,
+                'week': 40,
+                'month': 40,
+                'quarter': 40
+            };
+            return zoomWidths[currentZoom] || 40;
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function getPriorityColor(priority) {
+            const colors = {
+                'low': 'bg-gray-100 text-gray-800',
+                'medium': 'bg-yellow-100 text-yellow-800',
+                'high': 'bg-orange-100 text-orange-800',
+                'critical': 'bg-red-100 text-red-800'
+            };
+            return colors[priority] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'not-started': 'bg-gray-100 text-gray-800',
+                'in-progress': 'bg-blue-100 text-blue-800',
+                'completed': 'bg-green-100 text-green-800',
+                'on-hold': 'bg-yellow-100 text-yellow-800'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getTaskBarClass(task) {
+            const baseClasses = 'shadow-md cursor-move flex items-center';
+            const priorityClasses = {
+                'low': 'bg-gray-500',
+                'medium': 'bg-yellow-500',
+                'high': 'bg-orange-500',
+                'critical': 'bg-red-500'
+            };
+            return baseClasses + ' ' + (priorityClasses[task.priority] || 'bg-gray-500');
+        }
+
+        function getResourceColor(assignee) {
+            const resource = resources.find(r => r.name === assignee);
+            return resource ? resource.color : 'bg-gray-500';
+        }
+
+        function getResourceInitials(assignee) {
+            return assignee.split(' ').map(n => n[0]).join('');
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Project selector
+            document.getElementById('projectSelector').addEventListener('change', function(e) {
+                currentProject = e.target.value;
+                initGantt();
+            });
+            
+            // Prevent default drag behavior
+            document.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+            
+            // Window resize
+            window.addEventListener('resize', function() {
+                positionTodayLine();
+            });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initGantt();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Reports - PPM Champion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .report-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .report-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .report-template {
+            transition: all 0.2s ease;
+        }
+        .report-template:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+            border-color: #3B82F6;
+        }
+        .schedule-item {
+            transition: all 0.2s ease;
+        }
+        .schedule-item:hover {
+            background-color: #F9FAFB;
+        }
+        .generating {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .report-preview {
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            page-break-after: always;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .report-preview { box-shadow: none; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="text-gray-600 hover:text-gray-800 mr-4">
+                        <i class="fas fa-arrow-left text-xl"></i>
+                    </button>
+                    <i class="fas fa-file-alt text-blue-600 text-2xl mr-3"></i>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">Automated Reports</h1>
+                        <p class="text-sm text-gray-600">Real-time Report Generation & Analytics</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="createCustomReport()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                        <i class="fas fa-plus mr-2"></i>Custom Report
+                    </button>
+                    <button onclick="viewScheduleManager()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                        <i class="fas fa-clock mr-2"></i>Schedule Manager
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Report Navigation Tabs -->
+    <div class="bg-white border-b sticky top-16 z-40">
+        <div class="container mx-auto px-6">
+            <div class="flex space-x-1 overflow-x-auto">
+                <button onclick="switchReportTab('dashboard')" class="report-tab-button px-6 py-3 text-sm font-medium rounded-t-lg bg-blue-600 text-white">
+                    <i class="fas fa-th-large mr-2"></i>Dashboard
+                </button>
+                <button onclick="switchReportTab('templates')" class="report-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-file-alt mr-2"></i>Templates
+                </button>
+                <button onclick="switchReportTab('generate')" class="report-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-cogs mr-2"></i>Generate
+                </button>
+                <button onclick="switchReportTab('schedule')" class="report-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-calendar-alt mr-2"></i>Schedule
+                </button>
+                <button onclick="switchReportTab('history')" class="report-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-history mr-2"></i>History
+                </button>
+                <button onclick="switchReportTab('analytics')" class="report-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-chart-line mr-2"></i>Analytics
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Dashboard Tab -->
+        <div id="report-dashboard" class="report-tab-content">
+            <!-- Quick Stats -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Reports Generated Today</p>
+                            <p class="text-3xl font-bold text-gray-800">47</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-chart-bar text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Active Schedules</p>
+                            <p class="text-3xl font-bold text-green-600">12</p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-clock text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Total Recipients</p>
+                            <p class="text-3xl font-bold text-purple-600">234</p>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-full">
+                            <i class="fas fa-users text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Automation Rate</p>
+                            <p class="text-3xl font-bold text-orange-600">94%</p>
+                        </div>
+                        <div class="bg-orange-100 p-3 rounded-full">
+                            <i class="fas fa-robot text-orange-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Report Generation -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Report Generation</h3>
+                <div class="grid md:grid-cols-4 gap-4">
+                    <button onclick="generateReport('executive')" class="report-card bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                        <i class="fas fa-briefcase text-blue-600 text-2xl mb-2"></i>
+                        <h4 class="font-semibold text-gray-800">Executive Summary</h4>
+                        <p class="text-sm text-gray-600">High-level overview for leadership</p>
+                    </button>
+                    
+                    <button onclick="generateReport('progress')" class="report-card bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                        <i class="fas fa-tasks text-green-600 text-2xl mb-2"></i>
+                        <h4 class="font-semibold text-gray-800">Progress Report</h4>
+                        <p class="text-sm text-gray-600">Current project status and milestones</p>
+                    </button>
+                    
+                    <button onclick="generateReport('financial')" class="report-card bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+                        <i class="fas fa-dollar-sign text-purple-600 text-2xl mb-2"></i>
+                        <h4 class="font-semibold text-gray-800">Financial Report</h4>
+                        <p class="text-sm text-gray-600">Budget analysis and cost tracking</p>
+                    </button>
+                    
+                    <button onclick="generateReport('resource')" class="report-card bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-4 border border-orange-200">
+                        <i class="fas fa-users text-orange-600 text-2xl mb-2"></i>
+                        <h4 class="font-semibold text-gray-800">Resource Report</h4>
+                        <p class="text-sm text-gray-600">Team allocation and utilization</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Reports & Scheduled Reports -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Reports</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-pdf text-red-500 text-xl mr-3"></i>
+                                <div>
+                                    <div class="font-medium text-gray-800">Weekly Progress Report</div>
+                                    <div class="text-sm text-gray-600">Generated 2 hours ago</div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="viewReport('weekly-progress')" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="downloadReport('weekly-progress')" class="text-green-600 hover:text-green-800">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-excel text-green-500 text-xl mr-3"></i>
+                                <div>
+                                    <div class="font-medium text-gray-800">Budget Analysis</div>
+                                    <div class="text-sm text-gray-600">Generated yesterday</div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="viewReport('budget-analysis')" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="downloadReport('budget-analysis')" class="text-green-600 hover:text-green-800">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-powerpoint text-orange-500 text-xl mr-3"></i>
+                                <div>
+                                    <div class="font-medium text-gray-800">Executive Dashboard</div>
+                                    <div class="text-sm text-gray-600">Generated 3 days ago</div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="viewReport('executive-dashboard')" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="downloadReport('executive-dashboard')" class="text-green-600 hover:text-green-800">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Scheduled Reports</h3>
+                    <div class="space-y-3">
+                        <div class="schedule-item flex items-center justify-between p-3 border rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                <div>
+                                    <div class="font-medium text-gray-800">Daily Status Report</div>
+                                    <div class="text-sm text-gray-600">Every day at 8:00 AM</div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <span>12 recipients</span>
+                            </div>
+                        </div>
+                        
+                        <div class="schedule-item flex items-center justify-between p-3 border rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                <div>
+                                    <div class="font-medium text-gray-800">Weekly Progress Summary</div>
+                                    <div class="text-sm text-gray-600">Every Monday at 9:00 AM</div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <span>25 recipients</span>
+                            </div>
+                        </div>
+                        
+                        <div class="schedule-item flex items-center justify-between p-3 border rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                                <div>
+                                    <div class="font-medium text-gray-800">Monthly Financial Report</div>
+                                    <div class="text-sm text-gray-600">1st of each month at 10:00 AM</div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <span>8 recipients</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Templates Tab -->
+        <div id="report-templates" class="report-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">Report Templates</h3>
+                    <button onclick="createNewTemplate()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-plus mr-2"></i>Create Template
+                    </button>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="report-template border rounded-lg p-4 cursor-pointer" onclick="selectTemplate('executive-summary')">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-briefcase text-blue-600 text-xl mr-3"></i>
+                            <h4 class="font-semibold text-gray-800">Executive Summary</h4>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">High-level overview for C-suite and stakeholders</p>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>Used 47 times</span>
+                            <span>Last updated: 2 days ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="report-template border rounded-lg p-4 cursor-pointer" onclick="selectTemplate('project-status')">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-tasks text-green-600 text-xl mr-3"></i>
+                            <h4 class="font-semibold text-gray-800">Project Status Report</h4>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Comprehensive project health and progress tracking</p>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>Used 89 times</span>
+                            <span>Last updated: 1 week ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="report-template border rounded-lg p-4 cursor-pointer" onclick="selectTemplate('financial-analysis')">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-dollar-sign text-purple-600 text-xl mr-3"></i>
+                            <h4 class="font-semibold text-gray-800">Financial Analysis</h4>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Budget tracking, variance analysis, forecasts</p>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>Used 34 times</span>
+                            <span>Last updated: 3 days ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="report-template border rounded-lg p-4 cursor-pointer" onclick="selectTemplate('resource-utilization')">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-users text-orange-600 text-xl mr-3"></i>
+                            <h4 class="font-semibold text-gray-800">Resource Utilization</h4>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Team allocation, workload, capacity planning</p>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>Used 28 times</span>
+                            <span>Last updated: 5 days ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="report-template border rounded-lg p-4 cursor-pointer" onclick="selectTemplate('risk-assessment')">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-xl mr-3"></i>
+                            <h4 class="font-semibold text-gray-800">Risk Assessment</h4>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Risk register, mitigation status, impact analysis</p>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>Used 19 times</span>
+                            <span>Last updated: 4 days ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="report-template border rounded-lg p-4 cursor-pointer" onclick="selectTemplate('milestone-tracker')">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-flag text-yellow-600 text-xl mr-3"></i>
+                            <h4 class="font-semibold text-gray-800">Milestone Tracker</h4>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Milestone completion, timeline, critical path</p>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>Used 56 times</span>
+                            <span>Last updated: 1 day ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Tab -->
+        <div id="report-generate" class="report-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Generate Custom Report</h3>
+                
+                <form onsubmit="generateCustomReport(event)" class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+                            <select id="reportType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="executive">Executive Summary</option>
+                                <option value="progress">Progress Report</option>
+                                <option value="financial">Financial Report</option>
+                                <option value="resource">Resource Report</option>
+                                <option value="risk">Risk Assessment</option>
+                                <option value="custom">Custom Report</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Format</label>
+                            <select id="reportFormat" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="pdf">PDF</option>
+                                <option value="excel">Excel</option>
+                                <option value="powerpoint">PowerPoint</option>
+                                <option value="html">HTML</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                            <div class="flex space-x-2">
+                                <input type="date" id="startDate" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="date" id="endDate" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Projects</label>
+                            <select multiple id="selectedProjects" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" size="4">
+                                <option value="all" selected>All Projects</option>
+                                <option value="cloud-migration">Cloud Migration</option>
+                                <option value="mobile-app">Mobile App Development</option>
+                                <option value="crm-implementation">CRM Implementation</option>
+                                <option value="data-analytics">Data Analytics Platform</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Report Sections</label>
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="rounded text-blue-600 mr-2">
+                                <span class="text-sm">Executive Summary</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="rounded text-blue-600 mr-2">
+                                <span class="text-sm">Project Overview</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="rounded text-blue-600 mr-2">
+                                <span class="text-sm">Progress Metrics</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="rounded text-blue-600 mr-2">
+                                <span class="text-sm">Financial Analysis</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded text-blue-600 mr-2">
+                                <span class="text-sm">Resource Utilization</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded text-blue-600 mr-2">
+                                <span class="text-sm">Risk Assessment</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded text-blue-600 mr-2">
+                                <span class="text-sm">Milestones</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded text-blue-600 mr-2">
+                                <span class="text-sm">Appendices</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="rounded text-blue-600 mr-2">
+                                <span class="text-sm">Charts & Graphs</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Distribution</label>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Email Recipients</label>
+                                <input type="email" placeholder="Enter email addresses" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Schedule (Optional)</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">One-time</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-cogs mr-2"></i>Generate Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Schedule Tab -->
+        <div id="report-schedule" class="report-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">Scheduled Reports</h3>
+                    <button onclick="createSchedule()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                        <i class="fas fa-plus mr-2"></i>New Schedule
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b bg-gray-50">
+                                <th class="text-left py-3 px-4">Report Name</th>
+                                <th class="text-left py-3 px-4">Type</th>
+                                <th class="text-left py-3 px-4">Schedule</th>
+                                <th class="text-left py-3 px-4">Recipients</th>
+                                <th class="text-left py-3 px-4">Last Run</th>
+                                <th class="text-left py-3 px-4">Next Run</th>
+                                <th class="text-left py-3 px-4">Status</th>
+                                <th class="text-left py-3 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-3 px-4 font-medium">Daily Status Report</td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Progress</span>
+                                </td>
+                                <td class="py-3 px-4">Daily at 8:00 AM</td>
+                                <td class="py-3 px-4">12 recipients</td>
+                                <td class="py-3 px-4">Today, 8:00 AM</td>
+                                <td class="py-3 px-4">Tomorrow, 8:00 AM</td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Active</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <button onclick="editSchedule(1)" class="text-blue-600 hover:text-blue-800 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="pauseSchedule(1)" class="text-yellow-600 hover:text-yellow-800 mr-2">
+                                        <i class="fas fa-pause"></i>
+                                    </button>
+                                    <button onclick="deleteSchedule(1)" class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="report-history" class="report-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Report Generation History</h3>
+                <canvas id="reportTrendChart" width="800" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="report-analytics" class="report-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Report Analytics</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <canvas id="reportTypeChart" width="400" height="300"></canvas>
+                    <canvas id="reportUsageChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Generation Modal -->
+    <div id="generatingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div class="text-center">
+                <div class="mb-4">
+                    <i class="fas fa-cogs fa-spin text-4xl text-blue-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Generating Report...</h3>
+                <p class="text-gray-600 mb-4">Please wait while we create your report with real data</p>
+                <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+                    <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <p id="progressText" class="text-sm text-gray-600">Initializing...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Preview Modal -->
+    <div id="reportPreviewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] overflow-hidden">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">Report Preview</h3>
+                <div class="flex space-x-2">
+                    <button onclick="printReport()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+                        <i class="fas fa-print mr-2"></i>Print
+                    </button>
+                    <button onclick="downloadGeneratedReport()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                        <i class="fas fa-download mr-2"></i>Download
+                    </button>
+                    <button onclick="closeReportPreview()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <div id="reportContent" class="report-preview">
+                    <!-- Report content will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Report data
+        const reportData = {
+            projects: [
+                { name: 'Cloud Migration', status: 'Active', progress: 78, budget: 1200000, spent: 936000 },
+                { name: 'Mobile App Development', status: 'Active', progress: 92, budget: 1500000, spent: 1380000 },
+                { name: 'CRM Implementation', status: 'At Risk', progress: 45, budget: 850000, spent: 382500 }
+            ],
+            resources: {
+                total: 62,
+                allocated: 48,
+                utilization: 78
+            },
+            risks: {
+                total: 24,
+                critical: 8,
+                high: 12,
+                medium: 4
+            }
+        };
+
+        // Tab switching
+        function switchReportTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.report-tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Reset all buttons
+            document.querySelectorAll('.report-tab-button').forEach(button => {
+                button.className = 'report-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100';
+            });
+            
+            // Show selected tab
+            document.getElementById('report-' + tabName).classList.remove('hidden');
+            
+            // Highlight selected button
+            event.target.className = 'report-tab-button px-6 py-3 text-sm font-medium rounded-t-lg bg-blue-600 text-white';
+
+            // Initialize specific tab content
+            if (tabName === 'history') {
+                initializeHistoryChart();
+            } else if (tabName === 'analytics') {
+                initializeAnalyticsCharts();
+            }
+        }
+
+        // Generate report function
+        function generateReport(type) {
+            showGeneratingModal();
+            
+            // Simulate report generation progress
+            let progress = 0;
+            const progressSteps = [
+                { progress: 20, text: 'Collecting data from projects...' },
+                { progress: 40, text: 'Analyzing financial metrics...' },
+                { progress: 60, text: 'Generating charts and graphs...' },
+                { progress: 80, text: 'Formatting report layout...' },
+                { progress: 100, text: 'Finalizing report...' }
+            ];
+            
+            let currentStep = 0;
+            const interval = setInterval(() => {
+                if (currentStep < progressSteps.length) {
+                    const step = progressSteps[currentStep];
+                    document.getElementById('progressBar').style.width = step.progress + '%';
+                    document.getElementById('progressText').textContent = step.text;
+                    currentStep++;
+                } else {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        hideGeneratingModal();
+                        showReportPreview(type);
+                    }, 500);
+                }
+            }, 800);
+        }
+
+        // Show/hide modals
+        function showGeneratingModal() {
+            document.getElementById('generatingModal').classList.remove('hidden');
+        }
+
+        function hideGeneratingModal() {
+            document.getElementById('generatingModal').classList.add('hidden');
+            // Reset progress
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressText').textContent = 'Initializing...';
+        }
+
+        function showReportPreview(type) {
+            const content = generateReportContent(type);
+            document.getElementById('reportContent').innerHTML = content;
+            document.getElementById('reportPreviewModal').classList.remove('hidden');
+        }
+
+        function closeReportPreview() {
+            document.getElementById('reportPreviewModal').classList.add('hidden');
+        }
+
+        // Generate report content
+        function generateReportContent(type) {
+            const currentDate = new Date().toLocaleDateString();
+            
+            let content = `
+                <div class="no-print">
+                    <div class="text-center mb-8">
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">${getReportTitle(type)}</h1>
+                        <p class="text-gray-600">Generated on ${currentDate}</p>
+                    </div>
+                </div>
+            `;
+
+            switch(type) {
+                case 'executive':
+                    content += generateExecutiveSummary();
+                    break;
+                case 'progress':
+                    content += generateProgressReport();
+                    break;
+                case 'financial':
+                    content += generateFinancialReport();
+                    break;
+                case 'resource':
+                    content += generateResourceReport();
+                    break;
+                default:
+                    content += generateExecutiveSummary();
+            }
+
+            return content;
+        }
+
+        function getReportTitle(type) {
+            const titles = {
+                'executive': 'Executive Summary Report',
+                'progress': 'Project Progress Report',
+                'financial': 'Financial Analysis Report',
+                'resource': 'Resource Utilization Report'
+            };
+            return titles[type] || 'Custom Report';
+        }
+
+        function generateExecutiveSummary() {
+            return `
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800 mb-3">Executive Summary</h2>
+                        <p class="text-gray-700 leading-relaxed">
+                            This report provides a comprehensive overview of the current project portfolio status, 
+                            highlighting key achievements, challenges, and strategic recommendations for the period 
+                            under review. The portfolio demonstrates strong overall performance with 78% average 
+                            project completion rate and effective resource utilization.
+                        </p>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-gray-800 mb-3">Key Metrics</h3>
+                            <ul class="space-y-2">
+                                <li class="flex justify-between">
+                                    <span>Total Projects:</span>
+                                    <span class="font-medium">3 Active Projects</span>
+                                </li>
+                                <li class="flex justify-between">
+                                    <span>Overall Progress:</span>
+                                    <span class="font-medium">78%</span>
+                                </li>
+                                <li class="flex justify-between">
+                                    <span>Budget Utilization:</span>
+                                    <span class="font-medium">78%</span>
+                                </li>
+                                <li class="flex justify-between">
+                                    <span>Resources Allocated:</span>
+                                    <span class="font-medium">48 of 62</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-gray-800 mb-3">Risk Overview</h3>
+                            <ul class="space-y-2">
+                                <li class="flex justify-between">
+                                    <span>Total Risks:</span>
+                                    <span class="font-medium">24</span>
+                                </li>
+                                <li class="flex justify-between">
+                                    <span>Critical Risks:</span>
+                                    <span class="font-medium text-red-600">8</span>
+                                </li>
+                                <li class="flex justify-between">
+                                    <span>High Risks:</span>
+                                    <span class="font-medium text-orange-600">12</span>
+                                </li>
+                                <li class="flex justify-between">
+                                    <span>Active Mitigations:</span>
+                                    <span class="font-medium text-green-600">18</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-3">Strategic Recommendations</h3>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                            <li>Increase focus on Cloud Migration project to address timeline risks</li>
+                            <li>Optimize resource allocation to improve utilization rate from 78% to 85%</li>
+                            <li>Implement additional risk mitigation strategies for critical risks</li>
+                            <li>Enhance monitoring and reporting mechanisms for better visibility</li>
+                        </ol>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateProgressReport() {
+            return `
+                <div class="space-y-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Project Progress Overview</h2>
+                    
+                    ${reportData.projects.map(project => `
+                        <div class="border rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">${project.name}</h3>
+                                    <p class="text-sm text-gray-600">Status: ${project.status}</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold ${project.progress > 75 ? 'text-green-600' : project.progress > 50 ? 'text-yellow-600' : 'text-red-600'}">${project.progress}%</div>
+                                    <p class="text-sm text-gray-600">Complete</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="w-full bg-gray-200 rounded-full h-3">
+                                    <div class="bg-blue-500 h-3 rounded-full" style="width: ${project.progress}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid md:grid-cols-2 gap-4 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Budget:</span>
+                                    <span class="font-medium">$${project.budget.toLocaleString()}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Spent:</span>
+                                    <span class="font-medium">$${project.spent.toLocaleString()}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Budget Used:</span>
+                                    <span class="font-medium">${Math.round((project.spent/project.budget)*100)}%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Remaining:</span>
+                                    <span class="font-medium">$${(project.budget - project.spent).toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function generateFinancialReport() {
+            return `
+                <div class="space-y-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Financial Analysis</h2>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-gray-800 mb-3">Budget Overview</h3>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span>Total Budget:</span>
+                                    <span class="font-medium">$3,550,000</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Total Spent:</span>
+                                    <span class="font-medium">$2,698,500</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Remaining Budget:</span>
+                                    <span class="font-medium text-green-600">$851,500</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Budget Utilization:</span>
+                                    <span class="font-medium">76%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-gray-800 mb-3">Variance Analysis</h3>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span>Planned vs Actual:</span>
+                                    <span class="font-medium text-green-600">+2% Under Budget</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Cost Performance Index:</span>
+                                    <span class="font-medium">1.02</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Schedule Performance Index:</span>
+                                    <span class="font-medium">0.95</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Estimate at Completion:</span>
+                                    <span class="font-medium">$3,480,000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateResourceReport() {
+            return `
+                <div class="space-y-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Resource Utilization Report</h2>
+                    
+                    <div class="grid md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-blue-50 p-4 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-blue-600">${reportData.resources.total}</div>
+                            <p class="text-gray-600">Total Resources</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-green-600">${reportData.resources.allocated}</div>
+                            <p class="text-gray-600">Allocated</p>
+                        </div>
+                        <div class="bg-orange-50 p-4 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-orange-600">${reportData.resources.utilization}%</div>
+                            <p class="text-gray-600">Utilization Rate</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-800 mb-3">Resource Allocation by Department</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span>Engineering:</span>
+                                <span class="font-medium">25 resources (85% utilization)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Design:</span>
+                                <span class="font-medium">8 resources (75% utilization)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>QA:</span>
+                                <span class="font-medium">10 resources (80% utilization)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>DevOps:</span>
+                                <span class="font-medium">5 resources (95% utilization)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize charts
+        function initializeHistoryChart() {
+            const ctx = document.getElementById('reportTrendChart');
+            if (!ctx || window.historyChartInstance) return;
+
+            window.historyChartInstance = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Reports Generated',
+                        data: [45, 52, 48, 58, 47, 35, 12],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function initializeAnalyticsCharts() {
+            // Report Type Chart
+            const typeCtx = document.getElementById('reportTypeChart');
+            if (typeCtx && !window.typeChartInstance) {
+                window.typeChartInstance = new Chart(typeCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Executive', 'Progress', 'Financial', 'Resource', 'Risk'],
+                        datasets: [{
+                            data: [30, 25, 20, 15, 10],
+                            backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Reports by Type'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Report Usage Chart
+            const usageCtx = document.getElementById('reportUsageChart');
+            if (usageCtx && !window.usageChartInstance) {
+                window.usageChartInstance = new Chart(usageCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Executive Team', 'Project Managers', 'Stakeholders', 'Team Members'],
+                        datasets: [{
+                            label: 'Reports Consumed',
+                            data: [120, 180, 95, 140],
+                            backgroundColor: '#3B82F6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Report Usage by Role'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Report action functions
+        function viewReport(reportId) {
+            generateReport(reportId);
+        }
+
+        function downloadReport(reportId) {
+            generateReport(reportId);
+            setTimeout(() => {
+                downloadGeneratedReport();
+            }, 2000);
+        }
+
+        function downloadGeneratedReport() {
+            // Simulate download
+            alert('Report downloaded successfully!');
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        function createCustomReport() {
+            switchReportTab('generate');
+        }
+
+        function viewScheduleManager() {
+            switchReportTab('schedule');
+        }
+
+        function selectTemplate(templateId) {
+            generateReport(templateId);
+        }
+
+        function createNewTemplate() {
+            alert('Template creation functionality coming next...');
+        }
+
+        function generateCustomReport(event) {
+            event.preventDefault();
+            generateReport('custom');
+        }
+
+        function createSchedule() {
+            alert('Schedule creation functionality coming next...');
+        }
+
+        function editSchedule(scheduleId) {
+            alert('Edit schedule functionality coming next...');
+        }
+
+        function pauseSchedule(scheduleId) {
+            alert('Pause schedule functionality coming next...');
+        }
+
+        function deleteSchedule(scheduleId) {
+            if (confirm('Are you sure you want to delete this schedule?')) {
+                alert('Schedule deleted successfully!');
+            }
+        }
+
+        // Navigation
+        function goBack() {
+            window.location.href = 'project-detail-full.html';
+        }
+
+        // Initialize dashboard on load
+        window.addEventListener('load', function() {
+            // Dashboard is shown by default
+        });
+    </script>
+</body>
+</html>

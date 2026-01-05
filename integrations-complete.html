@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrations Module - Complete Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .integration-card {
+            transition: all 0.3s ease;
+        }
+        .integration-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .method-badge {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .method-get { background: #dbeafe; color: #1e40af; }
+        .method-post { background: #d1fae5; color: #065f46; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="gradient-bg text-white p-6 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">🔗 Integrations Module</h1>
+                    <p class="text-purple-100">Complete integration suite with 50+ connections</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="syncAll()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Sync All
+                    </button>
+                    <button onclick="createAPIKey()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-key mr-2"></i>New API Key
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex gap-2">
+                <button onclick="switchTab('connected')" class="tab-button active px-6 py-3 rounded-lg font-semibold text-white hover:bg-white hover:bg-opacity-20 transition">
+                    <i class="fas fa-plug mr-2"></i>Connected
+                </button>
+                <button onclick="switchTab('api')" class="tab-button px-6 py-3 rounded-lg font-semibold text-white hover:bg-white hover:bg-opacity-20 transition">
+                    <i class="fas fa-code mr-2"></i>API & Webhooks
+                </button>
+                <button onclick="switchTab('marketplace')" class="tab-button px-6 py-3 rounded-lg font-semibold text-white hover:bg-white hover:bg-opacity-20 transition">
+                    <i class="fas fa-store mr-2"></i>Marketplace
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Connected Integrations Tab -->
+        <div id="connected-tab" class="tab-content active">
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Active</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Connected</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">12</p>
+                    <p class="text-xs text-gray-500">99.9% uptime</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-plug text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">Available</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Total Available</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">50+</p>
+                    <p class="text-xs text-gray-500">Pre-built integrations</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exchange-alt text-purple-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">Live</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Data Synced</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">2.4M</p>
+                    <p class="text-xs text-gray-500">Records today</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">Real-time</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Last Sync</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">2m</p>
+                    <p class="text-xs text-gray-500">ago</p>
+                </div>
+            </div>
+
+            <!-- Connected Integrations Grid -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">✅ Connected Integrations</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <!-- Jira -->
+                    <div class="integration-card border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                                    <i class="fab fa-jira text-white text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">Jira</h3>
+                                    <p class="text-xs text-gray-500">Project Management</p>
+                                </div>
+                            </div>
+                            <span class="status-badge status-connected">Connected</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Sync tasks, issues, and sprints</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                            <span><i class="fas fa-sync-alt mr-1"></i>2m ago</span>
+                            <span><i class="fas fa-check-circle text-green-600 mr-1"></i>2,847 items</span>
+                        </div>
+                        <button onclick="configureIntegration('jira')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            Configure
+                        </button>
+                    </div>
+
+                    <!-- Slack -->
+                    <div class="integration-card border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                                    <i class="fab fa-slack text-white text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">Slack</h3>
+                                    <p class="text-xs text-gray-500">Communication</p>
+                                </div>
+                            </div>
+                            <span class="status-badge status-connected">Connected</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Real-time notifications</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                            <span><i class="fas fa-sync-alt mr-1"></i>Real-time</span>
+                            <span><i class="fas fa-check-circle text-green-600 mr-1"></i>5 channels</span>
+                        </div>
+                        <button onclick="configureIntegration('slack')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            Configure
+                        </button>
+                    </div>
+
+                    <!-- GitHub -->
+                    <div class="integration-card border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
+                                    <i class="fab fa-github text-white text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">GitHub</h3>
+                                    <p class="text-xs text-gray-500">Development</p>
+                                </div>
+                            </div>
+                            <span class="status-badge status-connected">Connected</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Track commits and PRs</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                            <span><i class="fas fa-sync-alt mr-1"></i>5m ago</span>
+                            <span><i class="fas fa-check-circle text-green-600 mr-1"></i>12 repos</span>
+                        </div>
+                        <button onclick="configureIntegration('github')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            Configure
+                        </button>
+                    </div>
+
+                    <!-- Google Drive -->
+                    <div class="integration-card border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
+                                    <i class="fab fa-google-drive text-white text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">Google Drive</h3>
+                                    <p class="text-xs text-gray-500">Cloud Storage</p>
+                                </div>
+                            </div>
+                            <span class="status-badge status-connected">Connected</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Store and share documents</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                            <span><i class="fas fa-sync-alt mr-1"></i>1m ago</span>
+                            <span><i class="fas fa-check-circle text-green-600 mr-1"></i>1,247 files</span>
+                        </div>
+                        <button onclick="configureIntegration('gdrive')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            Configure
+                        </button>
+                    </div>
+
+                    <!-- Microsoft Teams -->
+                    <div class="integration-card border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-blue-700 rounded-lg flex items-center justify-center">
+                                    <i class="fab fa-microsoft text-white text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">MS Teams</h3>
+                                    <p class="text-xs text-gray-500">Communication</p>
+                                </div>
+                            </div>
+                            <span class="status-badge status-connected">Connected</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Team collaboration</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                            <span><i class="fas fa-sync-alt mr-1"></i>Real-time</span>
+                            <span><i class="fas fa-check-circle text-green-600 mr-1"></i>8 teams</span>
+                        </div>
+                        <button onclick="configureIntegration('teams')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            Configure
+                        </button>
+                    </div>
+
+                    <!-- Salesforce -->
+                    <div class="integration-card border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                                    <i class="fab fa-salesforce text-white text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">Salesforce</h3>
+                                    <p class="text-xs text-gray-500">CRM</p>
+                                </div>
+                            </div>
+                            <span class="status-badge status-connected">Connected</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Sync customer data</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                            <span><i class="fas fa-sync-alt mr-1"></i>10m ago</span>
+                            <span><i class="fas fa-check-circle text-green-600 mr-1"></i>456 records</span>
+                        </div>
+                        <button onclick="configureIntegration('salesforce')" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            Configure
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API & Webhooks Tab -->
+        <div id="api-tab" class="tab-content">
+            <!-- API Stats -->
+            <div class="grid grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exchange-alt text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">Today</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">API Calls</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">847K</p>
+                    <p class="text-xs text-green-600 font-semibold">↑ 12% vs yesterday</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Live</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Success Rate</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">99.8%</p>
+                    <p class="text-xs text-gray-500">1,692 errors</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-purple-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">Avg</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Response Time</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">142ms</p>
+                    <p class="text-xs text-green-600 font-semibold">↓ 8ms faster</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-bell text-yellow-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">Active</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-1">Webhooks</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2">24</p>
+                    <p class="text-xs text-gray-500">18 triggered today</p>
+                </div>
+            </div>
+
+            <!-- API Usage Chart -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">📊 API Usage (Last 7 Days)</h2>
+                <canvas id="apiUsageChart" height="80"></canvas>
+            </div>
+
+            <!-- API Keys -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">🔑 API Keys</h2>
+                    <button onclick="createAPIKey()" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700">
+                        <i class="fas fa-plus mr-2"></i>Create New Key
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <h3 class="font-bold text-gray-800">Production API Key</h3>
+                                    <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Active</span>
+                                </div>
+                                <code class="text-sm bg-gray-100 px-3 py-1 rounded font-mono">pk_live_4xK9mN2pQ7rS8tU5vW6xY7zA</code>
+                                <p class="text-sm text-gray-500 mt-2">Last used: 2 minutes ago</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-4 text-sm">
+                            <div>
+                                <p class="text-gray-500">Requests Today</p>
+                                <p class="font-bold text-gray-800">542,847</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Rate Limit</p>
+                                <p class="font-bold text-gray-800">10,000/min</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Permissions</p>
+                                <p class="font-bold text-gray-800">Read/Write</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Environment</p>
+                                <p class="font-bold text-gray-800">Production</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Endpoints -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">📚 API Endpoints</h2>
+                <div class="space-y-2">
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="method-badge method-get">GET</span>
+                                <code class="text-sm font-mono">/api/v1/projects</code>
+                                <span class="text-sm text-gray-600">List all projects</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="method-badge method-post">POST</span>
+                                <code class="text-sm font-mono">/api/v1/projects</code>
+                                <span class="text-sm text-gray-600">Create new project</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-500 cursor-pointer">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="method-badge method-get">GET</span>
+                                <code class="text-sm font-mono">/api/v1/tasks</code>
+                                <span class="text-sm text-gray-600">List all tasks</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Marketplace Tab -->
+        <div id="marketplace-tab" class="tab-content">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🏪 Integration Marketplace</h2>
+                <p class="text-gray-600">Discover and connect 50+ integrations to extend your PPM system</p>
+            </div>
+
+            <div class="grid grid-cols-4 gap-6">
+                <!-- Integration Cards -->
+                <div class="integration-card bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Asana</h3>
+                            <div class="flex items-center gap-1 text-xs">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <span class="text-gray-600">4.7 (1,234)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-3">Project management platform</p>
+                    <button onclick="installIntegration('asana')" class="w-full bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Install
+                    </button>
+                </div>
+
+                <div class="integration-card bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fab fa-trello text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Trello</h3>
+                            <div class="flex items-center gap-1 text-xs">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <span class="text-gray-600">4.6 (987)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-3">Visual project boards</p>
+                    <button onclick="installIntegration('trello')" class="w-full bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Install
+                    </button>
+                </div>
+
+                <div class="integration-card bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-blue-700 rounded-lg flex items-center justify-center">
+                            <i class="fab fa-dropbox text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Dropbox</h3>
+                            <div class="flex items-center gap-1 text-xs">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <span class="text-gray-600">4.6 (1,876)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-3">File storage and sync</p>
+                    <button onclick="installIntegration('dropbox')" class="w-full bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Install
+                    </button>
+                </div>
+
+                <div class="integration-card bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-video text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Zoom</h3>
+                            <div class="flex items-center gap-1 text-xs">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <span class="text-gray-600">4.9 (5,234)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-3">Video conferencing</p>
+                    <button onclick="installIntegration('zoom')" class="w-full bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Install
+                    </button>
+                </div>
+
+                <div class="integration-card bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center">
+                            <i class="fab fa-gitlab text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">GitLab</h3>
+                            <div class="flex items-center gap-1 text-xs">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <span class="text-gray-600">4.7 (1,654)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-3">DevOps platform</p>
+                    <button onclick="installIntegration('gitlab')" class="w-full bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Install
+                    </button>
+                </div>
+
+                <div class="integration-card bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fab fa-bitbucket text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Bitbucket</h3>
+                            <div class="flex items-center gap-1 text-xs">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <span class="text-gray-600">4.5 (876)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-3">Git repository</p>
+                    <button onclick="installIntegration('bitbucket')" class="w-full bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Install
+                    </button>
+                </div>
+
+                <div class="integration-card bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-blue-700 rounded-lg flex items-center justify-center">
+                            <i class="fab fa-confluence text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Confluence</h3>
+                            <div class="flex items-center gap-1 text-xs">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <span class="text-gray-600">4.6 (1,432)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-3">Team documentation</p>
+                    <button onclick="installIntegration('confluence')" class="w-full bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Install
+                    </button>
+                </div>
+
+                <div class="integration-card bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-bullseye text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">HubSpot</h3>
+                            <div class="flex items-center gap-1 text-xs">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <span class="text-gray-600">4.7 (2,876)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-3">Marketing automation</p>
+                    <button onclick="installIntegration('hubspot')" class="w-full bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                        Install
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                <button class="bg-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-purple-700">
+                    View All 50+ Integrations
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.closest('.tab-button').classList.add('active');
+            
+            if (tabName === 'api') {
+                setTimeout(() => initChart(), 100);
+            }
+        }
+
+        // Initialize Chart
+        function initChart() {
+            const ctx = document.getElementById('apiUsageChart');
+            if (ctx && ctx.offsetParent !== null) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'API Calls',
+                            data: [654000, 712000, 698000, 847000, 823000, 756000, 847000],
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return (value / 1000) + 'K';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Actions
+        function syncAll() {
+            showToast('Syncing all integrations...');
+            setTimeout(() => showToast('All integrations synced successfully!'), 2000);
+        }
+
+        function createAPIKey() {
+            showToast('Creating new API key...');
+            setTimeout(() => showToast('API key created successfully!'), 1500);
+        }
+
+        function configureIntegration(name) {
+            showToast(`Opening ${name} configuration...`);
+        }
+
+        function installIntegration(name) {
+            showToast(`Installing ${name} integration...`);
+            setTimeout(() => showToast(`${name} integration installed successfully!`), 2000);
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

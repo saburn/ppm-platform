@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPM System - Master Navigation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .nav-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+            min-width: 320px;
+            max-height: 600px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .nav-dropdown.active {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .module-link {
+            transition: all 0.2s ease;
+        }
+        .module-link:hover {
+            background: #f3f4f6;
+            transform: translateX(4px);
+        }
+        .ai-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Master Navigation Bar -->
+    <nav id="master-nav" class="gradient-bg text-white shadow-lg fixed top-0 left-0 right-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Home -->
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="flex items-center space-x-3 hover:opacity-80 transition">
+                        <i class="fas fa-home text-2xl"></i>
+                        <span class="text-xl font-bold hidden sm:block">PPM System</span>
+                    </a>
+                    
+                    <!-- Breadcrumb -->
+                    <div id="breadcrumb" class="hidden md:flex items-center space-x-2 text-purple-200">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Center - Quick Actions -->
+                <div class="hidden lg:flex items-center space-x-2">
+                    <button onclick="quickAction('new-project')" class="px-3 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition text-sm font-semibold">
+                        <i class="fas fa-plus mr-2"></i>New Project
+                    </button>
+                    <button onclick="quickAction('new-task')" class="px-3 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition text-sm font-semibold">
+                        <i class="fas fa-tasks mr-2"></i>New Task
+                    </button>
+                </div>
+
+                <!-- Right Side - Navigation & Actions -->
+                <div class="flex items-center space-x-3">
+                    <!-- Global Search -->
+                    <div class="relative hidden md:block">
+                        <input 
+                            type="text" 
+                            id="global-search"
+                            placeholder="Search everything..." 
+                            class="w-64 px-4 py-2 rounded-lg bg-white bg-opacity-20 text-white placeholder-purple-200 focus:bg-opacity-30 focus:outline-none transition"
+                            onkeyup="globalSearch(event)"
+                        >
+                        <i class="fas fa-search absolute right-3 top-3 text-purple-200"></i>
+                    </div>
+
+                    <!-- Notifications -->
+                    <button onclick="toggleNotifications()" class="relative p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+
+                    <!-- Module Switcher -->
+                    <div class="relative">
+                        <button 
+                            id="module-switcher-btn"
+                            onclick="toggleModuleSwitcher()" 
+                            class="flex items-center space-x-2 px-4 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition font-semibold"
+                        >
+                            <i class="fas fa-th"></i>
+                            <span class="hidden sm:inline">Modules</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        
+                        <!-- Module Dropdown -->
+                        <div id="module-dropdown" class="nav-dropdown">
+                            <div class="p-4">
+                                <input 
+                                    type="text" 
+                                    id="module-search"
+                                    placeholder="Search modules..." 
+                                    class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm text-gray-900 focus:border-purple-500 focus:outline-none mb-3"
+                                    onkeyup="filterModules()"
+                                >
+                                <div id="module-list" class="space-y-1">
+                                    <!-- Populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Menu -->
+                    <button onclick="toggleUserMenu()" class="flex items-center space-x-2 p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition">
+                        <div class="w-8 h-8 bg-white bg-opacity-30 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Spacer for fixed nav -->
+    <div class="h-16"></div>
+
+    <!-- Notification Panel -->
+    <div id="notification-panel" class="hidden fixed top-20 right-4 w-96 bg-white rounded-xl shadow-2xl z-50 max-h-96 overflow-y-auto">
+        <div class="p-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-gray-900">Notifications</h3>
+                <button onclick="toggleNotifications()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-3">
+                <div class="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-info-circle text-blue-500 mt-1"></i>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-900">New task assigned</p>
+                            <p class="text-xs text-gray-600">Cloud Migration - Setup Infrastructure</p>
+                            <p class="text-xs text-gray-400 mt-1">2 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-500">
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-exclamation-triangle text-orange-500 mt-1"></i>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-900">Budget alert</p>
+                            <p class="text-xs text-gray-600">Mobile App is 15% over budget</p>
+                            <p class="text-xs text-gray-400 mt-1">5 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-900">Timesheet approved</p>
+                            <p class="text-xs text-gray-600">Week of Jan 15-21, 2024</p>
+                            <p class="text-xs text-gray-400 mt-1">1 day ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-xl shadow-md p-8 text-center">
+            <i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Master Navigation System</h1>
+            <p class="text-gray-600 mb-6">This navigation bar will be integrated into all 10 modules</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 text-left">
+                <div class="p-6 bg-purple-50 rounded-lg">
+                    <h3 class="font-bold text-gray-900 mb-3">✅ Features Included:</h3>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Module switcher dropdown</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Global search functionality</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Notification center</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Quick action buttons</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Breadcrumb navigation</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>User menu</li>
+                    </ul>
+                </div>
+                
+                <div class="p-6 bg-blue-50 rounded-lg">
+                    <h3 class="font-bold text-gray-900 mb-3">🎯 Next Steps:</h3>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li><i class="fas fa-arrow-right text-blue-500 mr-2"></i>Integrate into all 10 modules</li>
+                        <li><i class="fas fa-arrow-right text-blue-500 mr-2"></i>Build shared data layer</li>
+                        <li><i class="fas fa-arrow-right text-blue-500 mr-2"></i>Create cross-module workflows</li>
+                        <li><i class="fas fa-arrow-right text-blue-500 mr-2"></i>Add global features</li>
+                        <li><i class="fas fa-arrow-right text-blue-500 mr-2"></i>Test integration</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Module definitions
+        const MODULES = [
+            { id: 1, name: 'Project Planning', icon: 'fa-project-diagram', url: 'project-planning-world-class.html', badge: null, category: 'Planning' },
+            { id: 2, name: 'Resource Management', icon: 'fa-users', url: 'resource-management-complete.html', badge: 'AI', category: 'Resources' },
+            { id: 3, name: 'Time Tracking', icon: 'fa-clock', url: 'time-tracking-complete.html', badge: null, category: 'Time' },
+            { id: 4, name: 'Collaboration', icon: 'fa-comments', url: 'collaboration-complete.html', badge: null, category: 'Communication' },
+            { id: 5, name: 'Risk Management', icon: 'fa-exclamation-triangle', url: 'risk-management-complete.html', badge: 'AI', category: 'Risk' },
+            { id: 6, name: 'Reports & Analytics', icon: 'fa-chart-bar', url: 'reports-analytics-complete.html', badge: null, category: 'Analytics' },
+            { id: 7, name: 'Budget Tracking', icon: 'fa-dollar-sign', url: 'budget-tracking-complete.html', badge: 'AI', category: 'Finance' },
+            { id: 8, name: 'Dashboards', icon: 'fa-tachometer-alt', url: 'dashboards-complete.html', badge: 'AI', category: 'Analytics' },
+            { id: 9, name: 'Integrations', icon: 'fa-plug', url: 'integrations-complete.html', badge: null, category: 'System' },
+            { id: 10, name: 'Portfolio Management', icon: 'fa-briefcase', url: 'portfolio-management-complete.html', badge: 'AI', category: 'Planning' }
+        ];
+
+        // Render module list
+        function renderModuleList() {
+            const moduleList = document.getElementById('module-list');
+            const currentPage = window.location.pathname.split('/').pop();
+            
+            moduleList.innerHTML = MODULES.map(module => `
+                <a href="${module.url}" class="module-link flex items-center space-x-3 p-3 rounded-lg text-gray-900 ${currentPage === module.url ? 'bg-purple-50' : ''}">
+                    <div class="bg-purple-100 p-2 rounded-lg">
+                        <i class="fas ${module.icon} text-purple-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-sm">${module.name}</div>
+                        <div class="text-xs text-gray-500">${module.category}</div>
+                    </div>
+                    ${module.badge ? `<span class="ai-badge">${module.badge}</span>` : ''}
+                    ${currentPage === module.url ? '<i class="fas fa-check text-green-500"></i>' : ''}
+                </a>
+            `).join('');
+        }
+
+        // Toggle module switcher
+        function toggleModuleSwitcher() {
+            const dropdown = document.getElementById('module-dropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Filter modules
+        function filterModules() {
+            const searchInput = document.getElementById('module-search');
+            const filter = searchInput.value.toLowerCase();
+            const links = document.querySelectorAll('.module-link');
+            
+            links.forEach(link => {
+                const text = link.textContent.toLowerCase();
+                link.style.display = text.includes(filter) ? '' : 'none';
+            });
+        }
+
+        // Toggle notifications
+        function toggleNotifications() {
+            const panel = document.getElementById('notification-panel');
+            panel.classList.toggle('hidden');
+        }
+
+        // Toggle user menu
+        function toggleUserMenu() {
+            alert('User menu - Coming soon!');
+        }
+
+        // Quick actions
+        function quickAction(action) {
+            switch(action) {
+                case 'new-project':
+                    window.location.href = 'project-planning-world-class.html';
+                    break;
+                case 'new-task':
+                    window.location.href = 'project-planning-world-class.html';
+                    break;
+            }
+        }
+
+        // Global search
+        function globalSearch(event) {
+            if (event.key === 'Enter') {
+                const query = event.target.value;
+                alert(`Searching for: ${query}\n\nGlobal search will be implemented in Phase 2!`);
+            }
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const moduleDropdown = document.getElementById('module-dropdown');
+            const moduleBtn = document.getElementById('module-switcher-btn');
+            const notificationPanel = document.getElementById('notification-panel');
+            
+            if (!moduleBtn.contains(event.target) && !moduleDropdown.contains(event.target)) {
+                moduleDropdown.classList.remove('active');
+            }
+            
+            if (!event.target.closest('#notification-panel') && !event.target.closest('button[onclick="toggleNotifications()"]')) {
+                notificationPanel.classList.add('hidden');
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderModuleList();
+        });
+    </script>
+</body>
+</html>

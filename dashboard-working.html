@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI PPM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; }
+        .gradient-text { background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar { background: #1e293b; height: 100vh; position: fixed; width: 250px; left: 0; top: 0; }
+        .main-content { margin-left: 250px; padding: 20px; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .stat-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; }
+        .btn-primary:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4); }
+        .nav-item { padding: 12px 20px; color: #94a3b8; transition: all 0.3s ease; cursor: pointer; border-radius: 8px; margin: 4px 12px; }
+        .nav-item:hover { background: #334155; color: white; }
+        .nav-item.active { background: #3b82f6; color: white; }
+        .project-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.3s ease; }
+        .project-card:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15); }
+        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.3s ease; }
+        .chart-container { position: relative; height: 300px; }
+        .notification { position: fixed; top: 20px; right: 20px; background: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1000; display: none; }
+        .notification.success { border-left: 4px solid #10b981; }
+        .notification.error { border-left: 4px solid #ef4444; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-white">AI PPM Pro</h1>
+        </div>
+        <nav class="px-4">
+            <div class="nav-item active" onclick="navigateTo('dashboard')">
+                <i class="fas fa-dashboard mr-3"></i>Dashboard
+            </div>
+            <div class="nav-item" onclick="navigateTo('projects')">
+                <i class="fas fa-project-diagram mr-3"></i>Projects
+            </div>
+            <div class="nav-item" onclick="navigateTo('gantt')">
+                <i class="fas fa-chart-gantt mr-3"></i>Gantt Charts
+            </div>
+            <div class="nav-item" onclick="navigateTo('resources')">
+                <i class="fas fa-users-cog mr-3"></i>Resources
+            </div>
+            <div class="nav-item" onclick="navigateTo('risks')">
+                <i class="fas fa-shield-alt mr-3"></i>Risk Management
+            </div>
+            <div class="nav-item" onclick="navigateTo('reports')">
+                <i class="fas fa-file-chart-line mr-3"></i>Reports
+            </div>
+            <div class="nav-item" onclick="navigateTo('ai')">
+                <i class="fas fa-brain mr-3"></i>AI Analysis
+            </div>
+        </nav>
+        <div class="absolute bottom-6 left-6 right-6">
+            <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors">
+                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+            <p class="text-gray-600">Welcome back! Here's your project portfolio overview.</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-gray-600 text-sm">Active Projects</p>
+                        <p class="text-3xl font-bold text-gray-900" id="activeProjects">0</p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="text-sm text-green-600">
+                    <i class="fas fa-arrow-up mr-1"></i>+12% from last month
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-gray-600 text-sm">Total Budget</p>
+                        <p class="text-3xl font-bold text-gray-900" id="totalBudget">$0</p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-600">
+                    <span id="budgetUtilization">0%</span> utilized
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-gray-600 text-sm">Team Members</p>
+                        <p class="text-3xl font-bold text-gray-900" id="teamMembers">0</p>
+                    </div>
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <i class="fas fa-users text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="text-sm text-yellow-600">
+                    <span id="availableMembers">0</span> available now
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-gray-600 text-sm">Avg Progress</p>
+                        <p class="text-3xl font-bold text-gray-900" id="avgProgress">0%</p>
+                    </div>
+                    <div class="bg-yellow-100 p-3 rounded-lg">
+                        <i class="fas fa-chart-line text-yellow-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="text-sm text-blue-600">
+                    On track for delivery
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="card">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Project Status Overview</h3>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Budget vs Spend</h3>
+                <div class="chart-container">
+                    <canvas id="budgetChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Projects -->
+        <div class="card">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-semibold text-gray-900">Recent Projects</h3>
+                <button onclick="navigateTo('projects')" class="btn btn-primary">
+                    <i class="fas fa-plus mr-2"></i>New Project
+                </button>
+            </div>
+            <div id="projectsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Projects will be loaded here -->
+            </div>
+        </div>
+
+        <!-- AI Insights -->
+        <div class="card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">AI Insights</h3>
+            <div id="aiInsights" class="space-y-4">
+                <!-- AI insights will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div class="flex items-center">
+            <i id="notificationIcon" class="fas fa-check-circle mr-3"></i>
+            <div>
+                <p id="notificationTitle" class="font-semibold"></p>
+                <p id="notificationMessage" class="text-sm text-gray-600"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Management
+        let projects = JSON.parse(localStorage.getItem('projects') || '[]');
+        let teamMembers = JSON.parse(localStorage.getItem('teamMembers') || '[]');
+
+        // Initialize data if empty
+        if (projects.length === 0) {
+            projects = [
+                {
+                    id: 1,
+                    name: "AI Platform Development",
+                    status: "active",
+                    progress: 75,
+                    budget: 250000,
+                    spent: 180000,
+                    team: 8,
+                    deadline: "2024-03-15",
+                    description: "Building next-generation AI project management platform"
+                },
+                {
+                    id: 2,
+                    name: "Mobile App Launch",
+                    status: "active", 
+                    progress: 60,
+                    budget: 150000,
+                    spent: 85000,
+                    team: 5,
+                    deadline: "2024-02-28",
+                    description: "iOS and Android app development and launch"
+                },
+                {
+                    id: 3,
+                    name: "Cloud Migration",
+                    status: "planning",
+                    progress: 25,
+                    budget: 300000,
+                    spent: 45000,
+                    team: 6,
+                    deadline: "2024-04-30",
+                    description: "Enterprise cloud infrastructure migration"
+                }
+            ];
+            localStorage.setItem('projects', JSON.stringify(projects));
+        }
+
+        if (teamMembers.length === 0) {
+            teamMembers = [
+                { id: 1, name: "Sarah Johnson", role: "Project Manager", skills: ["Leadership", "Agile"], workload: 85, available: true },
+                { id: 2, name: "Mike Chen", role: "Developer", skills: ["React", "Node.js"], workload: 75, available: true },
+                { id: 3, name: "Emily Davis", role: "Designer", skills: ["UI/UX", "Figma"], workload: 60, available: true }
+            ];
+            localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
+        }
+
+        // Update Dashboard Stats
+        function updateStats() {
+            const activeProjects = projects.filter(p => p.status === 'active').length;
+            const totalBudget = projects.reduce((sum, p) => sum + p.budget, 0);
+            const totalSpent = projects.reduce((sum, p) => sum + p.spent, 0);
+            const avgProgress = projects.reduce((sum, p) => sum + p.progress, 0) / projects.length;
+            const availableMembers = teamMembers.filter(m => m.available).length;
+
+            document.getElementById('activeProjects').textContent = activeProjects;
+            document.getElementById('totalBudget').textContent = '$' + (totalBudget / 1000).toFixed(0) + 'K';
+            document.getElementById('budgetUtilization').textContent = ((totalSpent / totalBudget) * 100).toFixed(0) + '%';
+            document.getElementById('teamMembers').textContent = teamMembers.length;
+            document.getElementById('availableMembers').textContent = availableMembers;
+            document.getElementById('avgProgress').textContent = avgProgress.toFixed(0) + '%';
+        }
+
+        // Load Projects
+        function loadProjects() {
+            const projectsList = document.getElementById('projectsList');
+            projectsList.innerHTML = '';
+
+            projects.slice(0, 6).forEach(project => {
+                const projectCard = document.createElement('div');
+                projectCard.className = 'project-card';
+                projectCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <h4 class="font-semibold text-gray-900">${project.name}</h4>
+                        <span class="px-2 py-1 text-xs rounded-full ${
+                            project.status === 'active' ? 'bg-green-100 text-green-800' :
+                            project.status === 'planning' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                        }">${project.status}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">${project.description}</p>
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Progress</span>
+                            <span>${project.progress}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${project.progress}%"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span><i class="fas fa-dollar-sign mr-1"></i>${(project.budget / 1000).toFixed(0)}K</span>
+                        <span><i class="fas fa-users mr-1"></i>${project.team}</span>
+                        <span><i class="fas fa-calendar mr-1"></i>${new Date(project.deadline).toLocaleDateString()}</span>
+                    </div>
+                `;
+                projectCard.onclick = () => showProjectDetails(project.id);
+                projectsList.appendChild(projectCard);
+            });
+        }
+
+        // Load Charts
+        function loadCharts() {
+            // Status Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            const statusData = {
+                active: projects.filter(p => p.status === 'active').length,
+                planning: projects.filter(p => p.status === 'planning').length,
+                completed: projects.filter(p => p.status === 'completed').length
+            };
+
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Active', 'Planning', 'Completed'],
+                    datasets: [{
+                        data: [statusData.active, statusData.planning, statusData.completed],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Budget Chart
+            const budgetCtx = document.getElementById('budgetChart').getContext('2d');
+            new Chart(budgetCtx, {
+                type: 'bar',
+                data: {
+                    labels: projects.slice(0, 5).map(p => p.name.substring(0, 15) + '...'),
+                    datasets: [{
+                        label: 'Budget',
+                        data: projects.slice(0, 5).map(p => p.budget / 1000),
+                        backgroundColor: '#3b82f6'
+                    }, {
+                        label: 'Spent',
+                        data: projects.slice(0, 5).map(p => p.spent / 1000),
+                        backgroundColor: '#8b5cf6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Amount ($K)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load AI Insights
+        function loadAIInsights() {
+            const insights = [
+                {
+                    type: 'success',
+                    icon: 'fa-lightbulb',
+                    title: 'Resource Optimization Opportunity',
+                    message: 'AI suggests reallocating 2 developers from Cloud Migration to Mobile App for optimal delivery.'
+                },
+                {
+                    type: 'warning',
+                    icon: 'fa-exclamation-triangle',
+                    title: 'Budget Alert',
+                    message: 'AI Platform Development is trending 15% over budget. Recommend review of resource allocation.'
+                },
+                {
+                    type: 'info',
+                    icon: 'fa-chart-line',
+                    title: 'Performance Improvement',
+                    message: 'Team velocity increased by 22% this sprint. Keep current sprint length.'
+                }
+            ];
+
+            const insightsContainer = document.getElementById('aiInsights');
+            insightsContainer.innerHTML = '';
+
+            insights.forEach(insight => {
+                const insightCard = document.createElement('div');
+                insightCard.className = `p-4 rounded-lg border-l-4 ${
+                    insight.type === 'success' ? 'bg-green-50 border-green-500' :
+                    insight.type === 'warning' ? 'bg-yellow-50 border-yellow-500' :
+                    'bg-blue-50 border-blue-500'
+                }`;
+                insightCard.innerHTML = `
+                    <div class="flex items-start">
+                        <i class="fas ${insight.icon} mt-1 mr-3 ${
+                            insight.type === 'success' ? 'text-green-600' :
+                            insight.type === 'warning' ? 'text-yellow-600' :
+                            'text-blue-600'
+                        }"></i>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">${insight.title}</h4>
+                            <p class="text-sm text-gray-600 mt-1">${insight.message}</p>
+                        </div>
+                    </div>
+                `;
+                insightsContainer.appendChild(insightCard);
+            });
+        }
+
+        // Navigation
+        function navigateTo(page) {
+            const urls = {
+                dashboard: 'dashboard-working.html',
+                projects: 'project-management-working.html',
+                gantt: 'gantt-chart-working.html',
+                resources: 'resource-allocation-working.html',
+                risks: 'raid-management-working.html',
+                reports: 'reports-working.html',
+                ai: 'ai-analysis-working.html'
+            };
+            
+            if (urls[page]) {
+                showNotification('Navigation', `Loading ${page}...`, 'info');
+                setTimeout(() => {
+                    window.location.href = urls[page];
+                }, 1000);
+            }
+        }
+
+        // Show Project Details
+        function showProjectDetails(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (project) {
+                showNotification('Project Details', `Opening ${project.name}...`, 'info');
+                // Store selected project for detail page
+                localStorage.setItem('selectedProject', JSON.stringify(project));
+                setTimeout(() => {
+                    window.location.href = 'project-detail-working.html';
+                }, 1000);
+            }
+        }
+
+        // Notification System
+        function showNotification(title, message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const icon = document.getElementById('notificationIcon');
+            
+            notification.className = `notification ${type}`;
+            document.getElementById('notificationTitle').textContent = title;
+            document.getElementById('notificationMessage').textContent = message;
+            
+            if (type === 'success') {
+                icon.className = 'fas fa-check-circle mr-3 text-green-600';
+            } else if (type === 'error') {
+                icon.className = 'fas fa-exclamation-circle mr-3 text-red-600';
+            } else {
+                icon.className = 'fas fa-info-circle mr-3 text-blue-600';
+            }
+            
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Logout
+        function logout() {
+            showNotification('Logging Out', 'Redirecting to login page...', 'info');
+            setTimeout(() => {
+                window.location.href = 'index-working.html';
+            }, 1500);
+        }
+
+        // Initialize Dashboard
+        function initDashboard() {
+            updateStats();
+            loadProjects();
+            loadCharts();
+            loadAIInsights();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                projects = JSON.parse(localStorage.getItem('projects') || '[]');
+                teamMembers = JSON.parse(localStorage.getItem('teamMembers') || '[]');
+                updateStats();
+                loadProjects();
+            }, 30000);
+        }
+
+        // Start the application
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborative Document Editor - Real-Time Co-Editing Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .editor-card {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            transition: all 0.3s ease;
+        }
+        .editor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(34, 197, 94, 0.3);
+        }
+        .editor-glow {
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.4),
+                        0 0 60px rgba(34, 197, 94, 0.2),
+                        0 0 90px rgba(34, 197, 94, 0.1);
+        }
+        .active-cursor {
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        .collaboration-cursor {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, currentColor, transparent);
+            animation: blink 1s infinite;
+        }
+        .user-highlight {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.2), transparent);
+            border-left: 3px solid #3b82f6;
+        }
+        .comment-bubble {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1));
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        .toolbar-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+        }
+        .toolbar-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        .toolbar-button.active {
+            background: rgba(34, 197, 94, 0.3);
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+        .version-item {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900 text-white min-h-screen">
+    
+    <!-- Header -->
+    <header class="glass-morphism border-b border-white/10 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="editor-glow rounded-lg p-2 bg-green-600/20">
+                        <i class="fas fa-file-alt text-2xl text-green-400"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                            Collaborative Document Editor
+                        </h1>
+                        <p class="text-sm text-green-300">Real-Time Co-Editing Platform</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 bg-green-500/20 px-3 py-1 rounded-full">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm text-green-400">Auto-saved</span>
+                    </div>
+                    <button onclick="shareDocument()" class="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-2 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105">
+                        <i class="fas fa-share mr-2"></i>Share
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- Editor Overview -->
+        <section class="mb-8">
+            <div class="glass-morphism rounded-2xl p-8 editor-glow">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-400">12</div>
+                        <div class="text-sm text-gray-400">Active Editors</div>
+                        <div class="text-xs text-green-400 mt-1">Live now</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-emerald-400">3,427</div>
+                        <div class="text-sm text-gray-400">Changes Made</div>
+                        <div class="text-xs text-emerald-400 mt-1">Today</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-400">89%</div>
+                        <div class="text-sm text-gray-400">Collaboration Score</div>
+                        <div class="text-xs text-blue-400 mt-1">Excellent</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-purple-400">47</div>
+                        <div class="text-sm text-gray-400">Comments</div>
+                        <div class="text-xs text-purple-400 mt-1">23 resolved</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-orange-400">2.3s</div>
+                        <div class="text-sm text-gray-400">Sync Latency</div>
+                        <div class="text-xs text-orange-400 mt-1">Real-time</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Document Editor Interface -->
+        <section class="mb-8">
+            <div class="editor-card rounded-xl">
+                <!-- Toolbar -->
+                <div class="border-b border-white/10 p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <button onclick="formatText('bold')" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button onclick="formatText('italic')" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button onclick="formatText('underline')" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-underline"></i>
+                            </button>
+                            <div class="w-px h-6 bg-white/20"></div>
+                            <button onclick="formatText('heading1')" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-heading"></i>
+                            </button>
+                            <button onclick="formatText('bullet')" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-list-ul"></i>
+                            </button>
+                            <button onclick="formatText('number')" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-list-ol"></i>
+                            </button>
+                            <div class="w-px h-6 bg-white/20"></div>
+                            <button onclick="insertLink()" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-link"></i>
+                            </button>
+                            <button onclick="insertImage()" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-image"></i>
+                            </button>
+                            <button onclick="insertTable()" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-table"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <button onclick="undo()" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                            <button onclick="redo()" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                            <div class="w-px h-6 bg-white/20"></div>
+                            <button onclick="toggleComments()" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-comment"></i>
+                            </button>
+                            <button onclick="trackChanges()" class="toolbar-button p-2 rounded">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Collaborators -->
+                <div class="border-b border-white/10 px-4 py-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm text-gray-400">Active now:</span>
+                            <div class="flex -space-x-2">
+                                <img src="https://picsum.photos/seed/editor1/32/32.jpg" class="w-8 h-8 rounded-full border-2 border-green-500" alt="Sarah" title="Sarah Johnson">
+                                <img src="https://picsum.photos/seed/editor2/32/32.jpg" class="w-8 h-8 rounded-full border-2 border-blue-500" alt="Mike" title="Mike Chen">
+                                <img src="https://picsum.photos/seed/editor3/32/32.jpg" class="w-8 h-8 rounded-full border-2 border-purple-500" alt="Lisa" title="Lisa Wong">
+                                <img src="https://picsum.photos/seed/editor4/32/32.jpg" class="w-8 h-8 rounded-full border-2 border-orange-500" alt="John" title="John Davis">
+                                <div class="w-8 h-8 rounded-full border-2 border-gray-500 bg-gray-600 flex items-center justify-center text-xs">
+                                    +8
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="text-sm text-gray-400">All changes synced</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-400">
+                            <i class="fas fa-file-word mr-1"></i>
+                            Project Requirements v2.3
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Content -->
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <!-- Main Editor -->
+                    <div class="lg:col-span-3 p-6">
+                        <div id="documentEditor" class="min-h-screen bg-white/5 rounded-lg p-8 focus:outline-none focus:ring-2 focus:ring-green-500" contenteditable="true">
+                            <h1 class="text-3xl font-bold text-white mb-4">Project Requirements Document</h1>
+                            <p class="text-gray-300 mb-4">
+                                <span class="user-highlight">This comprehensive document outlines the requirements for our next-generation 
+                                Project Portfolio Management system with advanced AI capabilities and real-time collaboration features.</span>
+                            </p>
+                            
+                            <h2 class="text-2xl font-semibold text-green-400 mb-3">1. Executive Summary</h2>
+                            <p class="text-gray-300 mb-4">
+                                The PPM system aims to establish market leadership through technological superiority, 
+                                delivering <strong>94.7% AI accuracy</strong> and <strong>67% productivity improvements</strong> 
+                                through intelligent automation and predictive analytics.
+                            </p>
+                            
+                            <div class="comment-bubble p-3 rounded-lg mb-4">
+                                <div class="flex items-start space-x-2">
+                                    <img src="https://picsum.photos/seed/editor1/24/24.jpg" class="w-6 h-6 rounded-full" alt="Sarah">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-yellow-300">Sarah Johnson</div>
+                                        <div class="text-xs text-gray-400">Should we add specific metrics for the AI accuracy target?</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h2 class="text-2xl font-semibold text-green-400 mb-3">2. Technical Architecture</h2>
+                            <p class="text-gray-300 mb-4">
+                                The system leverages cutting-edge technologies:
+                            </p>
+                            <ul class="list-disc list-inside text-gray-300 space-y-2 mb-4">
+                                <li>Chart.js 4.x for professional data visualization</li>
+                                <li>Plotly.js for advanced 3D and network graphs</li>
+                                <li>Tailwind CSS 3.x for modern responsive design</li>
+                                <li>Vanilla JavaScript for high-performance interactions</li>
+                            </ul>
+                            
+                            <div class="bg-blue-600/10 p-4 rounded-lg border-l-4 border-blue-500">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <i class="fas fa-info-circle text-blue-400"></i>
+                                    <span class="text-sm font-medium text-blue-300">Technical Note</span>
+                                </div>
+                                <p class="text-sm text-gray-300">
+                                    The architecture supports real-time collaboration with sub-second latency 
+                                    and can scale to 10,000 concurrent users.
+                                </p>
+                            </div>
+                            
+                            <h2 class="text-2xl font-semibold text-green-400 mb-3 mt-6">3. AI Capabilities</h2>
+                            <p class="text-gray-300 mb-4">
+                                Our AI systems deliver unprecedented accuracy and intelligence:
+                            </p>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white/5 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-purple-300 mb-2">Predictive Analytics</h4>
+                                    <p class="text-sm text-gray-400">94.7% accuracy with 2,847 predictions processed daily</p>
+                                </div>
+                                <div class="bg-white/5 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-purple-300 mb-2">Resource Optimization</h4>
+                                    <p class="text-sm text-gray-400">$1.8M savings identified through AI matching</p>
+                                </div>
+                                <div class="bg-white/5 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-purple-300 mb-2">Scenario Planning</h4>
+                                    <p class="text-sm text-gray-400">6 scenarios with 142% best ROI identified</p>
+                                </div>
+                                <div class="bg-white/5 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-purple-300 mb-2">Executive Insights</h4>
+                                    <p class="text-sm text-gray-400">$4.7M value created through strategic recommendations</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="p-6 space-y-6">
+                        <!-- Document Outline -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-green-300 mb-3">Document Outline</h3>
+                            <div class="space-y-2">
+                                <a href="#section1" class="block p-2 bg-white/5 rounded hover:bg-white/10 transition-all">
+                                    <span class="text-sm text-gray-300">1. Executive Summary</span>
+                                </a>
+                                <a href="#section2" class="block p-2 bg-white/5 rounded hover:bg-white/10 transition-all">
+                                    <span class="text-sm text-gray-300">2. Technical Architecture</span>
+                                </a>
+                                <a href="#section3" class="block p-2 bg-white/5 rounded hover:bg-white/10 transition-all">
+                                    <span class="text-sm text-gray-300">3. AI Capabilities</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-blue-300 mb-3">Recent Activity</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-start space-x-2">
+                                    <img src="https://picsum.photos/seed/editor2/32/32.jpg" class="w-6 h-6 rounded-full" alt="Mike">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-blue-300">Mike Chen</div>
+                                        <div class="text-xs text-gray-400">Added AI metrics</div>
+                                        <div class="text-xs text-gray-500">2 min ago</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start space-x-2">
+                                    <img src="https://picsum.photos/seed/editor3/32/32.jpg" class="w-6 h-6 rounded-full" alt="Lisa">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-blue-300">Lisa Wong</div>
+                                        <div class="text-xs text-gray-400">Edited section 2</div>
+                                        <div class="text-xs text-gray-500">5 min ago</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start space-x-2">
+                                    <img src="https://picsum.photos/seed/editor4/32/32.jpg" class="w-6 h-6 rounded-full" alt="John">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-blue-300">John Davis</div>
+                                        <div class="text-xs text-gray-400">Added comment</div>
+                                        <div class="text-xs text-gray-500">12 min ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Version History -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-purple-300 mb-3">Version History</h3>
+                            <div class="space-y-2">
+                                <div class="version-item p-2 rounded">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-sm font-medium text-purple-300">v2.3</span>
+                                        <span class="text-xs text-gray-400">Current</span>
+                                    </div>
+                                    <div class="text-xs text-gray-400">23 changes • 12 min ago</div>
+                                </div>
+                                <div class="version-item p-2 rounded opacity-60">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-sm font-medium text-gray-400">v2.2</span>
+                                        <span class="text-xs text-gray-500">1 hour ago</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500">47 changes • Sarah Johnson</div>
+                                </div>
+                                <div class="version-item p-2 rounded opacity-60">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-sm font-medium text-gray-400">v2.1</span>
+                                        <span class="text-xs text-gray-500">3 hours ago</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500">89 changes • Mike Chen</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Collaboration Features -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                <i class="fas fa-users mr-3"></i>Collaboration Features
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Real-Time Sync -->
+                <div class="editor-card rounded-xl p-6 text-center">
+                    <div class="w-16 h-16 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-sync text-2xl text-green-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-green-300 mb-2">Real-Time Sync</h3>
+                    <p class="text-sm text-gray-400 mb-4">Sub-second synchronization across all collaborators</p>
+                    <div class="text-xs text-green-400">2.3s average latency</div>
+                </div>
+
+                <!-- Version Control -->
+                <div class="editor-card rounded-xl p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-code-branch text-2xl text-blue-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-blue-300 mb-2">Version Control</h3>
+                    <p class="text-sm text-gray-400 mb-4">Automatic versioning with unlimited history</p>
+                    <div class="text-xs text-blue-400">47 versions tracked</div>
+                </div>
+
+                <!-- Comment System -->
+                <div class="editor-card rounded-xl p-6 text-center">
+                    <div class="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-comments text-2xl text-purple-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-purple-300 mb-2">Smart Comments</h3>
+                    <p class="text-sm text-gray-400 mb-4">Contextual comments with threaded discussions</p>
+                    <div class="text-xs text-purple-400">47 comments • 23 resolved</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Document Analytics -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                <i class="fas fa-chart-bar mr-3"></i>Document Analytics
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Activity Chart -->
+                <div class="glass-morphism rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-green-300 mb-4">Document Activity</h3>
+                    <div class="h-64" id="activityChart"></div>
+                </div>
+
+                <!-- Collaboration Metrics -->
+                <div class="glass-morphism rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-emerald-300 mb-4">Collaboration Metrics</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-300">Total Edits</span>
+                                <span class="text-sm font-bold text-green-400">3,427</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 87%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-300">Active Contributors</span>
+                                <span class="text-sm font-bold text-blue-400">12</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 75%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-300">Comments Added</span>
+                                <span class="text-sm font-bold text-purple-400">47</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-purple-500 h-2 rounded-full" style="width: 63%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-300">Time Saved</span>
+                                <span class="text-sm font-bold text-orange-400">23 hours</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-orange-500 h-2 rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-morphism border-t border-white/10 mt-12">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-file-alt text-green-400"></i>
+                        <span class="text-sm text-green-300">Collaborative Document Editor v2.0</span>
+                    </div>
+                    <div class="text-sm text-gray-400">12 active editors • 3,427 changes • 2.3s sync</div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="exportDocument()" class="text-sm bg-green-600/20 hover:bg-green-600/30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                    <button onclick="printDocument()" class="text-sm bg-emerald-600/20 hover:bg-emerald-600/30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-print mr-2"></i>Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Collaborative Document Editor
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            startRealTimeSync();
+            initializeCollaboration();
+        });
+
+        // Initialize Charts
+        function initializeCharts() {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                    datasets: [
+                        {
+                            label: 'Document Edits',
+                            data: [45, 23, 234, 567, 892, 645, 234],
+                            borderColor: 'rgb(34, 197, 94)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Active Users',
+                            data: [3, 2, 8, 15, 23, 18, 9],
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'rgba(255, 255, 255, 0.7)' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Real-Time Sync
+        function startRealTimeSync() {
+            setInterval(() => {
+                simulateCollaborativeEdit();
+                updateActiveUsers();
+            }, 3000);
+        }
+
+        function simulateCollaborativeEdit() {
+            // Simulate other users making changes
+            console.log('📝 Simulating collaborative edit from another user...');
+        }
+
+        function updateActiveUsers() {
+            // Update active user count dynamically
+            const activeCount = 8 + Math.floor(Math.random() * 6);
+            console.log(`👥 Active editors: ${activeCount}`);
+        }
+
+        // Collaboration Initialization
+        function initializeCollaboration() {
+            console.log('🤝 Collaborative Document Editor initialized');
+            console.log('⚡ Real-time sync engine active');
+            console.log('📊 Version control system ready');
+            console.log('💬 Smart commenting system enabled');
+        }
+
+        // Editor Functions
+        function formatText(format) {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                switch(format) {
+                    case 'bold':
+                        document.execCommand('bold', false, null);
+                        break;
+                    case 'italic':
+                        document.execCommand('italic', false, null);
+                        break;
+                    case 'underline':
+                        document.execCommand('underline', false, null);
+                        break;
+                    case 'heading1':
+                        document.execCommand('formatBlock', false, 'h1');
+                        break;
+                    case 'bullet':
+                        document.execCommand('insertUnorderedList', false, null);
+                        break;
+                    case 'number':
+                        document.execCommand('insertOrderedList', false, null);
+                        break;
+                }
+                showNotification(`Formatting applied: ${format}`, 'success');
+            }
+        }
+
+        function insertLink() {
+            const url = prompt('Enter URL:');
+            if (url) {
+                document.execCommand('createLink', false, url);
+                showNotification('Link inserted successfully', 'success');
+            }
+        }
+
+        function insertImage() {
+            showNotification('Opening image selector...', 'info');
+        }
+
+        function insertTable() {
+            showNotification('Creating table...', 'info');
+        }
+
+        function undo() {
+            document.execCommand('undo', false, null);
+            showNotification('Undo action', 'info');
+        }
+
+        function redo() {
+            document.execCommand('redo', false, null);
+            showNotification('Redo action', 'info');
+        }
+
+        function toggleComments() {
+            showNotification('Comment mode toggled', 'info');
+        }
+
+        function trackChanges() {
+            showNotification('Track changes enabled', 'success');
+        }
+
+        function shareDocument() {
+            showNotification('🔗 Generating share link with real-time collaboration...', 'success');
+        }
+
+        function exportDocument() {
+            showNotification('📄 Exporting document with version history...', 'info');
+        }
+
+        function printDocument() {
+            window.print();
+            showNotification('🖨️ Preparing document for printing...', 'info');
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-500 ${
+                type === 'success' ? 'bg-green-600' :
+                type === 'warning' ? 'bg-yellow-600' :
+                type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' :
+                        type === 'warning' ? 'fa-exclamation-triangle' :
+                        type === 'error' ? 'fa-times-circle' : 'fa-info-circle'
+                    }"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
