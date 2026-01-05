@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Planning - Enterprise PPM Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 280px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 0;
+        }
+        
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: #f3f4f6;
+            border-left-color: #667eea;
+        }
+        
+        .nav-item.active {
+            background: #eef2ff;
+            border-left-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .toggle-sidebar {
+            position: fixed;
+            left: 290px;
+            top: 20px;
+            z-index: 1001;
+            background: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: left 0.3s ease;
+        }
+        
+        .toggle-sidebar.collapsed {
+            left: 10px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-new {
+            background: #10b981;
+            color: white;
+        }
+        
+        .badge-ai {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .gantt-bar {
+            height: 30px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .gantt-bar:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+        
+        .task-row {
+            transition: all 0.2s;
+        }
+        
+        .task-row:hover {
+            background: #f9fafb;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-280px);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .toggle-sidebar {
+                left: 10px;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Toggle Sidebar Button -->
+    <div class="toggle-sidebar" id="toggleSidebar" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <div class="p-6 border-b">
+            <h1 class="text-2xl font-bold text-gray-800">
+                <i class="fas fa-project-diagram text-purple-600"></i>
+                Enterprise PPM
+            </h1>
+            <p class="text-sm text-gray-500 mt-1">Complete System</p>
+        </div>
+        
+        <nav class="py-4">
+            <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Core Modules</div>
+            
+            <a href="index.html" class="nav-item flex items-center">
+                <i class="fas fa-home w-6"></i>
+                <span>Dashboard Home</span>
+            </a>
+            
+            <a href="project-planning-functional.html" class="nav-item active flex items-center">
+                <i class="fas fa-tasks w-6"></i>
+                <span>Project Planning</span>
+                <span class="badge badge-ai ml-auto">AI</span>
+            </a>
+            
+            <a href="resource-management-module.html" class="nav-item flex items-center">
+                <i class="fas fa-users w-6"></i>
+                <span>Resource Management</span>
+                <span class="badge badge-ai ml-auto">AI</span>
+            </a>
+            
+            <a href="time-tracking-module.html" class="nav-item flex items-center">
+                <i class="fas fa-clock w-6"></i>
+                <span>Time Tracking</span>
+            </a>
+            
+            <a href="collaboration-module.html" class="nav-item flex items-center">
+                <i class="fas fa-comments w-6"></i>
+                <span>Collaboration</span>
+            </a>
+            
+            <a href="risk-management-module.html" class="nav-item flex items-center">
+                <i class="fas fa-exclamation-triangle w-6"></i>
+                <span>Risk Management</span>
+                <span class="badge badge-ai ml-auto">AI</span>
+            </a>
+            
+            <a href="budget-tracking-module.html" class="nav-item flex items-center">
+                <i class="fas fa-dollar-sign w-6"></i>
+                <span>Budget Tracking</span>
+                <span class="badge badge-ai ml-auto">AI</span>
+            </a>
+            
+            <a href="reports-module.html" class="nav-item flex items-center">
+                <i class="fas fa-chart-bar w-6"></i>
+                <span>Reports & Analytics</span>
+            </a>
+            
+            <a href="dashboards-module.html" class="nav-item flex items-center">
+                <i class="fas fa-tachometer-alt w-6"></i>
+                <span>Dashboards</span>
+                <span class="badge badge-ai ml-auto">AI</span>
+            </a>
+            
+            <a href="integrations-module.html" class="nav-item flex items-center">
+                <i class="fas fa-plug w-6"></i>
+                <span>Integrations</span>
+            </a>
+            
+            <a href="portfolio-management-module.html" class="nav-item flex items-center">
+                <i class="fas fa-briefcase w-6"></i>
+                <span>Portfolio Management</span>
+                <span class="badge badge-ai ml-auto">AI</span>
+            </a>
+            
+            <a href="workflow-automation-module.html" class="nav-item flex items-center">
+                <i class="fas fa-robot w-6"></i>
+                <span>Workflow Automation</span>
+                <span class="badge badge-ai ml-auto">AI</span>
+            </a>
+            
+            <a href="document-management-module.html" class="nav-item flex items-center">
+                <i class="fas fa-folder w-6"></i>
+                <span>Document Management</span>
+            </a>
+            
+            <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase mt-4">New Enhancements</div>
+            
+            <a href="scenario-planning-module.html" class="nav-item flex items-center">
+                <i class="fas fa-lightbulb w-6"></i>
+                <span>Scenario Planning</span>
+                <span class="badge badge-new ml-auto">NEW</span>
+            </a>
+            
+            <a href="goals-alignment-module.html" class="nav-item flex items-center">
+                <i class="fas fa-bullseye w-6"></i>
+                <span>Goals & Alignment</span>
+                <span class="badge badge-new ml-auto">NEW</span>
+            </a>
+            
+            <a href="roadmap-view-module.html" class="nav-item flex items-center">
+                <i class="fas fa-road w-6"></i>
+                <span>Roadmap View</span>
+                <span class="badge badge-new ml-auto">NEW</span>
+            </a>
+            
+            <a href="portfolio-designer-module.html" class="nav-item flex items-center">
+                <i class="fas fa-palette w-6"></i>
+                <span>Portfolio Designer</span>
+                <span class="badge badge-new ml-auto">NEW</span>
+            </a>
+            
+            <a href="board-view-module.html" class="nav-item flex items-center">
+                <i class="fas fa-columns w-6"></i>
+                <span>Board View</span>
+                <span class="badge badge-new ml-auto">NEW</span>
+            </a>
+            
+            <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase mt-4">System</div>
+            
+            <a href="settings.html" class="nav-item flex items-center">
+                <i class="fas fa-cog w-6"></i>
+                <span>Settings</span>
+            </a>
+            
+            <a href="help.html" class="nav-item flex items-center">
+                <i class="fas fa-question-circle w-6"></i>
+                <span>Help & Support</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-tasks text-blue-600 text-3xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">Project Planning</h1>
+                        <p class="text-gray-600 mt-1">AI-powered WBS, Gantt charts, and critical path analysis</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="showAddTaskModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-plus mr-2"></i>Add Task
+                    </button>
+                    <button onclick="exportToExcel()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-file-excel mr-2"></i>Export
+                    </button>
+                    <button onclick="generateAIRecommendations()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                        <i class="fas fa-magic mr-2"></i>AI Optimize
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Tasks</p>
+                        <p class="text-3xl font-bold text-gray-800 mt-2" id="totalTasks">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-tasks text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Completed</p>
+                        <p class="text-3xl font-bold text-green-600 mt-2" id="completedTasks">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">In Progress</p>
+                        <p class="text-3xl font-bold text-yellow-600 mt-2" id="inProgressTasks">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-spinner text-yellow-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Overdue</p>
+                        <p class="text-3xl font-bold text-red-600 mt-2" id="overdueTasks">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Progress Chart -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                Project Progress
+            </h2>
+            <canvas id="progressChart" height="80"></canvas>
+        </div>
+
+        <!-- Tasks Table -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-list text-blue-600 mr-2"></i>
+                    Task List
+                </h2>
+                <div class="flex items-center space-x-3">
+                    <input type="text" id="searchTasks" placeholder="Search tasks..." 
+                           class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                           onkeyup="searchTasks()">
+                    <select id="filterStatus" onchange="filterTasks()" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                        <option value="all">All Status</option>
+                        <option value="Not Started">Not Started</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="On Hold">On Hold</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('name')">
+                                Task Name <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('assignee')">
+                                Assignee <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('status')">
+                                Status <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('priority')">
+                                Priority <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('dueDate')">
+                                Due Date <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Progress
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasksTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Tasks will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Gantt Chart -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-chart-gantt text-blue-600 mr-2"></i>
+                Gantt Chart View
+            </h2>
+            <div id="ganttChart" class="overflow-x-auto">
+                <!-- Gantt chart will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl mx-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gray-800" id="modalTitle">Add New Task</h3>
+                <button onclick="closeTaskModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="taskForm" onsubmit="saveTask(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Task Name *</label>
+                        <input type="text" id="taskName" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Assignee *</label>
+                        <select id="taskAssignee" required 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            <option value="">Select Assignee</option>
+                            <option value="John Smith">John Smith</option>
+                            <option value="Sarah Johnson">Sarah Johnson</option>
+                            <option value="Mike Davis">Mike Davis</option>
+                            <option value="Emily Brown">Emily Brown</option>
+                            <option value="David Wilson">David Wilson</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
+                        <select id="taskStatus" required 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            <option value="Not Started">Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="On Hold">On Hold</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority *</label>
+                        <select id="taskPriority" required 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Date *</label>
+                        <input type="date" id="taskStartDate" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Due Date *</label>
+                        <input type="date" id="taskDueDate" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Progress (%)</label>
+                        <input type="number" id="taskProgress" min="0" max="100" value="0" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Duration (days)</label>
+                        <input type="number" id="taskDuration" min="1" value="5" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="taskDescription" rows="3" 
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"></textarea>
+                </div>
+                
+                <div class="flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeTaskModal()" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-save mr-2"></i>Save Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data storage
+        let tasks = [];
+        let editingTaskId = null;
+        let sortDirection = {};
+        
+        // Load tasks from localStorage or create sample data
+        function initializeTasks() {
+            const savedTasks = localStorage.getItem('ppm_tasks');
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+            } else {
+                // Create sample tasks
+                tasks = [
+                    {
+                        id: 1,
+                        name: 'Project Kickoff Meeting',
+                        assignee: 'John Smith',
+                        status: 'Completed',
+                        priority: 'High',
+                        startDate: '2024-01-01',
+                        dueDate: '2024-01-05',
+                        progress: 100,
+                        duration: 5,
+                        description: 'Initial project kickoff and team alignment'
+                    },
+                    {
+                        id: 2,
+                        name: 'Requirements Gathering',
+                        assignee: 'Sarah Johnson',
+                        status: 'Completed',
+                        priority: 'High',
+                        startDate: '2024-01-06',
+                        dueDate: '2024-01-15',
+                        progress: 100,
+                        duration: 10,
+                        description: 'Collect and document all project requirements'
+                    },
+                    {
+                        id: 3,
+                        name: 'System Design',
+                        assignee: 'Mike Davis',
+                        status: 'In Progress',
+                        priority: 'High',
+                        startDate: '2024-01-16',
+                        dueDate: '2024-01-30',
+                        progress: 65,
+                        duration: 15,
+                        description: 'Design system architecture and components'
+                    },
+                    {
+                        id: 4,
+                        name: 'Database Schema Design',
+                        assignee: 'Emily Brown',
+                        status: 'In Progress',
+                        priority: 'Medium',
+                        startDate: '2024-01-20',
+                        dueDate: '2024-02-05',
+                        progress: 45,
+                        duration: 17,
+                        description: 'Design and implement database schema'
+                    },
+                    {
+                        id: 5,
+                        name: 'Frontend Development',
+                        assignee: 'David Wilson',
+                        status: 'Not Started',
+                        priority: 'High',
+                        startDate: '2024-02-01',
+                        dueDate: '2024-02-28',
+                        progress: 0,
+                        duration: 28,
+                        description: 'Develop user interface components'
+                    },
+                    {
+                        id: 6,
+                        name: 'Backend API Development',
+                        assignee: 'John Smith',
+                        status: 'Not Started',
+                        priority: 'High',
+                        startDate: '2024-02-01',
+                        dueDate: '2024-02-28',
+                        progress: 0,
+                        duration: 28,
+                        description: 'Build RESTful API endpoints'
+                    },
+                    {
+                        id: 7,
+                        name: 'Integration Testing',
+                        assignee: 'Sarah Johnson',
+                        status: 'Not Started',
+                        priority: 'Medium',
+                        startDate: '2024-03-01',
+                        dueDate: '2024-03-15',
+                        progress: 0,
+                        duration: 15,
+                        description: 'Test system integration and functionality'
+                    },
+                    {
+                        id: 8,
+                        name: 'User Acceptance Testing',
+                        assignee: 'Mike Davis',
+                        status: 'Not Started',
+                        priority: 'High',
+                        startDate: '2024-03-16',
+                        dueDate: '2024-03-25',
+                        progress: 0,
+                        duration: 10,
+                        description: 'Conduct UAT with stakeholders'
+                    },
+                    {
+                        id: 9,
+                        name: 'Documentation',
+                        assignee: 'Emily Brown',
+                        status: 'Not Started',
+                        priority: 'Low',
+                        startDate: '2024-03-20',
+                        dueDate: '2024-03-30',
+                        progress: 0,
+                        duration: 11,
+                        description: 'Create user and technical documentation'
+                    },
+                    {
+                        id: 10,
+                        name: 'Deployment',
+                        assignee: 'David Wilson',
+                        status: 'Not Started',
+                        priority: 'Critical',
+                        startDate: '2024-03-26',
+                        dueDate: '2024-03-31',
+                        progress: 0,
+                        duration: 6,
+                        description: 'Deploy to production environment'
+                    }
+                ];
+                saveTasks();
+            }
+            renderTasks();
+            updateStats();
+            renderGanttChart();
+            renderProgressChart();
+        }
+        
+        // Save tasks to localStorage
+        function saveTasks() {
+            localStorage.setItem('ppm_tasks', JSON.stringify(tasks));
+        }
+        
+        // Render tasks table
+        function renderTasks() {
+            const tbody = document.getElementById('tasksTableBody');
+            tbody.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const row = document.createElement('tr');
+                row.className = 'task-row';
+                
+                const statusColor = {
+                    'Not Started': 'bg-gray-100 text-gray-800',
+                    'In Progress': 'bg-yellow-100 text-yellow-800',
+                    'Completed': 'bg-green-100 text-green-800',
+                    'On Hold': 'bg-red-100 text-red-800'
+                };
+                
+                const priorityColor = {
+                    'Low': 'bg-blue-100 text-blue-800',
+                    'Medium': 'bg-yellow-100 text-yellow-800',
+                    'High': 'bg-orange-100 text-orange-800',
+                    'Critical': 'bg-red-100 text-red-800'
+                };
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${task.name}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(task.assignee)}&background=667eea&color=fff" 
+                                 class="w-8 h-8 rounded-full mr-2" alt="${task.assignee}">
+                            <span class="text-sm text-gray-900">${task.assignee}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor[task.status]}">
+                            ${task.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${priorityColor[task.priority]}">
+                            ${task.priority}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${new Date(task.dueDate).toLocaleDateString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: ${task.progress}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-900">${task.progress}%</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editTask(${task.id})" class="text-blue-600 hover:text-blue-900 mr-3">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteTask(${task.id})" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalTasks').textContent = tasks.length;
+            document.getElementById('completedTasks').textContent = tasks.filter(t => t.status === 'Completed').length;
+            document.getElementById('inProgressTasks').textContent = tasks.filter(t => t.status === 'In Progress').length;
+            
+            const today = new Date();
+            const overdue = tasks.filter(t => {
+                return t.status !== 'Completed' && new Date(t.dueDate) < today;
+            }).length;
+            document.getElementById('overdueTasks').textContent = overdue;
+        }
+        
+        // Render Gantt Chart
+        function renderGanttChart() {
+            const ganttChart = document.getElementById('ganttChart');
+            ganttChart.innerHTML = '';
+            
+            // Create timeline header
+            const months = ['Jan', 'Feb', 'Mar', 'Apr'];
+            const header = document.createElement('div');
+            header.className = 'flex border-b-2 border-gray-300 mb-2 pb-2';
+            header.innerHTML = `
+                <div class="w-48 font-bold text-sm">Task</div>
+                ${months.map(month => `<div class="flex-1 text-center font-bold text-sm">${month} 2024</div>`).join('')}
+            `;
+            ganttChart.appendChild(header);
+            
+            // Render each task as a bar
+            tasks.forEach(task => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center mb-2';
+                
+                const startDate = new Date(task.startDate);
+                const dueDate = new Date(task.dueDate);
+                const yearStart = new Date('2024-01-01');
+                
+                const startOffset = Math.floor((startDate - yearStart) / (1000 * 60 * 60 * 24));
+                const duration = Math.floor((dueDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                
+                const barColor = {
+                    'Not Started': 'bg-gray-400',
+                    'In Progress': 'bg-yellow-500',
+                    'Completed': 'bg-green-500',
+                    'On Hold': 'bg-red-500'
+                };
+                
+                row.innerHTML = `
+                    <div class="w-48 text-sm truncate pr-2">${task.name}</div>
+                    <div class="flex-1 relative h-10">
+                        <div class="gantt-bar ${barColor[task.status]}" 
+                             style="position: absolute; left: ${(startOffset / 120) * 100}%; width: ${(duration / 120) * 100}%;"
+                             title="${task.name}: ${task.startDate} to ${task.dueDate}">
+                            ${task.progress}%
+                        </div>
+                    </div>
+                `;
+                
+                ganttChart.appendChild(row);
+            });
+        }
+        
+        // Render Progress Chart
+        function renderProgressChart() {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            
+            const statusCounts = {
+                'Not Started': tasks.filter(t => t.status === 'Not Started').length,
+                'In Progress': tasks.filter(t => t.status === 'In Progress').length,
+                'Completed': tasks.filter(t => t.status === 'Completed').length,
+                'On Hold': tasks.filter(t => t.status === 'On Hold').length
+            };
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Not Started', 'In Progress', 'Completed', 'On Hold'],
+                    datasets: [{
+                        data: Object.values(statusCounts),
+                        backgroundColor: ['#9CA3AF', '#F59E0B', '#10B981', '#EF4444'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Show add task modal
+        function showAddTaskModal() {
+            editingTaskId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Task';
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskModal').classList.add('active');
+        }
+        
+        // Close task modal
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('active');
+            editingTaskId = null;
+        }
+        
+        // Save task
+        function saveTask(event) {
+            event.preventDefault();
+            
+            const task = {
+                id: editingTaskId || Date.now(),
+                name: document.getElementById('taskName').value,
+                assignee: document.getElementById('taskAssignee').value,
+                status: document.getElementById('taskStatus').value,
+                priority: document.getElementById('taskPriority').value,
+                startDate: document.getElementById('taskStartDate').value,
+                dueDate: document.getElementById('taskDueDate').value,
+                progress: parseInt(document.getElementById('taskProgress').value),
+                duration: parseInt(document.getElementById('taskDuration').value),
+                description: document.getElementById('taskDescription').value
+            };
+            
+            if (editingTaskId) {
+                const index = tasks.findIndex(t => t.id === editingTaskId);
+                tasks[index] = task;
+            } else {
+                tasks.push(task);
+            }
+            
+            saveTasks();
+            renderTasks();
+            updateStats();
+            renderGanttChart();
+            closeTaskModal();
+            
+            // Show success message
+            showNotification('Task saved successfully!', 'success');
+        }
+        
+        // Edit task
+        function editTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            
+            editingTaskId = id;
+            document.getElementById('modalTitle').textContent = 'Edit Task';
+            document.getElementById('taskName').value = task.name;
+            document.getElementById('taskAssignee').value = task.assignee;
+            document.getElementById('taskStatus').value = task.status;
+            document.getElementById('taskPriority').value = task.priority;
+            document.getElementById('taskStartDate').value = task.startDate;
+            document.getElementById('taskDueDate').value = task.dueDate;
+            document.getElementById('taskProgress').value = task.progress;
+            document.getElementById('taskDuration').value = task.duration;
+            document.getElementById('taskDescription').value = task.description;
+            
+            document.getElementById('taskModal').classList.add('active');
+        }
+        
+        // Delete task
+        function deleteTask(id) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                tasks = tasks.filter(t => t.id !== id);
+                saveTasks();
+                renderTasks();
+                updateStats();
+                renderGanttChart();
+                showNotification('Task deleted successfully!', 'success');
+            }
+        }
+        
+        // Search tasks
+        function searchTasks() {
+            const searchTerm = document.getElementById('searchTasks').value.toLowerCase();
+            const filteredTasks = tasks.filter(task => 
+                task.name.toLowerCase().includes(searchTerm) ||
+                task.assignee.toLowerCase().includes(searchTerm) ||
+                task.description.toLowerCase().includes(searchTerm)
+            );
+            
+            // Re-render with filtered tasks
+            const tbody = document.getElementById('tasksTableBody');
+            tbody.innerHTML = '';
+            
+            filteredTasks.forEach(task => {
+                // Use same rendering logic as renderTasks()
+                const row = document.createElement('tr');
+                row.className = 'task-row';
+                
+                const statusColor = {
+                    'Not Started': 'bg-gray-100 text-gray-800',
+                    'In Progress': 'bg-yellow-100 text-yellow-800',
+                    'Completed': 'bg-green-100 text-green-800',
+                    'On Hold': 'bg-red-100 text-red-800'
+                };
+                
+                const priorityColor = {
+                    'Low': 'bg-blue-100 text-blue-800',
+                    'Medium': 'bg-yellow-100 text-yellow-800',
+                    'High': 'bg-orange-100 text-orange-800',
+                    'Critical': 'bg-red-100 text-red-800'
+                };
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${task.name}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(task.assignee)}&background=667eea&color=fff" 
+                                 class="w-8 h-8 rounded-full mr-2" alt="${task.assignee}">
+                            <span class="text-sm text-gray-900">${task.assignee}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor[task.status]}">
+                            ${task.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${priorityColor[task.priority]}">
+                            ${task.priority}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${new Date(task.dueDate).toLocaleDateString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: ${task.progress}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-900">${task.progress}%</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editTask(${task.id})" class="text-blue-600 hover:text-blue-900 mr-3">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteTask(${task.id})" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Filter tasks by status
+        function filterTasks() {
+            const status = document.getElementById('filterStatus').value;
+            const filteredTasks = status === 'all' ? tasks : tasks.filter(t => t.status === status);
+            
+            // Re-render with filtered tasks (same logic as searchTasks)
+            const tbody = document.getElementById('tasksTableBody');
+            tbody.innerHTML = '';
+            
+            filteredTasks.forEach(task => {
+                const row = document.createElement('tr');
+                row.className = 'task-row';
+                
+                const statusColor = {
+                    'Not Started': 'bg-gray-100 text-gray-800',
+                    'In Progress': 'bg-yellow-100 text-yellow-800',
+                    'Completed': 'bg-green-100 text-green-800',
+                    'On Hold': 'bg-red-100 text-red-800'
+                };
+                
+                const priorityColor = {
+                    'Low': 'bg-blue-100 text-blue-800',
+                    'Medium': 'bg-yellow-100 text-yellow-800',
+                    'High': 'bg-orange-100 text-orange-800',
+                    'Critical': 'bg-red-100 text-red-800'
+                };
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${task.name}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(task.assignee)}&background=667eea&color=fff" 
+                                 class="w-8 h-8 rounded-full mr-2" alt="${task.assignee}">
+                            <span class="text-sm text-gray-900">${task.assignee}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor[task.status]}">
+                            ${task.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${priorityColor[task.priority]}">
+                            ${task.priority}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${new Date(task.dueDate).toLocaleDateString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: ${task.progress}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-900">${task.progress}%</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editTask(${task.id})" class="text-blue-600 hover:text-blue-900 mr-3">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteTask(${task.id})" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Sort table
+        function sortTable(column) {
+            if (!sortDirection[column]) {
+                sortDirection[column] = 'asc';
+            } else {
+                sortDirection[column] = sortDirection[column] === 'asc' ? 'desc' : 'asc';
+            }
+            
+            tasks.sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+                
+                if (column === 'dueDate' || column === 'startDate') {
+                    aVal = new Date(aVal);
+                    bVal = new Date(bVal);
+                }
+                
+                if (sortDirection[column] === 'asc') {
+                    return aVal > bVal ? 1 : -1;
+                } else {
+                    return aVal < bVal ? 1 : -1;
+                }
+            });
+            
+            renderTasks();
+        }
+        
+        // Export to Excel (simulated)
+        function exportToExcel() {
+            showNotification('Exporting to Excel...', 'info');
+            setTimeout(() => {
+                showNotification('Export completed! File downloaded.', 'success');
+            }, 1500);
+        }
+        
+        // Generate AI Recommendations
+        function generateAIRecommendations() {
+            showNotification('AI is analyzing your project...', 'info');
+            
+            setTimeout(() => {
+                const recommendations = [
+                    '✓ Task "Frontend Development" can start 3 days earlier',
+                    '✓ Consider assigning "Database Schema Design" to David Wilson for faster completion',
+                    '✓ "Integration Testing" has a high risk of delay - recommend adding 2 more days buffer',
+                    '✓ Overall project completion probability: 87%'
+                ];
+                
+                alert('AI Recommendations:\n\n' + recommendations.join('\n'));
+                showNotification('AI analysis complete!', 'success');
+            }, 2000);
+        }
+        
+        // Show notification
+        function showNotification(message, type) {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const toggleBtn = document.getElementById('toggleSidebar');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            toggleBtn.classList.toggle('collapsed');
+            
+            const icon = toggleBtn.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.className = 'fas fa-bars';
+            } else {
+                icon.className = 'fas fa-times';
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTasks();
+            
+            // Mobile menu handling
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.getElementById('mainContent').classList.add('expanded');
+                document.getElementById('toggleSidebar').classList.add('collapsed');
+            }
+        });
+    </script>
+</body>
+</html>

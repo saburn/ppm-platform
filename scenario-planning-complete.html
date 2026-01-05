@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scenario Planning - Complete Suite | PPM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .tab-button { padding: 12px 24px; border-radius: 8px; font-weight: 600; transition: all 0.3s ease; }
+        .tab-button.active { background: white; color: #667eea; }
+        .tab-button:not(.active) { color: rgba(255, 255, 255, 0.8); }
+        .tab-button:not(.active):hover { background: rgba(255, 255, 255, 0.1); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); }
+        .scenario-card { border-left: 4px solid; }
+        .scenario-best { border-color: #10b981; }
+        .scenario-expected { border-color: #3b82f6; }
+        .scenario-worst { border-color: #ef4444; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-sitemap text-3xl"></i>
+                    <div>
+                        <h1 class="text-3xl font-bold">Scenario Planning</h1>
+                        <p class="text-purple-200">What-If Analysis & Strategic Planning</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="createScenario()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-plus mr-2"></i>New Scenario
+                    </button>
+                    <button onclick="runSimulation()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-play mr-2"></i>Run Simulation
+                    </button>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <button class="tab-button active" onclick="switchTab('scenarios')"><i class="fas fa-layer-group mr-2"></i>Scenarios</button>
+                <button class="tab-button" onclick="switchTab('comparison')"><i class="fas fa-balance-scale mr-2"></i>Comparison</button>
+                <button class="tab-button" onclick="switchTab('simulation')"><i class="fas fa-chart-line mr-2"></i>Simulation</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Scenarios Tab -->
+        <div id="scenarios-tab" class="tab-content active">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-blue-100 p-3 rounded-lg"><i class="fas fa-sitemap text-blue-600 text-2xl"></i></div>
+                        <span class="text-green-600 text-sm font-semibold"><i class="fas fa-arrow-up mr-1"></i>3</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Active Scenarios</h3>
+                    <p class="text-3xl font-bold text-gray-900">6</p>
+                    <p class="text-sm text-gray-500 mt-2">Under analysis</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-green-100 p-3 rounded-lg"><i class="fas fa-check-circle text-green-600 text-2xl"></i></div>
+                        <span class="text-green-600 text-sm font-semibold">50%</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Decision Accuracy</h3>
+                    <p class="text-3xl font-bold text-gray-900">+50%</p>
+                    <p class="text-sm text-gray-500 mt-2">Improvement</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-purple-100 p-3 rounded-lg"><i class="fas fa-brain text-purple-600 text-2xl"></i></div>
+                        <span class="text-purple-600 text-sm font-semibold">AI</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Simulations Run</h3>
+                    <p class="text-3xl font-bold text-gray-900">10K</p>
+                    <p class="text-sm text-gray-500 mt-2">Monte Carlo</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-orange-100 p-3 rounded-lg"><i class="fas fa-shield-alt text-orange-600 text-2xl"></i></div>
+                        <span class="text-green-600 text-sm font-semibold">$2M</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Risk Avoided</h3>
+                    <p class="text-3xl font-bold text-gray-900">30%</p>
+                    <p class="text-sm text-gray-500 mt-2">Risk reduction</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Strategic Scenarios</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="scenario-card scenario-best bg-green-50 p-6 rounded-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900">Best Case</h3>
+                            <span class="text-green-600 font-bold">+35%</span>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900 mb-2">$12.5M</p>
+                        <p class="text-sm text-gray-600 mb-4">Revenue projection</p>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span>Success Rate:</span><span class="font-semibold">85%</span></div>
+                            <div class="flex justify-between"><span>Timeline:</span><span class="font-semibold">18 months</span></div>
+                            <div class="flex justify-between"><span>Risk Level:</span><span class="font-semibold">Low</span></div>
+                        </div>
+                    </div>
+
+                    <div class="scenario-card scenario-expected bg-blue-50 p-6 rounded-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900">Expected</h3>
+                            <span class="text-blue-600 font-bold">+15%</span>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900 mb-2">$10.2M</p>
+                        <p class="text-sm text-gray-600 mb-4">Revenue projection</p>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span>Success Rate:</span><span class="font-semibold">70%</span></div>
+                            <div class="flex justify-between"><span>Timeline:</span><span class="font-semibold">24 months</span></div>
+                            <div class="flex justify-between"><span>Risk Level:</span><span class="font-semibold">Medium</span></div>
+                        </div>
+                    </div>
+
+                    <div class="scenario-card scenario-worst bg-red-50 p-6 rounded-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900">Worst Case</h3>
+                            <span class="text-red-600 font-bold">-10%</span>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900 mb-2">$8.1M</p>
+                        <p class="text-sm text-gray-600 mb-4">Revenue projection</p>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span>Success Rate:</span><span class="font-semibold">45%</span></div>
+                            <div class="flex justify-between"><span>Timeline:</span><span class="font-semibold">30 months</span></div>
+                            <div class="flex justify-between"><span>Risk Level:</span><span class="font-semibold">High</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Scenario Variables</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Budget Allocation</label>
+                        <input type="range" min="0" max="100" value="60" class="w-full">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>$0</span><span>$10M</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Timeline (months)</label>
+                        <input type="range" min="12" max="36" value="24" class="w-full">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>12</span><span>36</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Resource Allocation</label>
+                        <input type="range" min="0" max="100" value="75" class="w-full">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>0%</span><span>100%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Risk Tolerance</label>
+                        <input type="range" min="0" max="100" value="40" class="w-full">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Low</span><span>High</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Tab -->
+        <div id="comparison-tab" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Side-by-Side Comparison</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b-2 border-gray-200">
+                                <th class="text-left py-3 px-4 font-semibold text-gray-900">Metric</th>
+                                <th class="text-center py-3 px-4 font-semibold text-green-600">Best Case</th>
+                                <th class="text-center py-3 px-4 font-semibold text-blue-600">Expected</th>
+                                <th class="text-center py-3 px-4 font-semibold text-red-600">Worst Case</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100"><td class="py-3 px-4">Revenue</td><td class="text-center py-3 px-4">$12.5M</td><td class="text-center py-3 px-4">$10.2M</td><td class="text-center py-3 px-4">$8.1M</td></tr>
+                            <tr class="border-b border-gray-100"><td class="py-3 px-4">ROI</td><td class="text-center py-3 px-4">35%</td><td class="text-center py-3 px-4">15%</td><td class="text-center py-3 px-4">-10%</td></tr>
+                            <tr class="border-b border-gray-100"><td class="py-3 px-4">Timeline</td><td class="text-center py-3 px-4">18 mo</td><td class="text-center py-3 px-4">24 mo</td><td class="text-center py-3 px-4">30 mo</td></tr>
+                            <tr class="border-b border-gray-100"><td class="py-3 px-4">Success Rate</td><td class="text-center py-3 px-4">85%</td><td class="text-center py-3 px-4">70%</td><td class="text-center py-3 px-4">45%</td></tr>
+                            <tr class="border-b border-gray-100"><td class="py-3 px-4">Risk Level</td><td class="text-center py-3 px-4">Low</td><td class="text-center py-3 px-4">Medium</td><td class="text-center py-3 px-4">High</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulation Tab -->
+        <div id="simulation-tab" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Monte Carlo Simulation</h2>
+                <canvas id="simulationChart" style="max-height: 400px;"></canvas>
+                <div class="mt-6 grid grid-cols-3 gap-6">
+                    <div class="text-center p-4 bg-green-50 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Best Outcome</p>
+                        <p class="text-2xl font-bold text-green-600">$15.2M</p>
+                    </div>
+                    <div class="text-center p-4 bg-blue-50 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Most Likely</p>
+                        <p class="text-2xl font-bold text-blue-600">$10.5M</p>
+                    </div>
+                    <div class="text-center p-4 bg-red-50 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Worst Outcome</p>
+                        <p class="text-2xl font-bold text-red-600">$6.8M</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+            if (tabName === 'simulation') initChart();
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('simulationChart')?.getContext('2d');
+            if (!ctx) return;
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 20}, (_, i) => `${i*5}%`),
+                    datasets: [{
+                        label: 'Probability Distribution',
+                        data: [1,3,8,15,25,35,42,45,42,35,25,15,8,5,3,2,1,0.5,0.2,0.1],
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        function createScenario() { showToast('Creating new scenario...', 'success'); }
+        function runSimulation() { showToast('Running Monte Carlo simulation...', 'info'); }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-blue-500';
+            toast.className = `fixed top-20 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50`;
+            toast.innerHTML = `<div class="flex items-center space-x-3"><i class="fas fa-check-circle text-xl"></i><span class="font-semibold">${message}</span></div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

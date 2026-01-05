@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Collaboration - AI-Enhanced PPM Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .slide-up { animation: slideUp 0.3s ease-out; }
+        
+        .team-member-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .team-member-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: #3b82f6;
+        }
+        
+        .workload-bar {
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+        
+        .avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .skill-tag {
+            transition: all 0.2s ease;
+        }
+        .skill-tag:hover {
+            transform: scale(1.05);
+        }
+        
+        .task-assignment-card {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .task-assignment-card:hover {
+            background: #f0f9ff;
+            transform: translateX(4px);
+        }
+        
+        .comment-bubble {
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .capacity-indicator {
+            transition: all 0.3s ease;
+        }
+        
+        .online-indicator {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-users text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Team Collaboration</h1>
+                        <p class="text-purple-100 text-sm">Manage team members, workloads, and communication</p>
+                    </div>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="openTeamSetup()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-user-plus mr-2"></i>Add Team Member
+                    </button>
+                    <button onclick="goToDashboard()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Team Overview Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center transform hover:scale-105 transition">
+                <i class="fas fa-users text-3xl text-blue-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="totalTeamMembers">0</p>
+                <p class="text-sm text-gray-600">Team Members</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center transform hover:scale-105 transition">
+                <i class="fas fa-briefcase text-3xl text-green-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="activeTasks">0</p>
+                <p class="text-sm text-gray-600">Active Tasks</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center transform hover:scale-105 transition">
+                <i class="fas fa-chart-line text-3xl text-amber-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="avgWorkload">0%</p>
+                <p class="text-sm text-gray-600">Avg. Workload</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center transform hover:scale-105 transition">
+                <i class="fas fa-comments text-3xl text-purple-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="totalComments">0</p>
+                <p class="text-sm text-gray-600">Team Comments</p>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Team Members Section (2/3 width) -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-users mr-2 text-blue-600"></i>Team Members
+                        </h3>
+                        <div class="flex space-x-2">
+                            <select id="skillFilter" onchange="filterBySkill()" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                                <option value="all">All Skills</option>
+                                <option value="frontend">Frontend</option>
+                                <option value="backend">Backend</option>
+                                <option value="design">Design</option>
+                                <option value="devops">DevOps</option>
+                            </select>
+                            <select id="availabilityFilter" onchange="filterByAvailability()" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                                <option value="all">All Members</option>
+                                <option value="available">Available</option>
+                                <option value="busy">Busy</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Team Members Grid -->
+                    <div id="teamMembersGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Team members will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Task Assignment Section -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-tasks mr-2 text-green-600"></i>Task Assignment Queue
+                        </h3>
+                        <button onclick="openBulkAssignment()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-layer-group mr-2"></i>Bulk Assign
+                        </button>
+                    </div>
+
+                    <!-- Unassigned Tasks -->
+                    <div id="unassignedTasks" class="space-y-3">
+                        <!-- Unassigned tasks will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar (1/3 width) -->
+            <div class="space-y-6">
+                <!-- Workload Chart -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-pie mr-2 text-amber-600"></i>Team Workload
+                    </h3>
+                    <canvas id="workloadChart" width="400" height="300"></canvas>
+                    <div class="mt-4 text-sm text-gray-600">
+                        <p><i class="fas fa-info-circle mr-1"></i>Optimal workload: 60-80%</p>
+                    </div>
+                </div>
+
+                <!-- Team Communication -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-comments mr-2 text-purple-600"></i>Team Chat
+                    </h3>
+                    <div id="teamChat" class="space-y-3 max-h-64 overflow-y-auto mb-4">
+                        <!-- Chat messages will be populated here -->
+                    </div>
+                    <div class="flex space-x-2">
+                        <input type="text" id="chatMessage" placeholder="Type a message..." 
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-history mr-2 text-gray-600"></i>Recent Activity
+                    </h3>
+                    <div id="recentActivity" class="space-y-2">
+                        <!-- Activity will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Team Member Setup Modal -->
+    <div id="teamMemberModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 slide-up">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Add Team Member</h3>
+            <form id="teamMemberForm" onsubmit="saveTeamMember(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                    <input type="text" id="memberName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="memberEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                    <select id="memberRole" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select Role</option>
+                        <option value="Frontend Developer">Frontend Developer</option>
+                        <option value="Backend Developer">Backend Developer</option>
+                        <option value="Full Stack Developer">Full Stack Developer</option>
+                        <option value="UI/UX Designer">UI/UX Designer</option>
+                        <option value="DevOps Engineer">DevOps Engineer</option>
+                        <option value="QA Engineer">QA Engineer</option>
+                        <option value="Project Manager">Project Manager</option>
+                        <option value="Data Scientist">Data Scientist</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Experience Level</label>
+                    <select id="memberExperience" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select Level</option>
+                        <option value="Junior">Junior</option>
+                        <option value="Mid">Mid-Level</option>
+                        <option value="Senior">Senior</option>
+                        <option value="Lead">Lead/Principal</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Skills (comma separated)</label>
+                    <input type="text" id="memberSkills" placeholder="React, Node.js, TypeScript" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Max Workload (%)</label>
+                    <input type="number" id="memberMaxWorkload" min="50" max="100" value="80" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeTeamMemberModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                        Add Member
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Task Assignment Modal -->
+    <div id="taskAssignmentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 slide-up">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Assign Task</h3>
+            <form id="taskAssignmentForm" onsubmit="saveTaskAssignment(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Task</label>
+                    <div id="selectedTaskInfo" class="p-3 bg-gray-50 rounded-lg">
+                        <!-- Task info will be populated here -->
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Assign To</label>
+                    <select id="assignToMember" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select Team Member</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                    <select id="assignmentPriority" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Estimated Hours</label>
+                    <input type="number" id="estimatedHours" min="1" max="200" value="8" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                    <textarea id="assignmentNotes" rows="3" placeholder="Any special instructions..." 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeTaskAssignmentModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">
+                        Assign Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data Management
+        let teamMembers = [];
+        let teamTasks = [];
+        let teamChat = [];
+        let workloadChart = null;
+        let selectedTaskForAssignment = null;
+
+        // Initialize data
+        function initializeData() {
+            // Load or initialize team members
+            const savedMembers = localStorage.getItem('ppm_team_members');
+            if (savedMembers) {
+                teamMembers = JSON.parse(savedMembers);
+            } else {
+                // Create sample team members
+                teamMembers = [
+                    {
+                        id: 1,
+                        name: "Alex Johnson",
+                        email: "alex@company.com",
+                        role: "Frontend Developer",
+                        experience: "Senior",
+                        skills: ["React", "TypeScript", "CSS", "UI/UX"],
+                        maxWorkload: 80,
+                        currentWorkload: 60,
+                        assignedTasks: [1, 3],
+                        status: "available",
+                        avatar: "AJ",
+                        online: true
+                    },
+                    {
+                        id: 2,
+                        name: "Sarah Chen",
+                        email: "sarah@company.com",
+                        role: "Backend Developer",
+                        experience: "Senior",
+                        skills: ["Node.js", "Python", "Database", "API"],
+                        maxWorkload: 90,
+                        currentWorkload: 75,
+                        assignedTasks: [2, 4],
+                        status: "busy",
+                        avatar: "SC",
+                        online: true
+                    },
+                    {
+                        id: 3,
+                        name: "Mike Wilson",
+                        email: "mike@company.com",
+                        role: "UI/UX Designer",
+                        experience: "Mid",
+                        skills: ["Figma", "Adobe XD", "Prototyping", "Design Systems"],
+                        maxWorkload: 70,
+                        currentWorkload: 50,
+                        assignedTasks: [5],
+                        status: "available",
+                        avatar: "MW",
+                        online: false
+                    }
+                ];
+                saveTeamMembers();
+            }
+
+            // Load team tasks from projects
+            loadTeamTasks();
+            
+            // Load or initialize chat
+            const savedChat = localStorage.getItem('ppm_team_chat');
+            if (savedChat) {
+                teamChat = JSON.parse(savedChat);
+            } else {
+                teamChat = [
+                    { id: 1, sender: "Alex Johnson", message: "Just completed the UI mockups for the dashboard", timestamp: new Date(Date.now() - 3600000).toISOString(), type: "message" },
+                    { id: 2, sender: "Sarah Chen", message: "Great work! I'll start integrating the backend APIs", timestamp: new Date(Date.now() - 1800000).toISOString(), type: "message" },
+                    { id: 3, sender: "System", message: "New task assigned: Database Design to Sarah Chen", timestamp: new Date(Date.now() - 900000).toISOString(), type: "assignment" }
+                ];
+                saveTeamChat();
+            }
+
+            updateUI();
+        }
+
+        // Load team tasks from projects
+        function loadTeamTasks() {
+            const projects = JSON.parse(localStorage.getItem('ppm_projects') || '[]');
+            teamTasks = [];
+            
+            projects.forEach(project => {
+                if (project.tasks) {
+                    project.tasks.forEach(task => {
+                        teamTasks.push({
+                            ...task,
+                            projectId: project.id,
+                            projectName: project.name,
+                            assignedTo: task.assignedTo || null,
+                            assignmentNotes: task.assignmentNotes || '',
+                            estimatedHours: task.estimatedHours || 8
+                        });
+                    });
+                }
+            });
+        }
+
+        // Save data functions
+        function saveTeamMembers() {
+            localStorage.setItem('ppm_team_members', JSON.stringify(teamMembers));
+        }
+
+        function saveTeamTasks() {
+            // Update projects with assigned tasks
+            const projects = JSON.parse(localStorage.getItem('ppm_projects') || '[]');
+            projects.forEach(project => {
+                if (project.tasks) {
+                    project.tasks = project.tasks.map(task => {
+                        const teamTask = teamTasks.find(tt => tt.id === task.id && tt.projectId === project.id);
+                        return teamTask || task;
+                    });
+                }
+            });
+            localStorage.setItem('ppm_projects', JSON.stringify(projects));
+        }
+
+        function saveTeamChat() {
+            localStorage.setItem('ppm_team_chat', JSON.stringify(teamChat));
+        }
+
+        // UI Update functions
+        function updateUI() {
+            updateTeamStats();
+            displayTeamMembers();
+            displayUnassignedTasks();
+            updateWorkloadChart();
+            displayTeamChat();
+            displayRecentActivity();
+        }
+
+        function updateTeamStats() {
+            document.getElementById('totalTeamMembers').textContent = teamMembers.length;
+            
+            const availableMembers = teamMembers.filter(m => m.status === 'available').length;
+            const activeTasksCount = teamTasks.filter(t => t.status !== 'completed').length;
+            const avgWorkload = teamMembers.length > 0 ? 
+                Math.round(teamMembers.reduce((sum, m) => sum + m.currentWorkload, 0) / teamMembers.length) : 0;
+            
+            document.getElementById('activeTasks').textContent = activeTasksCount;
+            document.getElementById('avgWorkload').textContent = avgWorkload + '%';
+            document.getElementById('totalComments').textContent = teamChat.filter(c => c.type === 'message').length;
+        }
+
+        function displayTeamMembers() {
+            const grid = document.getElementById('teamMembersGrid');
+            grid.innerHTML = '';
+            
+            teamMembers.forEach(member => {
+                const memberCard = document.createElement('div');
+                memberCard.className = 'team-member-card bg-gray-50 rounded-lg p-4';
+                
+                const workloadPercent = Math.round((member.currentWorkload / member.maxWorkload) * 100);
+                const workloadColor = workloadPercent > 80 ? 'red' : workloadPercent > 60 ? 'amber' : 'green';
+                const statusColor = member.status === 'available' ? 'green' : 'amber';
+                
+                memberCard.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="relative">
+                            <div class="avatar w-12 h-12 rounded-full text-lg">
+                                ${member.avatar}
+                            </div>
+                            ${member.online ? '<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white online-indicator"></div>' : ''}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-semibold text-gray-800">${member.name}</h4>
+                                    <p class="text-sm text-gray-600">${member.role} • ${member.experience}</p>
+                                    <p class="text-xs text-gray-500">${member.email}</p>
+                                </div>
+                                <span class="px-2 py-1 bg-${statusColor}-100 text-${statusColor}-800 text-xs rounded-full">
+                                    ${member.status}
+                                </span>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <div class="flex flex-wrap gap-1 mb-2">
+                                    ${member.skills.slice(0, 3).map(skill => 
+                                        `<span class="skill-tag px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">${skill}</span>`
+                                    ).join('')}
+                                    ${member.skills.length > 3 ? `<span class="text-xs text-gray-500">+${member.skills.length - 3} more</span>` : ''}
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                        <span>Workload</span>
+                                        <span>${member.currentWorkload}% / ${member.maxWorkload}%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="workload-bar bg-${workloadColor}-500 h-2 rounded-full" style="width: ${workloadPercent}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-between text-xs text-gray-600">
+                                    <span><i class="fas fa-tasks mr-1"></i>${member.assignedTasks?.length || 0} tasks</span>
+                                    <span><i class="fas fa-clock mr-1"></i>Available now</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                grid.appendChild(memberCard);
+            });
+            
+            if (teamMembers.length === 0) {
+                grid.innerHTML = '<p class="text-center text-gray-500 py-8">No team members yet. Add your first team member to get started!</p>';
+            }
+        }
+
+        function displayUnassignedTasks() {
+            const container = document.getElementById('unassignedTasks');
+            const unassignedTasks = teamTasks.filter(task => !task.assignedTo && task.status !== 'completed');
+            
+            container.innerHTML = '';
+            
+            unassignedTasks.forEach(task => {
+                const taskCard = document.createElement('div');
+                taskCard.className = 'task-assignment-card bg-gray-50 rounded-lg p-4 border border-gray-200';
+                
+                const priorityColor = task.priority === 'Critical' ? 'red' : 
+                                    task.priority === 'High' ? 'orange' : 
+                                    task.priority === 'Medium' ? 'yellow' : 'gray';
+                
+                taskCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800">${task.name || task.title}</h4>
+                            <p class="text-sm text-gray-600 mb-2">${task.projectName}</p>
+                            <p class="text-xs text-gray-500">${task.description || task.duration ? `${task.duration || 'N/A'} days • ${task.priority} priority` : 'No description'}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-1 bg-${priorityColor}-100 text-${priorityColor}-800 text-xs rounded">
+                                ${task.priority}
+                            </span>
+                            <button onclick="openTaskAssignment(${task.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition">
+                                <i class="fas fa-user-plus mr-1"></i>Assign
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(taskCard);
+            });
+            
+            if (unassignedTasks.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">All tasks are assigned! Great work team!</p>';
+            }
+        }
+
+        function updateWorkloadChart() {
+            const ctx = document.getElementById('workloadChart').getContext('2d');
+            
+            if (workloadChart) {
+                workloadChart.destroy();
+            }
+            
+            const data = {
+                labels: teamMembers.map(m => m.name.split(' ')[0]),
+                datasets: [{
+                    label: 'Current Workload',
+                    data: teamMembers.map(m => m.currentWorkload),
+                    backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Max Workload',
+                    data: teamMembers.map(m => m.maxWorkload),
+                    backgroundColor: 'rgba(229, 231, 235, 0.8)',
+                    borderColor: 'rgba(229, 231, 235, 1)',
+                    borderWidth: 1
+                }]
+            };
+            
+            workloadChart = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayTeamChat() {
+            const container = document.getElementById('teamChat');
+            container.innerHTML = '';
+            
+            teamChat.slice(-10).reverse().forEach(message => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'comment-bubble';
+                
+                if (message.type === 'assignment') {
+                    messageDiv.innerHTML = `
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-tasks text-blue-600 mr-2"></i>
+                                <span class="text-sm font-medium text-blue-800">${message.sender}</span>
+                            </div>
+                            <p class="text-sm text-gray-700">${message.message}</p>
+                            <p class="text-xs text-gray-500 mt-1">${formatTime(message.timestamp)}</p>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="text-sm font-medium text-gray-800">${message.sender}</span>
+                                <span class="text-xs text-gray-500">${formatTime(message.timestamp)}</span>
+                            </div>
+                            <p class="text-sm text-gray-700">${message.message}</p>
+                        </div>
+                    `;
+                }
+                
+                container.appendChild(messageDiv);
+            });
+        }
+
+        function displayRecentActivity() {
+            const container = document.getElementById('recentActivity');
+            const activities = [
+                ...teamChat.filter(c => c.type === 'assignment').slice(-3).map(c => ({
+                    icon: 'fa-tasks',
+                    color: 'blue',
+                    text: c.message,
+                    time: formatTime(c.timestamp)
+                })),
+                ...teamMembers.filter(m => m.assignedTasks && m.assignedTasks.length > 0).slice(-3).map(m => ({
+                    icon: 'fa-user-check',
+                    color: 'green',
+                    text: `${m.name} assigned ${m.assignedTasks.length} tasks`,
+                    time: '2 hours ago'
+                }))
+            ].slice(-5);
+            
+            container.innerHTML = '';
+            
+            activities.forEach(activity => {
+                const activityDiv = document.createElement('div');
+                activityDiv.className = 'flex items-center space-x-3 text-sm';
+                activityDiv.innerHTML = `
+                    <i class="fas ${activity.icon} text-${activity.color}-600"></i>
+                    <div class="flex-1">
+                        <p class="text-gray-700">${activity.text}</p>
+                        <p class="text-xs text-gray-500">${activity.time}</p>
+                    </div>
+                `;
+                container.appendChild(activityDiv);
+            });
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500">No recent activity</p>';
+            }
+        }
+
+        // Modal functions
+        function openTeamSetup() {
+            document.getElementById('teamMemberModal').classList.remove('hidden');
+        }
+
+        function closeTeamMemberModal() {
+            document.getElementById('teamMemberModal').classList.add('hidden');
+            document.getElementById('teamMemberForm').reset();
+        }
+
+        function openTaskAssignment(taskId) {
+            selectedTaskForAssignment = teamTasks.find(t => t.id === taskId);
+            if (!selectedTaskForAssignment) return;
+            
+            // Populate task info
+            document.getElementById('selectedTaskInfo').innerHTML = `
+                <p class="font-medium">${selectedTaskForAssignment.name || selectedTaskForAssignment.title}</p>
+                <p class="text-sm text-gray-600">${selectedTaskForAssignment.projectName}</p>
+                <p class="text-xs text-gray-500">${selectedTaskForAssignment.description || 'No description'}</p>
+            `;
+            
+            // Populate available team members
+            const memberSelect = document.getElementById('assignToMember');
+            memberSelect.innerHTML = '<option value="">Select Team Member</option>';
+            
+            teamMembers.filter(m => m.status === 'available').forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.id;
+                option.textContent = `${member.name} (${member.currentWorkload}% workload)`;
+                memberSelect.appendChild(option);
+            });
+            
+            document.getElementById('taskAssignmentModal').classList.remove('hidden');
+        }
+
+        function closeTaskAssignmentModal() {
+            document.getElementById('taskAssignmentModal').classList.add('hidden');
+            document.getElementById('taskAssignmentForm').reset();
+            selectedTaskForAssignment = null;
+        }
+
+        // Form submission functions
+        function saveTeamMember(event) {
+            event.preventDefault();
+            
+            const newMember = {
+                id: Date.now(),
+                name: document.getElementById('memberName').value,
+                email: document.getElementById('memberEmail').value,
+                role: document.getElementById('memberRole').value,
+                experience: document.getElementById('memberExperience').value,
+                skills: document.getElementById('memberSkills').value.split(',').map(s => s.trim()).filter(s => s),
+                maxWorkload: parseInt(document.getElementById('memberMaxWorkload').value),
+                currentWorkload: 0,
+                assignedTasks: [],
+                status: "available",
+                avatar: document.getElementById('memberName').value.split(' ').map(n => n[0]).join('').toUpperCase(),
+                online: true
+            };
+            
+            teamMembers.push(newMember);
+            saveTeamMembers();
+            updateUI();
+            closeTeamMemberModal();
+            
+            // Add system message
+            teamChat.push({
+                id: Date.now(),
+                sender: "System",
+                message: `New team member added: ${newMember.name} as ${newMember.role}`,
+                timestamp: new Date().toISOString(),
+                type: "assignment"
+            });
+            saveTeamChat();
+            updateUI();
+        }
+
+        function saveTaskAssignment(event) {
+            event.preventDefault();
+            
+            if (!selectedTaskForAssignment) return;
+            
+            const memberId = parseInt(document.getElementById('assignToMember').value);
+            const member = teamMembers.find(m => m.id === memberId);
+            
+            if (member) {
+                // Assign task to member
+                selectedTaskForAssignment.assignedTo = memberId;
+                selectedTaskForAssignment.assignedToName = member.name;
+                selectedTaskForAssignment.assignedPriority = document.getElementById('assignmentPriority').value;
+                selectedTaskForAssignment.estimatedHours = parseInt(document.getElementById('estimatedHours').value);
+                selectedTaskForAssignment.assignmentNotes = document.getElementById('assignmentNotes').value;
+                
+                // Update member's workload and tasks
+                if (!member.assignedTasks) member.assignedTasks = [];
+                member.assignedTasks.push(selectedTaskForAssignment.id);
+                member.currentWorkload = Math.min(member.currentWorkload + 10, member.maxWorkload);
+                
+                // Check if member is now busy
+                if (member.currentWorkload >= member.maxWorkload * 0.8) {
+                    member.status = "busy";
+                }
+                
+                // Save and update
+                saveTeamMembers();
+                saveTeamTasks();
+                updateUI();
+                closeTaskAssignmentModal();
+                
+                // Add chat message
+                teamChat.push({
+                    id: Date.now(),
+                    sender: "System",
+                    message: `Task assigned: "${selectedTaskForAssignment.name || selectedTaskForAssignment.title}" to ${member.name}`,
+                    timestamp: new Date().toISOString(),
+                    type: "assignment"
+                });
+                saveTeamChat();
+                updateUI();
+            }
+        }
+
+        // Communication functions
+        function sendMessage() {
+            const messageInput = document.getElementById('chatMessage');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                teamChat.push({
+                    id: Date.now(),
+                    sender: "Current User", // In real app, this would be the logged-in user
+                    message: message,
+                    timestamp: new Date().toISOString(),
+                    type: "message"
+                });
+                
+                saveTeamChat();
+                updateUI();
+                messageInput.value = '';
+            }
+        }
+
+        // Filter functions
+        function filterBySkill() {
+            const skill = document.getElementById('skillFilter').value;
+            // Implementation for skill filtering
+            console.log('Filter by skill:', skill);
+        }
+
+        function filterByAvailability() {
+            const availability = document.getElementById('availabilityFilter').value;
+            // Implementation for availability filtering
+            console.log('Filter by availability:', availability);
+        }
+
+        // Utility functions
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+            return `${Math.floor(diffMins / 1440)}d ago`;
+        }
+
+        function goToDashboard() {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeData();
+            
+            // Add enter key support for chat
+            document.getElementById('chatMessage').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

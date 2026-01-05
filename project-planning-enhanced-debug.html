@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Project Planning - Debug Version</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
+    <!-- DEBUG: Test if JavaScript loads -->
+    <script>
+        console.log('DEBUG: JavaScript is loading...');
+        alert('DEBUG: JavaScript file is loading!');
+    </script>
+    
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    
+    <header class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-3xl font-bold">Enhanced Project Planning - DEBUG VERSION</h1>
+            <p class="text-purple-100 text-sm">Testing JavaScript functionality</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">JavaScript Test</h2>
+            
+            <div class="space-y-4">
+                <button onclick="testAlert()" class="btn-primary">
+                    Test Alert
+                </button>
+                
+                <button onclick="testConsole()" class="btn-primary ml-4">
+                    Test Console
+                </button>
+                
+                <button onclick="testModal()" class="btn-primary ml-4">
+                    Test Modal
+                </button>
+                
+                <div id="test-output" class="mt-4 p-4 bg-gray-100 rounded">
+                    Waiting for test...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Test Modal -->
+    <div id="test-modal" class="modal">
+        <div class="bg-white rounded-xl p-8 max-w-md">
+            <h3 class="text-xl font-bold mb-4">Test Modal</h3>
+            <p class="mb-4">If you see this, modals are working!</p>
+            <button onclick="closeModal()" class="btn-primary">Close</button>
+        </div>
+    </div>
+
+    <script>
+        console.log('DEBUG: Main script block starting...');
+        
+        function testAlert() {
+            alert('Alert is working!');
+            document.getElementById('test-output').innerHTML = 'Alert test passed!';
+        }
+        
+        function testConsole() {
+            console.log('Console test successful!');
+            document.getElementById('test-output').innerHTML = 'Console test passed! Check browser console.';
+        }
+        
+        function testModal() {
+            document.getElementById('test-modal').classList.add('active');
+            document.getElementById('test-output').innerHTML = 'Modal test initiated!';
+        }
+        
+        function closeModal() {
+            document.getElementById('test-modal').classList.remove('active');
+            document.getElementById('test-output').innerHTML = 'Modal closed successfully!';
+        }
+        
+        // Test on load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DEBUG: DOMContentLoaded fired!');
+            document.getElementById('test-output').innerHTML = 'JavaScript loaded successfully! DOMContentLoaded fired.';
+        });
+        
+        console.log('DEBUG: Script block completed!');
+    </script>
+</body>
+</html>

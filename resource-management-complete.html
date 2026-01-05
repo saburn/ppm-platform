@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Management - Complete Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+            background: #f3f4f6;
+            padding: 4px;
+            border-radius: 8px;
+        }
+        .nav-tab {
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .nav-tab:hover {
+            background: #e5e7eb;
+        }
+        .nav-tab.active {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Conflict Card */
+        .conflict-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #ef4444;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 16px;
+        }
+
+        /* Solution Card */
+        .solution-card {
+            background: #f0fdf4;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #86efac;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .solution-card:hover {
+            background: #dcfce7;
+            transform: translateX(4px);
+        }
+
+        /* Report Card */
+        .report-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .report-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            border-color: #3b82f6;
+        }
+
+        /* Time Off Calendar */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .calendar-day:hover {
+            background: #f3f4f6;
+        }
+        .calendar-day.timeoff {
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 600;
+        }
+        .calendar-day.today {
+            border: 2px solid #3b82f6;
+            font-weight: bold;
+        }
+
+        /* Cost Tracker */
+        .cost-bar {
+            height: 32px;
+            border-radius: 8px;
+            background: #e5e7eb;
+            position: relative;
+            overflow: hidden;
+        }
+        .cost-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            transition: width 0.5s ease;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 10000;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.info { border-left: 4px solid #3b82f6; }
+        .toast.warning { border-left: 4px solid #f59e0b; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Main Container -->
+    <div class="min-h-screen p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+                    <i class="fas fa-users-cog text-blue-600"></i>
+                    Resource Management Suite
+                    <span class="text-sm font-normal px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full">
+                        Complete
+                    </span>
+                </h1>
+                <p class="text-gray-600">Advanced resource management with AI, capacity planning, and conflict resolution</p>
+            </div>
+
+            <!-- Navigation -->
+            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                <div class="nav-tabs">
+                    <div class="nav-tab active" onclick="switchTab('overview')">
+                        <i class="fas fa-home"></i> Overview
+                    </div>
+                    <div class="nav-tab" onclick="switchTab('conflicts')">
+                        <i class="fas fa-exclamation-triangle"></i> Conflicts
+                    </div>
+                    <div class="nav-tab" onclick="switchTab('timeoff')">
+                        <i class="fas fa-calendar-times"></i> Time Off
+                    </div>
+                    <div class="nav-tab" onclick="switchTab('costs')">
+                        <i class="fas fa-dollar-sign"></i> Costs
+                    </div>
+                    <div class="nav-tab" onclick="switchTab('reports')">
+                        <i class="fas fa-chart-bar"></i> Reports
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overview Tab -->
+            <div id="tab-overview" class="tab-content">
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm text-gray-600">Total Resources</p>
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900">24</p>
+                        <p class="text-sm text-gray-600 mt-1">Across 5 departments</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm text-gray-600">Utilization</p>
+                            <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900">73%</p>
+                        <p class="text-sm text-green-600 mt-1">↑ 8% from last month</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm text-gray-600">Conflicts</p>
+                            <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900">3</p>
+                        <p class="text-sm text-gray-600 mt-1">Need resolution</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm text-gray-600">Monthly Cost</p>
+                            <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900">$245K</p>
+                        <p class="text-sm text-gray-600 mt-1">Within budget</p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <a href="resource-management-core.html" class="report-card">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-users text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Resource Directory</h3>
+                                <p class="text-sm text-gray-600">View all team members, skills, and availability</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="resource-management-ai-matching.html" class="report-card">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-brain text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">AI Matching</h3>
+                                <p class="text-sm text-gray-600">Find best resource matches with 92% accuracy</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="resource-management-capacity.html" class="report-card">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-calendar-alt text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Capacity Planning</h3>
+                                <p class="text-sm text-gray-600">Heat maps, forecasting, and allocation</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user-plus text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Alex Chen assigned to Mobile App Redesign</p>
+                                <p class="text-sm text-gray-600">2 hours ago • 96% match score</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Conflict detected: Maria Garcia overallocated</p>
+                                <p class="text-sm text-gray-600">5 hours ago • Week 8 at 120%</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-check-circle text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Capacity plan approved for Q2</p>
+                                <p class="text-sm text-gray-600">1 day ago • 73% avg utilization</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conflicts Tab -->
+            <div id="tab-conflicts" class="tab-content" style="display: none;">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Resource Conflicts</h2>
+                    <p class="text-gray-600">AI-detected conflicts with one-click resolution</p>
+                </div>
+
+                <!-- Conflict 1 -->
+                <div class="conflict-card">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-1">Overallocation: Maria Garcia</h3>
+                                <p class="text-sm text-gray-600">Week 8 • Allocated at 120% (40 hours over capacity)</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-red-100 text-red-800 text-sm font-semibold rounded-full">Critical</span>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                        <h4 class="font-semibold text-gray-900 mb-2">Current Assignments</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-700">Mobile App Redesign</span>
+                                <span class="font-semibold">40%</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-700">Dashboard Enhancement</span>
+                                <span class="font-semibold">50%</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-700">Bug Fixes</span>
+                                <span class="font-semibold">30%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="font-semibold text-gray-900 mb-3">AI-Recommended Solutions</h4>
+                    <div class="space-y-3">
+                        <div class="solution-card" onclick="applySolution(1)">
+                            <div class="flex items-center justify-between mb-2">
+                                <h5 class="font-semibold text-green-900">Redistribute Bug Fixes</h5>
+                                <span class="text-sm text-green-700">Best Match</span>
+                            </div>
+                            <p class="text-sm text-green-800 mb-2">Reassign Bug Fixes (30%) to James Wilson who has 78% utilization</p>
+                            <div class="flex items-center gap-2 text-xs text-green-700">
+                                <i class="fas fa-check"></i>
+                                <span>95% skill match • Available immediately</span>
+                            </div>
+                        </div>
+
+                        <div class="solution-card" onclick="applySolution(2)">
+                            <div class="flex items-center justify-between mb-2">
+                                <h5 class="font-semibold text-green-900">Reduce Dashboard Scope</h5>
+                                <span class="text-sm text-green-700">Alternative</span>
+                            </div>
+                            <p class="text-sm text-green-800 mb-2">Reduce Dashboard Enhancement to 30% and defer non-critical features</p>
+                            <div class="flex items-center gap-2 text-xs text-green-700">
+                                <i class="fas fa-check"></i>
+                                <span>No resource change needed • Low risk</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conflict 2 -->
+                <div class="conflict-card">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-calendar-times text-yellow-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-1">Vacation Conflict: Sophie Turner</h3>
+                                <p class="text-sm text-gray-600">Week 10 • On vacation but assigned to critical project</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-semibold rounded-full">Medium</span>
+                    </div>
+
+                    <h4 class="font-semibold text-gray-900 mb-3">AI-Recommended Solutions</h4>
+                    <div class="space-y-3">
+                        <div class="solution-card" onclick="applySolution(3)">
+                            <div class="flex items-center justify-between mb-2">
+                                <h5 class="font-semibold text-green-900">Assign Backup PM</h5>
+                                <span class="text-sm text-green-700">Recommended</span>
+                            </div>
+                            <p class="text-sm text-green-800 mb-2">Temporarily assign Lisa Anderson as backup PM for Week 10</p>
+                            <div class="flex items-center gap-2 text-xs text-green-700">
+                                <i class="fas fa-check"></i>
+                                <span>88% skill match • 75% available</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Off Tab -->
+            <div id="tab-timeoff" class="tab-content" style="display: none;">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Time Off Management</h2>
+                    <div class="flex gap-3">
+                        <button onclick="requestTimeOff()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-plus"></i> Request Time Off
+                        </button>
+                        <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                            <i class="fas fa-download"></i> Export Calendar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Calendar -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">February 2024</h3>
+                        <div class="calendar-grid mb-2">
+                            <div class="text-center text-xs font-semibold text-gray-600 py-2">Sun</div>
+                            <div class="text-center text-xs font-semibold text-gray-600 py-2">Mon</div>
+                            <div class="text-center text-xs font-semibold text-gray-600 py-2">Tue</div>
+                            <div class="text-center text-xs font-semibold text-gray-600 py-2">Wed</div>
+                            <div class="text-center text-xs font-semibold text-gray-600 py-2">Thu</div>
+                            <div class="text-center text-xs font-semibold text-gray-600 py-2">Fri</div>
+                            <div class="text-center text-xs font-semibold text-gray-600 py-2">Sat</div>
+                        </div>
+                        <div class="calendar-grid">
+                            ${generateCalendar()}
+                        </div>
+                        <div class="mt-4 flex items-center gap-4 text-sm">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 rounded bg-yellow-200"></div>
+                                <span class="text-gray-600">Time Off</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 rounded border-2 border-blue-500"></div>
+                                <span class="text-gray-600">Today</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Time Off -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Upcoming Time Off</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+                                <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                    ST
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900">Sophie Turner</p>
+                                    <p class="text-sm text-gray-600">Feb 12-16 • 5 days</p>
+                                    <span class="inline-block mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">Approved</span>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+                                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                    RL
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900">Robert Lee</p>
+                                    <p class="text-sm text-gray-600">Feb 19-23 • 5 days</p>
+                                    <span class="inline-block mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">Approved</span>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+                                <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                    ED
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900">Emily Davis</p>
+                                    <p class="text-sm text-gray-600">Feb 26-28 • 3 days</p>
+                                    <span class="inline-block mt-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">Pending</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Costs Tab -->
+            <div id="tab-costs" class="tab-content" style="display: none;">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Resource Costs</h2>
+                    <p class="text-gray-600">Track and forecast resource costs across projects</p>
+                </div>
+
+                <!-- Cost Summary -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <p class="text-sm text-gray-600 mb-2">Monthly Budget</p>
+                        <p class="text-3xl font-bold text-gray-900 mb-4">$250,000</p>
+                        <div class="cost-bar">
+                            <div class="cost-fill" style="width: 98%; background: #10b981;">
+                                $245,000 (98%)
+                            </div>
+                        </div>
+                        <p class="text-sm text-green-600 mt-2">$5,000 under budget</p>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <p class="text-sm text-gray-600 mb-2">Avg Cost per Resource</p>
+                        <p class="text-3xl font-bold text-gray-900 mb-4">$10,208</p>
+                        <p class="text-sm text-gray-600">Per month</p>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <p class="text-sm text-gray-600 mb-2">Projected Q1 Cost</p>
+                        <p class="text-3xl font-bold text-gray-900 mb-4">$735,000</p>
+                        <p class="text-sm text-gray-600">3 months forecast</p>
+                    </div>
+                </div>
+
+                <!-- Cost by Department -->
+                <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Cost by Department</h3>
+                    <canvas id="cost-chart" height="300"></canvas>
+                </div>
+
+                <!-- Top Costs -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Highest Cost Resources</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                    AC
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900">Alex Chen</p>
+                                    <p class="text-sm text-gray-600">Senior Developer • $120/hr</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-bold text-gray-900">$20,400</p>
+                                <p class="text-sm text-gray-600">This month</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                    MB
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900">Michael Brown</p>
+                                    <p class="text-sm text-gray-600">Backend Developer • $110/hr</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-bold text-gray-900">$18,700</p>
+                                <p class="text-sm text-gray-600">This month</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="tab-reports" class="tab-content" style="display: none;">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Resource Reports</h2>
+                    <button onclick="scheduleReport()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-envelope"></i> Schedule Report
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="report-card" onclick="generateReport('utilization')">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-chart-line text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Utilization Report</h3>
+                                <p class="text-sm text-gray-600">Resource utilization trends and forecasts</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-card" onclick="generateReport('capacity')">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-calendar-alt text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Capacity Report</h3>
+                                <p class="text-sm text-gray-600">Available capacity and demand analysis</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-card" onclick="generateReport('cost')">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-dollar-sign text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Cost Analysis</h3>
+                                <p class="text-sm text-gray-600">Resource costs and budget tracking</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-card" onclick="generateReport('skills')">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-graduation-cap text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Skills Matrix</h3>
+                                <p class="text-sm text-gray-600">Team skills inventory and gaps</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-card" onclick="generateReport('productivity')">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-rocket text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Productivity Report</h3>
+                                <p class="text-sm text-gray-600">Performance metrics and trends</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-card" onclick="generateReport('forecast')">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-crystal-ball text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Forecast Report</h3>
+                                <p class="text-sm text-gray-600">Future resource needs prediction</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCostChart();
+            showToast('Resource Management Suite loaded!', 'success');
+        });
+
+        // Tab Switching
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            event.target.closest('.nav-tab').classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.getElementById(`tab-${tab}`).style.display = 'block';
+
+            showToast(`Switched to ${tab} tab`, 'info');
+        }
+
+        // Generate Calendar
+        function generateCalendar() {
+            const days = [];
+            const timeOffDays = [5, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 26, 27, 28];
+            const today = 15;
+
+            for (let i = 1; i <= 29; i++) {
+                const classes = ['calendar-day'];
+                if (timeOffDays.includes(i)) classes.push('timeoff');
+                if (i === today) classes.push('today');
+                days.push(`<div class="${classes.join(' ')}">${i}</div>`);
+            }
+            return days.join('');
+        }
+
+        // Initialize Cost Chart
+        function initializeCostChart() {
+            const ctx = document.getElementById('cost-chart')?.getContext('2d');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Engineering', 'Design', 'QA', 'PM', 'DevOps'],
+                    datasets: [{
+                        label: 'Monthly Cost ($K)',
+                        data: [120, 45, 35, 30, 15],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value + 'K';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Actions
+        function applySolution(id) {
+            showToast('Applying solution...', 'info');
+            setTimeout(() => {
+                showToast('Solution applied successfully! Conflict resolved.', 'success');
+            }, 1500);
+        }
+
+        function requestTimeOff() {
+            showToast('Opening time off request form...', 'info');
+        }
+
+        function scheduleReport() {
+            showToast('Opening report scheduler...', 'info');
+        }
+
+        function generateReport(type) {
+            showToast(`Generating ${type} report...`, 'info');
+            setTimeout(() => {
+                showToast('Report generated successfully!', 'success');
+            }, 1500);
+        }
+
+        // Toast
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                info: 'fa-info-circle',
+                warning: 'fa-exclamation-triangle'
+            };
+            
+            toast.innerHTML = `
+                <i class="fas ${icons[type]} text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-semibold text-gray-900">${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                    <p class="text-sm text-gray-600">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

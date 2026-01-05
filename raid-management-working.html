@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAID Management - AI PPM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f1f5f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+        }
+
+        .raid-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .raid-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .raid-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8fafc;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .icon-risks { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .icon-assumptions { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .icon-issues { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+        .icon-dependencies { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .raid-tabs {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 30px;
+        }
+
+        .tab {
+            padding: 16px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab:hover {
+            color: var(--dark);
+        }
+
+        .tab-content {
+            padding: 30px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .risk-matrix {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .matrix-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(5, 1fr);
+            grid-template-rows: repeat(5, 80px);
+            gap: 4px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .matrix-header {
+            font-weight: 600;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            background: var(--light);
+            border-radius: 6px;
+        }
+
+        .matrix-cell {
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .matrix-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .risk-very-low { background: #dcfce7; color: #166534; }
+        .risk-low { background: #fef3c7; color: #92400e; }
+        .risk-medium { background: #fed7aa; color: #9a3412; }
+        .risk-high { background: #fecaca; color: #991b1b; }
+        .risk-very-high { background: #ef4444; color: white; }
+
+        .risk-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .raid-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .raid-item:hover {
+            transform: translateX(4px);
+        }
+
+        .raid-item.risk { border-left-color: var(--danger); }
+        .raid-item.assumption { border-left-color: var(--warning); }
+        .raid-item.issue { border-left-color: #f97316; }
+        .raid-item.dependency { border-left-color: #8b5cf6; }
+
+        .raid-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .raid-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .raid-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .raid-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .raid-description {
+            color: #475569;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .raid-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .raid-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .tag-high {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .tag-medium {
+            background: #fef3c7;
+            color: var(--warning);
+        }
+
+        .tag-low {
+            background: #dcfce7;
+            color: var(--success);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .add-raid-form {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .ai-insights {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .insight-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .insight-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--light);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-low { background: var(--success); }
+        .progress-medium { background: var(--warning); }
+        .progress-high { background: var(--danger); }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="min-h-screen bg-gray-50">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <button onclick="window.history.back()" class="mr-4 text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h1 class="text-xl font-semibold text-gray-900">RAID Management</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="text-gray-500 hover:text-gray-700" onclick="exportData()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <button class="text-gray-500 hover:text-gray-700" onclick="openSettings()">
+                            <i class="fas fa-cog"></i> Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- RAID Stats -->
+            <div class="raid-stats">
+                <div class="stat-card">
+                    <div class="stat-icon icon-risks">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-value">18</div>
+                    <div class="stat-label">Active Risks</div>
+                    <div class="text-xs text-green-600 mt-2">
+                        <i class="fas fa-arrow-down"></i> 3 mitigated this week
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-assumptions">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Assumptions</div>
+                    <div class="text-xs text-yellow-600 mt-2">
+                        <i class="fas fa-exclamation-circle"></i> 2 need validation
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-issues">
+                        <i class="fas fa-bug"></i>
+                    </div>
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Open Issues</div>
+                    <div class="text-xs text-red-600 mt-2">
+                        <i class="fas fa-arrow-up"></i> 2 new today
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-dependencies">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <div class="stat-value">15</div>
+                    <div class="stat-label">Dependencies</div>
+                    <div class="text-xs text-blue-600 mt-2">
+                        <i class="fas fa-check"></i> 12 on track
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            <div class="ai-insights">
+                <div class="insight-title">
+                    <i class="fas fa-brain"></i>
+                    AI Risk Intelligence
+                </div>
+                <div class="insight-item">
+                    <div style="font-weight: 600; margin-bottom: 4px;">PREDICTIVE ALERT</div>
+                    <div style="font-size: 14px; opacity: 0.9;">Website Redesign project has 78% probability of schedule delay based on current resource constraints and task completion rates.</div>
+                </div>
+                <div class="insight-item">
+                    <div style="font-weight: 600; margin-bottom: 4px;">MITIGATION RECOMMENDATION</div>
+                    <div style="font-size: 14px; opacity: 0.9;">Adding 2 senior developers to E-commerce Platform could reduce overall project risk by 45% and improve on-time delivery probability to 92%.</div>
+                </div>
+                <div class="insight-item">
+                    <div style="font-weight: 600; margin-bottom: 4px;">PATTERN DETECTION</div>
+                    <div style="font-size: 14px; opacity: 0.9;">3 projects showing similar risk patterns in Q2. Consider implementing standardized mitigation strategies across portfolio.</div>
+                </div>
+            </div>
+
+            <!-- RAID Container -->
+            <div class="raid-container">
+                <div class="raid-tabs">
+                    <button class="tab active" onclick="switchTab('dashboard', this)">Dashboard</button>
+                    <button class="tab" onclick="switchTab('risks', this)">Risks</button>
+                    <button class="tab" onclick="switchTab('assumptions', this)">Assumptions</button>
+                    <button class="tab" onclick="switchTab('issues', this)">Issues</button>
+                    <button class="tab" onclick="switchTab('dependencies', this)">Dependencies</button>
+                    <button class="tab" onclick="switchTab('add', this)">Add RAID Item</button>
+                </div>
+
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-content active">
+                    <div class="risk-matrix">
+                        <h3 class="matrix-title">Risk Assessment Matrix</h3>
+                        <div class="matrix-grid" id="riskMatrix"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3 class="chart-title">Risk Trend Analysis</h3>
+                        <canvas id="riskTrendChart" height="100"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3 class="chart-title">RAID Distribution</h3>
+                        <canvas id="raidDistributionChart" height="100"></canvas>
+                    </div>
+                </div>
+
+                <!-- Risks Tab -->
+                <div id="risks" class="tab-content">
+                    <div class="form-group mb-4">
+                        <div class="flex gap-4">
+                            <input type="text" class="form-input flex-1" placeholder="Search risks..." id="riskSearch" onkeyup="filterRisks()">
+                            <select class="form-select w-40" id="riskFilter" onchange="filterRisks()">
+                                <option value="">All Risks</option>
+                                <option value="high">High Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="risksList"></div>
+                </div>
+
+                <!-- Assumptions Tab -->
+                <div id="assumptions" class="tab-content">
+                    <div class="form-group mb-4">
+                        <div class="flex gap-4">
+                            <input type="text" class="form-input flex-1" placeholder="Search assumptions..." id="assumptionSearch" onkeyup="filterAssumptions()">
+                            <select class="form-select w-40" id="assumptionFilter" onchange="filterAssumptions()">
+                                <option value="">All Status</option>
+                                <option value="validated">Validated</option>
+                                <option value="pending">Pending</option>
+                                <option value="invalidated">Invalidated</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="assumptionsList"></div>
+                </div>
+
+                <!-- Issues Tab -->
+                <div id="issues" class="tab-content">
+                    <div class="form-group mb-4">
+                        <div class="flex gap-4">
+                            <input type="text" class="form-input flex-1" placeholder="Search issues..." id="issueSearch" onkeyup="filterIssues()">
+                            <select class="form-select w-40" id="issueFilter" onchange="filterIssues()">
+                                <option value="">All Issues</option>
+                                <option value="open">Open</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="issuesList"></div>
+                </div>
+
+                <!-- Dependencies Tab -->
+                <div id="dependencies" class="tab-content">
+                    <div class="form-group mb-4">
+                        <div class="flex gap-4">
+                            <input type="text" class="form-input flex-1" placeholder="Search dependencies..." id="dependencySearch" onkeyup="filterDependencies()">
+                            <select class="form-select w-40" id="dependencyFilter" onchange="filterDependencies()">
+                                <option value="">All Types</option>
+                                <option value="internal">Internal</option>
+                                <option value="external">External</option>
+                                <option value="technical">Technical</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="dependenciesList"></div>
+                </div>
+
+                <!-- Add RAID Item Tab -->
+                <div id="add" class="tab-content">
+                    <div class="add-raid-form">
+                        <h3 class="text-lg font-semibold mb-4">Add New RAID Item</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Type</label>
+                                <select class="form-select" id="raidType">
+                                    <option value="">Select Type</option>
+                                    <option value="risk">Risk</option>
+                                    <option value="assumption">Assumption</option>
+                                    <option value="issue">Issue</option>
+                                    <option value="dependency">Dependency</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-input" id="raidTitle" placeholder="Enter title">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" id="raidPriority">
+                                    <option value="">Select Priority</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Project</label>
+                                <select class="form-select" id="raidProject">
+                                    <option value="">Select Project</option>
+                                    <option value="website">Website Redesign</option>
+                                    <option value="mobile">Mobile App Development</option>
+                                    <option value="ecommerce">E-commerce Platform</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Impact (1-5)</label>
+                                <select class="form-select" id="raidImpact">
+                                    <option value="">Select Impact</option>
+                                    <option value="1">1 - Very Low</option>
+                                    <option value="2">2 - Low</option>
+                                    <option value="3">3 - Medium</option>
+                                    <option value="4">4 - High</option>
+                                    <option value="5">5 - Very High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Probability (1-5)</label>
+                                <select class="form-select" id="raidProbability">
+                                    <option value="">Select Probability</option>
+                                    <option value="1">1 - Very Low</option>
+                                    <option value="2">2 - Low</option>
+                                    <option value="3">3 - Medium</option>
+                                    <option value="4">4 - High</option>
+                                    <option value="5">5 - Very High</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-textarea" id="raidDescription" placeholder="Describe the RAID item in detail..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mitigation Plan / Action Items</label>
+                            <textarea class="form-textarea" id="raidMitigation" placeholder="Describe mitigation steps or required actions..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Owner</label>
+                            <input type="text" class="form-input" id="raidOwner" placeholder="Assign responsibility">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Due Date</label>
+                            <input type="date" class="form-input" id="raidDueDate">
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-primary" onclick="saveRAIDItem()">
+                                <i class="fas fa-save"></i> Save RAID Item
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearRAIDForm()">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RAID Details Modal -->
+    <div class="modal" id="raidModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-lg font-semibold">RAID Item Details</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Modal content will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample RAID data
+        const raidData = {
+            risks: [
+                {
+                    id: 'R001',
+                    title: 'Timeline delay in Website Redesign',
+                    description: 'Current resource allocation may not meet Q2 deadline based on sprint velocity analysis',
+                    impact: 4,
+                    probability: 4,
+                    priority: 'high',
+                    project: 'Website Redesign',
+                    owner: 'John Smith',
+                    status: 'monitoring',
+                    mitigation: 'Consider adding 2 additional developers or extending timeline by 3 weeks',
+                    createdDate: '2024-03-10'
+                },
+                {
+                    id: 'R002',
+                    title: 'Budget overrun risk in Marketing Campaign',
+                    description: 'External vendor costs exceeding initial estimates by 15%',
+                    impact: 3,
+                    probability: 3,
+                    priority: 'medium',
+                    project: 'Marketing Campaign',
+                    owner: 'Sarah Chen',
+                    status: 'mitigating',
+                    mitigation: 'Renegotiate vendor contracts and explore alternative solutions',
+                    createdDate: '2024-03-08'
+                },
+                {
+                    id: 'R003',
+                    title: 'Technical debt in Mobile App',
+                    description: 'Legacy codebase may impact future scalability and maintenance',
+                    impact: 4,
+                    probability: 2,
+                    priority: 'medium',
+                    project: 'Mobile App',
+                    owner: 'Mike Johnson',
+                    status: 'monitoring',
+                    mitigation: 'Plan refactoring sprint in Q3 to address technical debt',
+                    createdDate: '2024-03-05'
+                }
+            ],
+            assumptions: [
+                {
+                    id: 'A001',
+                    title: 'Third-party API availability maintained',
+                    description: 'External payment gateway API will remain available with current uptime SLA',
+                    impact: 5,
+                    probability: 2,
+                    status: 'validated',
+                    project: 'E-commerce Platform',
+                    owner: 'Alex Brown',
+                    validation: 'Confirmed with vendor through 2024'
+                },
+                {
+                    id: 'A002',
+                    title: 'Client requirements remain stable',
+                    description: 'Stakeholder requirements will not significantly change during development',
+                    impact: 3,
+                    probability: 3,
+                    status: 'pending',
+                    project: 'Website Redesign',
+                    owner: 'Emily Davis',
+                    validation: 'Pending stakeholder confirmation'
+                }
+            ],
+            issues: [
+                {
+                    id: 'I001',
+                    title: 'Database performance degradation',
+                    description: 'Query response times increased by 40% after last deployment',
+                    impact: 4,
+                    priority: 'high',
+                    status: 'in-progress',
+                    project: 'E-commerce Platform',
+                    owner: 'David Lee',
+                    resolution: 'Database optimization team assigned - ETA 3 days'
+                },
+                {
+                    id: 'I002',
+                    title: 'UI inconsistency across browsers',
+                    description: 'CSS rendering issues in Safari browser affecting user experience',
+                    impact: 2,
+                    priority: 'medium',
+                    status: 'open',
+                    project: 'Website Redesign',
+                    owner: 'Chris Wilson',
+                    resolution: 'Awaiting designer review'
+                }
+            ],
+            dependencies: [
+                {
+                    id: 'D001',
+                    title: 'API integration with payment gateway',
+                    description: 'E-commerce platform depends on third-party payment processing API',
+                    type: 'external',
+                    impact: 5,
+                    priority: 'critical',
+                    status: 'on-track',
+                    project: 'E-commerce Platform',
+                    owner: 'Sarah Chen',
+                    target: 'API v2.1 integration by April 15'
+                },
+                {
+                    id: 'D002',
+                    title: 'Design system approval',
+                    description: 'Mobile app design depends on corporate design system finalization',
+                    type: 'internal',
+                    impact: 3,
+                    priority: 'medium',
+                    status: 'on-track',
+                    project: 'Mobile App',
+                    owner: 'Emily Davis',
+                    target: 'Design system approval by March 30'
+                }
+            ]
+        };
+
+        let charts = {};
+        let currentRAIDItem = null;
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDashboard();
+            populateRAIDLists();
+        });
+
+        // Switch tabs
+        function switchTab(tabName, element) {
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            element.classList.add('active');
+
+            // Show corresponding content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+
+            // Initialize charts for dashboard tab
+            if (tabName === 'dashboard') {
+                setTimeout(() => initializeCharts(), 100);
+            }
+        }
+
+        // Initialize Dashboard
+        function initializeDashboard() {
+            generateRiskMatrix();
+            initializeCharts();
+        }
+
+        // Generate risk matrix
+        function generateRiskMatrix() {
+            const matrixGrid = document.getElementById('riskMatrix');
+            
+            // Impact labels (rows)
+            const impactLabels = ['Very High', 'High', 'Medium', 'Low', 'Very Low'];
+            // Probability labels (columns)
+            const probLabels = ['Very Low', 'Low', 'Medium', 'High', 'Very High'];
+            
+            let html = '';
+
+            // Empty corner
+            html += '<div></div>';
+            
+            // Probability headers
+            probLabels.forEach(label => {
+                html += `<div class="matrix-header">${label}</div>`;
+            });
+
+            // Impact rows and cells
+            impactLabels.forEach((impact, rowIndex) => {
+                html += `<div class="matrix-header">${impact}</div>`;
+                
+                probLabels.forEach((prob, colIndex) => {
+                    const riskScore = (5 - rowIndex) * (colIndex + 1);
+                    const riskClass = getRiskClass(riskScore);
+                    const risksInCell = findRisksInCell(rowIndex, colIndex);
+                    
+                    html += `<div class="matrix-cell ${riskClass}" onclick="viewRisksInCell(${rowIndex}, ${colIndex})" title="Impact: ${impact}, Probability: ${prob}">`;
+                    
+                    if (risksInCell.length > 0) {
+                        html += `<div class="risk-dot" style="background: ${risksInCell.length > 1 ? '#ef4444' : '#f59e0b'}"></div>`;
+                        html += `${risksInCell.length}`;
+                    }
+                    
+                    html += `</div>`;
+                });
+            });
+
+            matrixGrid.innerHTML = html;
+        }
+
+        // Get risk class based on score
+        function getRiskClass(score) {
+            if (score <= 3) return 'risk-very-low';
+            if (score <= 6) return 'risk-low';
+            if (score <= 12) return 'risk-medium';
+            if (score <= 18) return 'risk-high';
+            return 'risk-very-high';
+        }
+
+        // Find risks in matrix cell
+        function findRisksInCell(impactIndex, probIndex) {
+            const impactValue = 5 - impactIndex;
+            const probValue = probIndex + 1;
+            
+            return raidData.risks.filter(risk => 
+                risk.impact === impactValue && risk.probability === probValue
+            );
+        }
+
+        // View risks in matrix cell
+        function viewRisksInCell(impactIndex, probIndex) {
+            const risks = findRisksInCell(impactIndex, probIndex);
+            if (risks.length > 0) {
+                const riskList = risks.map(r => `• ${r.title} (${r.project})`).join('\n');
+                alert(`Risks in this cell:\n\n${riskList}`);
+            }
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Risk Trend Chart
+            const trendCtx = document.getElementById('riskTrendChart').getContext('2d');
+            if (charts.trend) charts.trend.destroy();
+            
+            charts.trend = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'High Risks',
+                        data: [5, 4, 6, 5, 4, 3],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Medium Risks',
+                        data: [8, 9, 7, 8, 9, 8],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Low Risks',
+                        data: [3, 4, 5, 4, 5, 7],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // RAID Distribution Chart
+            const distributionCtx = document.getElementById('raidDistributionChart').getContext('2d');
+            if (charts.distribution) charts.distribution.destroy();
+            
+            charts.distribution = new Chart(distributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Risks', 'Assumptions', 'Issues', 'Dependencies'],
+                    datasets: [{
+                        data: [
+                            raidData.risks.length,
+                            raidData.assumptions.length,
+                            raidData.issues.length,
+                            raidData.dependencies.length
+                        ],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#f97316', '#8b5cf6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Populate RAID lists
+        function populateRAIDLists() {
+            populateRisksList();
+            populateAssumptionsList();
+            populateIssuesList();
+            populateDependenciesList();
+        }
+
+        // Populate risks list
+        function populateRisksList() {
+            const risksList = document.getElementById('risksList');
+            let html = '';
+
+            raidData.risks.forEach(risk => {
+                html += createRAIDItem(risk, 'risk');
+            });
+
+            risksList.innerHTML = html;
+        }
+
+        // Populate assumptions list
+        function populateAssumptionsList() {
+            const assumptionsList = document.getElementById('assumptionsList');
+            let html = '';
+
+            raidData.assumptions.forEach(assumption => {
+                html += createRAIDItem(assumption, 'assumption');
+            });
+
+            assumptionsList.innerHTML = html;
+        }
+
+        // Populate issues list
+        function populateIssuesList() {
+            const issuesList = document.getElementById('issuesList');
+            let html = '';
+
+            raidData.issues.forEach(issue => {
+                html += createRAIDItem(issue, 'issue');
+            });
+
+            issuesList.innerHTML = html;
+        }
+
+        // Populate dependencies list
+        function populateDependenciesList() {
+            const dependenciesList = document.getElementById('dependenciesList');
+            let html = '';
+
+            raidData.dependencies.forEach(dependency => {
+                html += createRAIDItem(dependency, 'dependency');
+            });
+
+            dependenciesList.innerHTML = html;
+        }
+
+        // Create RAID item HTML
+        function createRAIDItem(item, type) {
+            const priorityClass = item.priority ? `tag-${item.priority}` : '';
+            const statusColor = getStatusColor(item.status);
+            
+            return `
+                <div class="raid-item ${type}">
+                    <div class="raid-header-info">
+                        <div>
+                            <div class="raid-title">${item.title}</div>
+                            <div class="raid-meta">
+                                <div class="raid-meta-item">
+                                    <i class="fas fa-folder"></i> ${item.project}
+                                </div>
+                                <div class="raid-meta-item">
+                                    <i class="fas fa-user"></i> ${item.owner}
+                                </div>
+                                <div class="raid-meta-item">
+                                    <i class="fas fa-calendar"></i> ${item.createdDate}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-semibold">Score: ${item.impact * item.probability}</div>
+                            <div class="text-xs text-gray-500">I: ${item.impact} P: ${item.probability}</div>
+                        </div>
+                    </div>
+                    <div class="raid-description">${item.description}</div>
+                    <div class="raid-actions">
+                        <div class="raid-tags">
+                            ${item.priority ? `<span class="tag ${priorityClass}">${item.priority}</span>` : ''}
+                            <span class="tag" style="background: ${statusColor}; color: white;">${item.status}</span>
+                            ${item.type ? `<span class="tag" style="background: #e2e8f0; color: #475569;">${item.type}</span>` : ''}
+                        </div>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-primary" onclick="viewRAIDDetails('${type}', '${item.id}')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="action-btn btn-secondary" onclick="editRAIDItem('${type}', '${item.id}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Get status color
+        function getStatusColor(status) {
+            const colors = {
+                'monitoring': '#6366f1',
+                'mitigating': '#f59e0b',
+                'validated': '#10b981',
+                'pending': '#f59e0b',
+                'invalidated': '#ef4444',
+                'in-progress': '#6366f1',
+                'open': '#ef4444',
+                'resolved': '#10b981',
+                'on-track': '#10b981',
+                'delayed': '#ef4444'
+            };
+            return colors[status] || '#64748b';
+        }
+
+        // View RAID details
+        function viewRAIDDetails(type, id) {
+            const item = raidData[type].find(i => i.id === id);
+            if (item) {
+                currentRAIDItem = item;
+                const modalBody = document.getElementById('modalBody');
+                
+                let statusHTML = '';
+                if (item.status === 'validated' || item.status === 'pending' || item.status === 'invalidated') {
+                    statusHTML = `<div class="text-sm text-gray-600 mt-2">Validation: ${item.validation || 'N/A'}</div>`;
+                } else if (item.resolution) {
+                    statusHTML = `<div class="text-sm text-gray-600 mt-2">Resolution: ${item.resolution}</div>`;
+                }
+                
+                let additionalInfo = '';
+                if (item.target) {
+                    additionalInfo = `<div class="text-sm text-gray-600 mt-2">Target: ${item.target}</div>`;
+                }
+                
+                modalBody.innerHTML = `
+                    <div class="mb-4">
+                        <span class="tag" style="background: ${getStatusColor(item.status)}; color: white;">${item.status}</span>
+                        <span class="tag tag-${item.priority}">${item.priority}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <div class="text-sm text-gray-600">Impact Score</div>
+                            <div class="font-semibold">${item.impact}/5</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">Probability Score</div>
+                            <div class="font-semibold">${item.probability}/5</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">Overall Risk Score</div>
+                            <div class="font-semibold">${item.impact * item.probability}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">Project</div>
+                            <div class="font-semibold">${item.project}</div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="text-sm text-gray-600">Description</div>
+                        <div class="mt-1">${item.description}</div>
+                    </div>
+                    ${item.mitigation ? `
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-600">Mitigation Plan</div>
+                            <div class="mt-1">${item.mitigation}</div>
+                        </div>
+                    ` : ''}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <div class="text-sm text-gray-600">Owner</div>
+                            <div class="font-semibold">${item.owner}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">Created</div>
+                            <div class="font-semibold">${item.createdDate}</div>
+                        </div>
+                    </div>
+                    ${statusHTML}
+                    ${additionalInfo}
+                `;
+                document.getElementById('raidModal').classList.add('active');
+            }
+        }
+
+        // Edit RAID item
+        function editRAIDItem(type, id) {
+            const item = raidData[type].find(i => i.id === id);
+            if (item) {
+                alert(`Edit functionality for ${type} ${id} would open an edit form with current data pre-filled`);
+            }
+        }
+
+        // Save RAID item
+        function saveRAIDItem() {
+            const type = document.getElementById('raidType').value;
+            const title = document.getElementById('raidTitle').value;
+            const priority = document.getElementById('raidPriority').value;
+            const project = document.getElementById('raidProject').value;
+            const impact = document.getElementById('raidImpact').value;
+            const probability = document.getElementById('raidProbability').value;
+            const description = document.getElementById('raidDescription').value;
+            const mitigation = document.getElementById('raidMitigation').value;
+            const owner = document.getElementById('raidOwner').value;
+            const dueDate = document.getElementById('raidDueDate').value;
+
+            if (!type || !title || !priority || !project || !impact || !probability || !description || !owner) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Create new RAID item
+            const newRAID = {
+                id: generateRAIDId(type),
+                title: title,
+                description: description,
+                impact: parseInt(impact),
+                probability: parseInt(probability),
+                priority: priority,
+                project: project,
+                owner: owner,
+                status: 'monitoring',
+                mitigation: mitigation,
+                createdDate: new Date().toISOString().split('T')[0],
+                dueDate: dueDate
+            };
+
+            // Add to appropriate array
+            raidData[type + 's'].push(newRAID);
+            
+            // Refresh lists and switch to appropriate tab
+            populateRAIDLists();
+            clearRAIDForm();
+            
+            // Switch to the appropriate tab
+            const tabName = type === 'dependency' ? 'dependencies' : type + 's';
+            const tabButton = Array.from(document.querySelectorAll('.tab')).find(btn => 
+                btn.textContent.toLowerCase().includes(tabName)
+            );
+            if (tabButton) {
+                switchTab(tabName === 'dependencies' ? 'dependencies' : tabName, tabButton);
+            }
+
+            alert(`${type.charAt(0).toUpperCase() + type.slice(1)} item created successfully!`);
+        }
+
+        // Generate RAID ID
+        function generateRAIDId(type) {
+            const prefix = type.charAt(0).toUpperCase();
+            const existingIds = raidData[type + 's'].map(item => item.id);
+            const maxId = existingIds.length > 0 ? 
+                Math.max(...existingIds.map(id => parseInt(id.replace(prefix, '')))) : 0;
+            return `${prefix}${String(maxId + 1).padStart(3, '0')}`;
+        }
+
+        // Clear RAID form
+        function clearRAIDForm() {
+            document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(input => {
+                input.value = '';
+            });
+        }
+
+        // Filter functions
+        function filterRisks() {
+            const searchTerm = document.getElementById('riskSearch').value.toLowerCase();
+            const priority = document.getElementById('riskFilter').value;
+            filterList('risksList', raidData.risks, searchTerm, priority);
+        }
+
+        function filterAssumptions() {
+            const searchTerm = document.getElementById('assumptionSearch').value.toLowerCase();
+            const status = document.getElementById('assumptionFilter').value;
+            filterList('assumptionsList', raidData.assumptions, searchTerm, status);
+        }
+
+        function filterIssues() {
+            const searchTerm = document.getElementById('issueSearch').value.toLowerCase();
+            const status = document.getElementById('issueFilter').value;
+            filterList('issuesList', raidData.issues, searchTerm, status);
+        }
+
+        function filterDependencies() {
+            const searchTerm = document.getElementById('dependencySearch').value.toLowerCase();
+            const type = document.getElementById('dependencyFilter').value;
+            filterList('dependenciesList', raidData.dependencies, searchTerm, type);
+        }
+
+        // Generic filter function
+        function filterList(listId, items, searchTerm, filterValue) {
+            const listElement = document.getElementById(listId);
+            let html = '';
+
+            const filteredItems = items.filter(item => {
+                const matchesSearch = !searchTerm || 
+                    item.title.toLowerCase().includes(searchTerm) ||
+                    item.description.toLowerCase().includes(searchTerm) ||
+                    item.project.toLowerCase().includes(searchTerm) ||
+                    item.owner.toLowerCase().includes(searchTerm);
+
+                const matchesFilter = !filterValue || 
+                    (filterValue === 'high' && item.priority === 'high') ||
+                    (filterValue === 'medium' && item.priority === 'medium') ||
+                    (filterValue === 'low' && item.priority === 'low') ||
+                    item.status === filterValue ||
+                    item.type === filterValue;
+
+                return matchesSearch && matchesFilter;
+            });
+
+            filteredItems.forEach(item => {
+                const type = listId.replace('List', '');
+                html += createRAIDItem(item, type.slice(0, -1)); // Remove 's' from plural
+            });
+
+            listElement.innerHTML = html || '<p class="text-gray-500 text-center py-8">No items found matching your criteria</p>';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('raidModal').classList.remove('active');
+        }
+
+        // Export data
+        function exportData() {
+            alert('Export functionality would generate a comprehensive RAID report in PDF/Excel format');
+        }
+
+        // Open settings
+        function openSettings() {
+            alert('Settings panel for configuring RAID management preferences and notifications');
+        }
+    </script>
+</body>
+</html>

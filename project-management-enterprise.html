@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management - AI PPM Pro Enterprise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .glass-morphism { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .chart-container { position: relative; height: 250px; width: 100%; }
+        .sidebar { width: 280px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+        .nav-item { padding: 12px 20px; color: white; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.1); padding-left: 28px; }
+        .nav-item.active { background: rgba(255, 255, 255, 0.2); border-left: 4px solid #4ade80; }
+        .project-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; cursor: pointer; }
+        .project-card:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; }
+        .modal-content { background: white; border-radius: 16px; padding: 30px; max-width: 800px; margin: 50px auto; max-height: 80vh; overflow-y: auto; }
+        .tab-button { padding: 10px 20px; background: #f3f4f6; border: none; cursor: pointer; border-radius: 8px 8px 0 0; transition: all 0.3s ease; }
+        .tab-button.active { background: white; border-bottom: 3px solid #3b82f6; }
+        .tab-content { display: none; padding: 20px; background: white; border-radius: 0 0 12px 12px; }
+        .tab-content.active { display: block; }
+        .ai-insight { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .progress-ring { transform: rotate(-90deg); }
+        .progress-ring-circle { transition: stroke-dashoffset 0.35s; stroke: #4ade80; stroke-width: 4; fill: transparent; }
+        .kpi-card { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .kpi-value { font-size: 2.5rem; font-weight: 700; color: #1e3c72; }
+        .kpi-label { font-size: 0.875rem; color: #6b7280; margin-top: 5px; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="flex h-screen">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar fixed left-0 top-0 h-full z-50 overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-white text-xl font-bold">AI PPM Pro</h1>
+                        <p class="text-blue-200 text-xs">Enterprise Edition</p>
+                    </div>
+                </div>
+                
+                <nav class="space-y-2">
+                    <div class="nav-item" onclick="navigateTo('dashboard-beautiful.html')">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Main Dashboard</span>
+                    </div>
+                    <div class="nav-item active" onclick="navigateTo('project-management-enterprise.html')">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>Project Management</span>
+                    </div>
+                    <div class="nav-item" onclick="navigateTo('gantt-chart-enterprise.html')">
+                        <i class="fas fa-chart-gantt"></i>
+                        <span>Gantt Charts</span>
+                    </div>
+                    <div class="nav-item" onclick="navigateTo('resource-allocation-enterprise.html')">
+                        <i class="fas fa-users"></i>
+                        <span>Resource Management</span>
+                    </div>
+                    <div class="nav-item" onclick="navigateTo('raid-management-enterprise.html')">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>RAID Management</span>
+                    </div>
+                    <div class="nav-item" onclick="navigateTo('automated-reports-enterprise.html')">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Automated Reports</span>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 ml-80">
+            <!-- Header -->
+            <header class="glass-morphism shadow-lg">
+                <div class="px-8 py-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Project Management Hub</h2>
+                            <p class="text-gray-600">Enterprise-grade project portfolio oversight with AI intelligence</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <button onclick="createNewProject()" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all">
+                                <i class="fas fa-plus mr-2"></i>New Project
+                            </button>
+                            <button onclick="openAIInsights()" class="bg-gradient-to-r from-green-500 to-teal-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all">
+                                <i class="fas fa-brain mr-2"></i>AI Insights
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- KPI Dashboard -->
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="kpi-card">
+                        <div class="kpi-value">24</div>
+                        <div class="kpi-label">Active Projects</div>
+                        <div class="mt-2 text-green-600 text-sm">
+                            <i class="fas fa-arrow-up"></i> 12% from last month
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-value">87%</div>
+                        <div class="kpi-label">Overall Progress</div>
+                        <div class="mt-2 text-green-600 text-sm">
+                            <i class="fas fa-arrow-up"></i> 5% improvement
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-value">$2.4M</div>
+                        <div class="kpi-label">Total Budget</div>
+                        <div class="mt-2 text-blue-600 text-sm">
+                            <i class="fas fa-arrow-right"></i> On track
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-value">156</div>
+                        <div class="kpi-label">Team Members</div>
+                        <div class="mt-2 text-green-600 text-sm">
+                            <i class="fas fa-arrow-up"></i> 8 new this week
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Portfolio Analytics -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="glass-morphism rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-4">Project Status Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-morphism rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-4">Budget Utilization</h3>
+                        <div class="chart-container">
+                            <canvas id="budgetChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects Grid -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-white">Active Projects</h3>
+                        <div class="flex gap-4">
+                            <select class="px-4 py-2 rounded-lg bg-white/90 backdrop-blur" onchange="filterProjects(this.value)">
+                                <option value="all">All Projects</option>
+                                <option value="active">Active</option>
+                                <option value="planning">Planning</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                            <input type="text" placeholder="Search projects..." class="px-4 py-2 rounded-lg bg-white/90 backdrop-blur" onkeyup="searchProjects(this.value)">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="projectsGrid">
+                        <!-- Projects will be dynamically loaded here -->
+                    </div>
+                </div>
+
+                <!-- AI Insights Section -->
+                <div class="ai-insight rounded-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold">
+                            <i class="fas fa-brain mr-2"></i>AI Portfolio Intelligence
+                        </h3>
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-sm">Live Analysis</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold mb-2">🎯 Critical Recommendations</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li>• Project "Digital Transformation" shows 23% budget variance - recommend immediate review</li>
+                                <li>• Resource allocation in "Cloud Migration" exceeds capacity - consider rebalancing</li>
+                                <li>• 3 high-risk projects need mitigation plans within 48 hours</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2">📊 Predictive Analytics</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li>• 87% probability of meeting Q4 targets</li>
+                                <li>• Forecasted $150K savings through optimization</li>
+                                <li>• 2 projects at risk of delay - early intervention needed</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Details Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold" id="modalProjectName">Project Details</h2>
+                <button onclick="closeProjectModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Project Tabs -->
+            <div class="mb-6">
+                <div class="flex space-x-2 border-b">
+                    <button class="tab-button active" onclick="switchTab('overview')">Overview</button>
+                    <button class="tab-button" onclick="switchTab('tasks')">Tasks</button>
+                    <button class="tab-button" onclick="switchTab('team')">Team</button>
+                    <button class="tab-button" onclick="switchTab('timeline')">Timeline</button>
+                    <button class="tab-button" onclick="switchTab('budget')">Budget</button>
+                    <button class="tab-button" onclick="switchTab('risks')">Risks</button>
+                </div>
+            </div>
+
+            <!-- Tab Contents -->
+            <div id="overview" class="tab-content active">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-semibold mb-3">Project Information</h3>
+                        <div class="space-y-2">
+                            <div><strong>Start Date:</strong> <span id="projectStartDate">Jan 15, 2024</span></div>
+                            <div><strong>End Date:</strong> <span id="projectEndDate">Jun 30, 2024</span></div>
+                            <div><strong>Budget:</strong> <span id="projectBudget">$450,000</span></div>
+                            <div><strong>Progress:</strong> <span id="projectProgress">67%</span></div>
+                            <div><strong>Status:</strong> <span id="projectStatus" class="status-badge bg-green-100 text-green-800">On Track</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold mb-3">Key Metrics</h3>
+                        <div class="chart-container">
+                            <canvas id="projectMetricsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tasks" class="tab-content">
+                <div class="mb-4">
+                    <button onclick="addNewTask()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                        <i class="fas fa-plus mr-2"></i>Add Task
+                    </button>
+                </div>
+                <div id="tasksList" class="space-y-3">
+                    <!-- Tasks will be loaded here -->
+                </div>
+            </div>
+
+            <div id="team" class="tab-content">
+                <div class="mb-4">
+                    <button onclick="addTeamMember()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                        <i class="fas fa-user-plus mr-2"></i>Add Team Member
+                    </button>
+                </div>
+                <div id="teamList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Team members will be loaded here -->
+                </div>
+            </div>
+
+            <div id="timeline" class="tab-content">
+                <div class="chart-container" style="height: 400px;">
+                    <canvas id="projectTimelineChart"></canvas>
+                </div>
+            </div>
+
+            <div id="budget" class="tab-content">
+                <div class="chart-container">
+                    <canvas id="projectBudgetChart"></canvas>
+                </div>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600">$280,500</div>
+                        <div class="text-sm text-gray-600">Spent to Date</div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600">$169,500</div>
+                        <div class="text-sm text-gray-600">Remaining</div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-2xl font-bold text-orange-600">62%</div>
+                        <div class="text-sm text-gray-600">Budget Utilized</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="risks" class="tab-content">
+                <div class="mb-4">
+                    <button onclick="addNewRisk()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Add Risk
+                    </button>
+                    <button onclick="runAIRiskAnalysis()" class="ml-2 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600">
+                        <i class="fas fa-brain mr-2"></i>AI Risk Analysis
+                    </button>
+                </div>
+                <div id="risksList" class="space-y-3">
+                    <!-- Risks will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample project data
+        const projects = [
+            {
+                id: 1,
+                name: "Digital Transformation Initiative",
+                status: "Active",
+                progress: 67,
+                budget: 450000,
+                spent: 280500,
+                startDate: "2024-01-15",
+                endDate: "2024-06-30",
+                manager: "Sarah Johnson",
+                team: 12,
+                priority: "High",
+                description: "Complete digital transformation of enterprise systems",
+                risks: 3,
+                tasks: 24
+            },
+            {
+                id: 2,
+                name: "Cloud Migration Project",
+                status: "Active", 
+                progress: 45,
+                budget: 680000,
+                spent: 306000,
+                startDate: "2024-02-01",
+                endDate: "2024-09-30",
+                manager: "Michael Chen",
+                team: 18,
+                priority: "Critical",
+                description: "Migrate all infrastructure to AWS cloud platform",
+                risks: 5,
+                tasks: 36
+            },
+            {
+                id: 3,
+                name: "Customer Experience Platform",
+                status: "Planning",
+                progress: 15,
+                budget: 320000,
+                spent: 48000,
+                startDate: "2024-03-15",
+                endDate: "2024-08-31",
+                manager: "Emily Rodriguez",
+                team: 8,
+                priority: "Medium",
+                description: "Build comprehensive customer experience platform",
+                risks: 2,
+                tasks: 18
+            },
+            {
+                id: 4,
+                name: "AI Integration Suite",
+                status: "Active",
+                progress: 78,
+                budget: 520000,
+                spent: 405600,
+                startDate: "2023-11-01",
+                endDate: "2024-04-30",
+                manager: "David Kim",
+                team: 14,
+                priority: "High",
+                description: "Integrate AI capabilities across all products",
+                risks: 4,
+                tasks: 42
+            },
+            {
+                id: 5,
+                name: "Security Enhancement Program",
+                status: "Active",
+                progress: 89,
+                budget: 280000,
+                spent: 249200,
+                startDate: "2023-10-15",
+                endDate: "2024-03-31",
+                manager: "Lisa Wang",
+                team: 6,
+                priority: "Critical",
+                description: "Enterprise-wide security enhancement initiative",
+                risks: 1,
+                tasks: 15
+            },
+            {
+                id: 6,
+                name: "Mobile App Development",
+                status: "Completed",
+                progress: 100,
+                budget: 380000,
+                spent: 361000,
+                startDate: "2023-08-01",
+                endDate: "2024-01-31",
+                manager: "James Wilson",
+                team: 10,
+                priority: "Medium",
+                description: "Develop native mobile applications for iOS and Android",
+                risks: 0,
+                tasks: 28
+            }
+        ];
+
+        let currentProject = null;
+        let charts = {};
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProjects();
+            initializeDashboardCharts();
+        });
+
+        function loadProjects(filter = 'all') {
+            const grid = document.getElementById('projectsGrid');
+            const filteredProjects = filter === 'all' ? projects : projects.filter(p => 
+                filter === 'active' ? p.status === 'Active' :
+                filter === 'planning' ? p.status === 'Planning' :
+                filter === 'completed' ? p.status === 'Completed' : true
+            );
+
+            grid.innerHTML = filteredProjects.map(project => `
+                <div class="project-card" onclick="viewProjectDetails(${project.id})">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="font-bold text-lg">${project.name}</h4>
+                        <span class="status-badge ${
+                            project.status === 'Active' ? 'bg-green-100 text-green-800' :
+                            project.status === 'Planning' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                        }">${project.status}</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">${project.description}</p>
+                    
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Progress</span>
+                            <span>${project.progress}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style="width: ${project.progress}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <i class="fas fa-dollar-sign text-blue-500 mr-1"></i>
+                            <span>$${(project.budget/1000).toFixed(0)}K</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-users text-green-500 mr-1"></i>
+                            <span>${project.team} members</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-tasks text-purple-500 mr-1"></i>
+                            <span>${project.tasks} tasks</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-exclamation-triangle text-red-500 mr-1"></i>
+                            <span>${project.risks} risks</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-user-circle mr-2"></i>
+                                ${project.manager}
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                View Details →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewProjectDetails(projectId) {
+            currentProject = projects.find(p => p.id === projectId);
+            if (!currentProject) return;
+
+            document.getElementById('modalProjectName').textContent = currentProject.name;
+            document.getElementById('projectStartDate').textContent = new Date(currentProject.startDate).toLocaleDateString();
+            document.getElementById('projectEndDate').textContent = new Date(currentProject.endDate).toLocaleDateString();
+            document.getElementById('projectBudget').textContent = `$${currentProject.budget.toLocaleString()}`;
+            document.getElementById('projectProgress').textContent = `${currentProject.progress}%`;
+            
+            const statusElement = document.getElementById('projectStatus');
+            statusElement.textContent = currentProject.status;
+            statusElement.className = `status-badge ${
+                currentProject.status === 'Active' ? 'bg-green-100 text-green-800' :
+                currentProject.status === 'Planning' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-gray-100 text-gray-800'
+            }`;
+
+            // Load project-specific data
+            loadProjectTasks();
+            loadProjectTeam();
+            loadProjectTimeline();
+            loadProjectBudget();
+            loadProjectRisks();
+            initializeProjectMetrics();
+
+            document.getElementById('projectModal').style.display = 'block';
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModal').style.display = 'none';
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function initializeDashboardCharts() {
+            // Status Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            charts.statusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Active', 'Planning', 'Completed', 'On Hold'],
+                    datasets: [{
+                        data: [4, 1, 1, 0],
+                        backgroundColor: ['#10b981', '#f59e0b', '#6b7280', '#ef4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Budget Chart
+            const budgetCtx = document.getElementById('budgetChart').getContext('2d');
+            charts.budgetChart = new Chart(budgetCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Digital Transformation', 'Cloud Migration', 'CX Platform', 'AI Integration', 'Security', 'Mobile App'],
+                    datasets: [{
+                        label: 'Budgeted',
+                        data: [450, 680, 320, 520, 280, 380],
+                        backgroundColor: '#3b82f6'
+                    }, {
+                        label: 'Spent',
+                        data: [280.5, 306, 48, 405.6, 249.2, 361],
+                        backgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function initializeProjectMetrics() {
+            const ctx = document.getElementById('projectMetricsChart').getContext('2d');
+            if (charts.projectMetrics) {
+                charts.projectMetrics.destroy();
+            }
+            
+            charts.projectMetrics = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Schedule', 'Budget', 'Quality', 'Resources', 'Risks', 'Stakeholders'],
+                    datasets: [{
+                        label: 'Current Performance',
+                        data: [85, 78, 92, 70, 65, 88],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 2
+                    }, {
+                        label: 'Target',
+                        data: [90, 85, 95, 80, 80, 90],
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: '#10b981',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadProjectTasks() {
+            const tasks = [
+                { id: 1, name: 'Requirements Analysis', status: 'Completed', assignee: 'John Doe', dueDate: '2024-01-30', priority: 'High' },
+                { id: 2, name: 'System Design', status: 'In Progress', assignee: 'Jane Smith', dueDate: '2024-02-15', priority: 'High' },
+                { id: 3, name: 'Development Phase 1', status: 'In Progress', assignee: 'Mike Johnson', dueDate: '2024-03-30', priority: 'Medium' },
+                { id: 4, name: 'Testing & QA', status: 'Not Started', assignee: 'Sarah Lee', dueDate: '2024-05-15', priority: 'Medium' },
+                { id: 5, name: 'Deployment', status: 'Not Started', assignee: 'Tom Wilson', dueDate: '2024-06-20', priority: 'High' }
+            ];
+
+            const tasksList = document.getElementById('tasksList');
+            tasksList.innerHTML = tasks.map(task => `
+                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold">${task.name}</h4>
+                            <div class="text-sm text-gray-600 mt-1">
+                                <i class="fas fa-user mr-1"></i>${task.assignee} | 
+                                <i class="fas fa-calendar mr-1"></i>${new Date(task.dueDate).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-1 rounded text-xs font-medium ${
+                                task.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                                task.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                            }">${task.status}</span>
+                            <span class="px-2 py-1 rounded text-xs font-medium ${
+                                task.priority === 'High' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                            }">${task.priority}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadProjectTeam() {
+            const team = [
+                { id: 1, name: 'John Doe', role: 'Project Manager', avatar: 'JD', workload: 85%, skills: ['Leadership', 'Planning'] },
+                { id: 2, name: 'Jane Smith', role: 'Lead Developer', avatar: 'JS', workload: 90%, skills: ['JavaScript', 'React'] },
+                { id: 3, name: 'Mike Johnson', role: 'Backend Developer', avatar: 'MJ', workload: 75%, skills: ['Python', 'AWS'] },
+                { id: 4, name: 'Sarah Lee', role: 'UI/UX Designer', avatar: 'SL', workload: 60%, skills: ['Figma', 'Design'] }
+            ];
+
+            const teamList = document.getElementById('teamList');
+            teamList.innerHTML = team.map(member => `
+                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                            ${member.avatar}
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">${member.name}</h4>
+                            <p class="text-sm text-gray-600">${member.role}</p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Workload</span>
+                            <span>${member.workload}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style="width: ${member.workload}"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-1">
+                        ${member.skills.map(skill => `<span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">${skill}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadProjectTimeline() {
+            const ctx = document.getElementById('projectTimelineChart').getContext('2d');
+            if (charts.projectTimeline) {
+                charts.projectTimeline.destroy();
+            }
+            
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+            charts.projectTimeline = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Planned Progress',
+                        data: [10, 25, 40, 60, 80, 100],
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 2
+                    }, {
+                        label: 'Actual Progress',
+                        data: [8, 22, 38, 55, 67, 67],
+                        backgroundColor: 'rgba(16, 185, 129, 0.5)',
+                        borderColor: '#10b981',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadProjectBudget() {
+            const ctx = document.getElementById('projectBudgetChart').getContext('2d');
+            if (charts.projectBudget) {
+                charts.projectBudget.destroy();
+            }
+            
+            const categories = ['Personnel', 'Infrastructure', 'Software', 'Training', 'Contingency'];
+            charts.projectBudget = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: [180000, 135000, 90000, 27000, 18000],
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#10b981',
+                            '#f59e0b',
+                            '#8b5cf6',
+                            '#ef4444'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        function loadProjectRisks() {
+            const risks = [
+                { id: 1, name: 'Resource Shortage', probability: 'High', impact: 'Medium', status: 'Active', mitigation: 'Cross-training team members' },
+                { id: 2, name: 'Technical Complexity', probability: 'Medium', impact: 'High', status: 'Monitoring', mitigation: 'Technical proof of concept' },
+                { id: 3, name: 'Timeline Delay', probability: 'Low', impact: 'High', status: 'Mitigated', mitigation: 'Buffer time allocated' }
+            ];
+
+            const risksList = document.getElementById('risksList');
+            risksList.innerHTML = risks.map(risk => `
+                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-semibold">${risk.name}</h4>
+                        <span class="px-2 py-1 rounded text-xs font-medium ${
+                            risk.status === 'Active' ? 'bg-red-100 text-red-800' :
+                            risk.status === 'Monitoring' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-green-100 text-green-800'
+                        }">${risk.status}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm mb-2">
+                        <div><strong>Probability:</strong> ${risk.probability}</div>
+                        <div><strong>Impact:</strong> ${risk.impact}</div>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        <strong>Mitigation:</strong> ${risk.mitigation}
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <button class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+                        <button class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterProjects(value) {
+            loadProjects(value);
+        }
+
+        function searchProjects(query) {
+            const grid = document.getElementById('projectsGrid');
+            const filteredProjects = projects.filter(p => 
+                p.name.toLowerCase().includes(query.toLowerCase()) ||
+                p.description.toLowerCase().includes(query.toLowerCase()) ||
+                p.manager.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            if (filteredProjects.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center text-white py-8">No projects found matching your search.</div>';
+                return;
+            }
+            
+            grid.innerHTML = filteredProjects.map(project => `
+                <div class="project-card" onclick="viewProjectDetails(${project.id})">
+                    <!-- Same project card HTML as in loadProjects() -->
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="font-bold text-lg">${project.name}</h4>
+                        <span class="status-badge ${
+                            project.status === 'Active' ? 'bg-green-100 text-green-800' :
+                            project.status === 'Planning' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                        }">${project.status}</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">${project.description}</p>
+                    
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Progress</span>
+                            <span>${project.progress}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style="width: ${project.progress}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <i class="fas fa-dollar-sign text-blue-500 mr-1"></i>
+                            <span>$${(project.budget/1000).toFixed(0)}K</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-users text-green-500 mr-1"></i>
+                            <span>${project.team} members</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-tasks text-purple-500 mr-1"></i>
+                            <span>${project.tasks} tasks</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-exclamation-triangle text-red-500 mr-1"></i>
+                            <span>${project.risks} risks</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-user-circle mr-2"></i>
+                                ${project.manager}
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                View Details →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function createNewProject() {
+            alert('Project creation wizard would open here. This would include: Project details, team assignment, budget allocation, timeline setup, and risk assessment.');
+        }
+
+        function openAIInsights() {
+            alert('AI Insights panel would open here with: Portfolio optimization recommendations, resource balancing suggestions, risk predictions, and success probability analysis.');
+        }
+
+        function addNewTask() {
+            alert('Task creation form would open here with: Task details, assignment, due date, priority, and dependencies.');
+        }
+
+        function addTeamMember() {
+            alert('Team member addition form would open here with: Role selection, skills assessment, workload assignment, and permissions.');
+        }
+
+        function addNewRisk() {
+            alert('Risk assessment form would open here with: Risk identification, probability/impact analysis, mitigation planning, and monitoring setup.');
+        }
+
+        function runAIRiskAnalysis() {
+            alert('AI Risk Analysis would run here with: Machine learning risk prediction, automated mitigation suggestions, and early warning alerts.');
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('projectModal');
+            if (event.target === modal) {
+                closeProjectModal();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise RAID Management - AI PPM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar {
+            background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+        }
+        .heatmap-cell {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .risk-card {
+            transition: all 0.3s ease;
+        }
+        .risk-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full w-64 text-white z-40">
+        <div class="p-6">
+            <div class="flex items-center mb-8">
+                <i class="fas fa-chart-line text-2xl mr-3"></i>
+                <h1 class="text-xl font-bold">AI PPM Pro</h1>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="dashboard-beautiful.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="project-management-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-project-diagram mr-3"></i>
+                    Projects
+                </a>
+                <a href="gantt-chart-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-chart-gantt mr-3"></i>
+                    Gantt Charts
+                </a>
+                <a href="resource-allocation-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-users-cog mr-3"></i>
+                    Resources
+                </a>
+                <a href="raid-management-enterprise.html" class="flex items-center p-3 rounded-lg bg-white bg-opacity-10">
+                    <i class="fas fa-shield-alt mr-3"></i>
+                    RAID
+                </a>
+                <a href="automated-reports-enterprise.html" class="flex items-center p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                    <i class="fas fa-file-alt mr-3"></i>
+                    Reports
+                </a>
+            </nav>
+        </div>
+        
+        <div class="absolute bottom-6 left-6 right-6">
+            <button onclick="logout()" class="w-full flex items-center justify-center p-3 rounded-lg bg-red-600 hover:bg-red-700 transition">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-64">
+        <!-- Header -->
+        <header class="bg-white shadow-sm px-8 py-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Enterprise RAID Management</h2>
+                    <p class="text-gray-600">Advanced risk intelligence with automated mitigation workflows</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="runRiskAssessment()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-brain mr-2"></i>AI Assessment
+                    </button>
+                    <button onclick="addRisk()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-plus mr-2"></i>Add Risk
+                    </button>
+                    <div class="flex items-center">
+                        <img src="https://picsum.photos/seed/avatar1/40/40.jpg" alt="User" class="w-10 h-10 rounded-full mr-3">
+                        <div>
+                            <div class="font-semibold">Demo User</div>
+                            <div class="text-sm text-gray-600">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="p-8">
+            <!-- RAID Overview Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-red-100 rounded-lg">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm text-red-600 font-semibold">+3</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">24</h3>
+                    <p class="text-gray-600">Active Risks</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-yellow-100 rounded-lg">
+                            <i class="fas fa-lightbulb text-yellow-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm text-green-600 font-semibold">-2</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">12</h3>
+                    <p class="text-gray-600">Assumptions</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-orange-100 rounded-lg">
+                            <i class="fas fa-bug text-orange-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm text-yellow-600 font-semibold">0</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">8</h3>
+                    <p class="text-gray-600">Issues</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-blue-100 rounded-lg">
+                            <i class="fas fa-link text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="text-sm text-green-600 font-semibold">+5</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">18</h3>
+                    <p class="text-gray-600">Dependencies</p>
+                </div>
+            </div>
+
+            <!-- Risk Assessment Heatmap -->
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Interactive Risk Assessment Matrix</h3>
+                    <div class="flex items-center space-x-4">
+                        <select class="px-3 py-2 border rounded-lg">
+                            <option>All Projects</option>
+                            <option>Website Redesign</option>
+                            <option>Mobile App Launch</option>
+                            <option>Data Migration</option>
+                        </select>
+                        <button onclick="refreshHeatmap()" class="p-2 bg-gray-100 rounded hover:bg-gray-200 transition">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-6 gap-4">
+                    <!-- Legend Row -->
+                    <div class="text-sm font-semibold text-gray-600"></div>
+                    <div class="text-center text-sm font-semibold text-gray-600">Very Low</div>
+                    <div class="text-center text-sm font-semibold text-gray-600">Low</div>
+                    <div class="text-center text-sm font-semibold text-gray-600">Medium</div>
+                    <div class="text-center text-sm font-semibold text-gray-600">High</div>
+                    <div class="text-center text-sm font-semibold text-gray-600">Very High</div>
+                    
+                    <!-- Impact Rows -->
+                    <div class="text-sm font-semibold text-gray-600 flex items-center">Very High</div>
+                    <div class="heatmap-cell h-16 rounded bg-green-200 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Critical Server Failure', 0.2, 0.9)">
+                        <span class="text-gray-700">1</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-yellow-200 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Budget Overrun Risk', 0.4, 0.9)">
+                        <span class="text-gray-700">2</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-orange-300 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Key Team Member Departure', 0.6, 0.9)">
+                        <span class="text-gray-700">3</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-red-400 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Security Breach', 0.8, 0.9)">
+                        <span class="text-gray-700">2</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-red-600 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Data Center Outage', 0.9, 0.9)">
+                        <span class="text-gray-700">1</span>
+                    </div>
+
+                    <div class="text-sm font-semibold text-gray-600 flex items-center">High</div>
+                    <div class="heatmap-cell h-16 rounded bg-green-200 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Minor Scope Creep', 0.2, 0.7)">
+                        <span class="text-gray-700">2</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-yellow-200 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Vendor Delay', 0.4, 0.7)">
+                        <span class="text-gray-700">4</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-orange-300 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Resource Shortage', 0.6, 0.7)">
+                        <span class="text-gray-700">3</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-red-400 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Technology Stack Risk', 0.8, 0.7)">
+                        <span class="text-gray-700">2</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-red-500 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Regulatory Compliance', 0.9, 0.7)">
+                        <span class="text-gray-700">1</span>
+                    </div>
+
+                    <div class="text-sm font-semibold text-gray-600 flex items-center">Medium</div>
+                    <div class="heatmap-cell h-16 rounded bg-green-300 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('UI Design Changes', 0.2, 0.5)">
+                        <span class="text-gray-700">3</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-yellow-300 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Integration Complexity', 0.4, 0.5)">
+                        <span class="text-gray-700">5</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-orange-400 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Testing Delays', 0.6, 0.5)">
+                        <span class="text-gray-700">2</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-orange-500 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Stakeholder Alignment', 0.8, 0.5)">
+                        <span class="text-gray-700">1</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-red-400 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Market Competition', 0.9, 0.5)">
+                        <span class="text-gray-700">0</span>
+                    </div>
+
+                    <div class="text-sm font-semibold text-gray-600 flex items-center">Low</div>
+                    <div class="heatmap-cell h-16 rounded bg-green-400 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Documentation Gaps', 0.2, 0.3)">
+                        <span class="text-gray-700">4</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-green-300 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Team Communication', 0.4, 0.3)">
+                        <span class="text-gray-700">2</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-yellow-400 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Code Quality', 0.6, 0.3)">
+                        <span class="text-gray-700">1</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-yellow-500 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Performance Issues', 0.8, 0.3)">
+                        <span class="text-gray-700">0</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-orange-400 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('User Adoption', 0.9, 0.3)">
+                        <span class="text-gray-700">0</span>
+                    </div>
+
+                    <div class="text-sm font-semibold text-gray-600 flex items-center">Very Low</div>
+                    <div class="heatmap-cell h-16 rounded bg-green-500 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Minor Bugs', 0.2, 0.1)">
+                        <span class="text-gray-700">5</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-green-400 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('UI Polish', 0.4, 0.1)">
+                        <span class="text-gray-700">3</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-green-300 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Training Needs', 0.6, 0.1)">
+                        <span class="text-gray-700">1</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-yellow-300 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Documentation Updates', 0.8, 0.1)">
+                        <span class="text-gray-700">0</span>
+                    </div>
+                    <div class="heatmap-cell h-16 rounded bg-yellow-400 flex items-center justify-center text-xs cursor-pointer" 
+                         onclick="showRiskDetails('Future Scalability', 0.9, 0.1)">
+                        <span class="text-gray-700">0</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-xs text-gray-600">
+                    <div class="flex items-center justify-between">
+                        <span>Probability →</span>
+                        <span>← Impact</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Radar and Trend Analysis -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">Risk Radar Analysis</h3>
+                    <canvas id="riskRadarChart"></canvas>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">Risk Trend Analysis</h3>
+                    <canvas id="riskTrendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Active Risks and Mitigation -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">Active High-Priority Risks</h3>
+                    <div class="space-y-4">
+                        <div class="risk-card border rounded-lg p-4 border-red-200">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-semibold text-red-800">Critical Server Failure</h4>
+                                    <p class="text-sm text-gray-600">Project: Data Migration</p>
+                                </div>
+                                <span class="px-2 py-1 bg-red-600 text-white rounded-full text-xs">Critical</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mb-3">
+                                <div>
+                                    <span class="text-sm font-semibold">Probability:</span>
+                                    <span class="text-sm text-red-600 ml-1">Very Low (20%)</span>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-semibold">Impact:</span>
+                                    <span class="text-sm text-red-600 ml-1">Very High</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-sm font-semibold">Mitigation:</span>
+                                <p class="text-sm text-gray-700">Redundant server infrastructure, regular backups, failover testing</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="updateRisk(1)" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                                    <i class="fas fa-edit mr-1"></i>Update
+                                </button>
+                                <button onclick="mitigateRisk(1)" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">
+                                    <i class="fas fa-shield-alt mr-1"></i>Mitigate
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="risk-card border rounded-lg p-4 border-orange-200">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-semibold text-orange-800">Resource Shortage</h4>
+                                    <p class="text-sm text-gray-600">Project: Mobile App Launch</p>
+                                </div>
+                                <span class="px-2 py-1 bg-orange-600 text-white rounded-full text-xs">High</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mb-3">
+                                <div>
+                                    <span class="text-sm font-semibold">Probability:</span>
+                                    <span class="text-sm text-orange-600 ml-1">Medium (60%)</span>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-semibold">Impact:</span>
+                                    <span class="text-sm text-orange-600 ml-1">High</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-sm font-semibold">Mitigation:</span>
+                                <p class="text-sm text-gray-700">Cross-training team members, contingency contractor agreements</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="updateRisk(2)" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                                    <i class="fas fa-edit mr-1"></i>Update
+                                </button>
+                                <button onclick="mitigateRisk(2)" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">
+                                    <i class="fas fa-shield-alt mr-1"></i>Mitigate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Risk Intelligence -->
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">AI Risk Intelligence</h3>
+                    <div class="space-y-4">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-brain text-blue-600 mr-2"></i>
+                                <span class="font-semibold text-blue-800">Predictive Analysis</span>
+                            </div>
+                            <p class="text-sm text-blue-700 mb-2">3 risks predicted to escalate in next 2 weeks</p>
+                            <div class="text-xs text-blue-600">
+                                <p>• Resource Shortage: 85% probability of escalation</p>
+                                <p>• Integration Complexity: New dependencies identified</p>
+                                <p>• Budget Overrun: Market factors increasing risk</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-shield-alt text-green-600 mr-2"></i>
+                                <span class="font-semibold text-green-800">Mitigation Success</span>
+                            </div>
+                            <p class="text-sm text-green-700 mb-2">Recent mitigation activities showing positive results</p>
+                            <div class="text-xs text-green-600">
+                                <p>• Security protocols reduced breach risk by 40%</p>
+                                <p>• Cross-training eliminated 2 resource risks</p>
+                                <p>• Stakeholder alignment improved communication</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                                <span class="font-semibold text-yellow-800">Emerging Risks</span>
+                            </div>
+                            <p class="text-sm text-yellow-700 mb-2">New risks detected by AI monitoring</p>
+                            <div class="text-xs text-yellow-600">
+                                <p>• Technology obsolescence: New framework versions</p>
+                                <p>• Compliance changes: New data regulations</p>
+                                <p>• Talent competition: Market pressure on key skills</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-chart-line text-purple-600 mr-2"></i>
+                                <span class="font-semibold text-purple-800">Risk Maturity</span>
+                            </div>
+                            <p class="text-sm text-purple-700 mb-2">Overall risk management maturity score: 78/100</p>
+                            <div class="text-xs text-purple-600">
+                                <p>Above industry average (65). Focus on predictive capabilities for further improvement.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Risk Radar Chart
+        const radarCtx = document.getElementById('riskRadarChart').getContext('2d');
+        new Chart(radarCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Technical', 'Resource', 'Schedule', 'Budget', 'Quality', 'External'],
+                datasets: [{
+                    label: 'Current Risk Level',
+                    data: [65, 78, 82, 45, 58, 71],
+                    borderColor: 'rgb(239, 68, 68)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                }, {
+                    label: 'Risk Threshold',
+                    data: [70, 70, 70, 70, 70, 70],
+                    borderColor: 'rgb(156, 163, 175)',
+                    backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                    borderDash: [5, 5]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // Risk Trend Chart
+        const trendCtx = document.getElementById('riskTrendChart').getContext('2d');
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                datasets: [{
+                    label: 'High Risks',
+                    data: [8, 9, 11, 10, 9, 8],
+                    borderColor: 'rgb(239, 68, 68)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Medium Risks',
+                    data: [15, 16, 14, 13, 12, 11],
+                    borderColor: 'rgb(251, 146, 60)',
+                    backgroundColor: 'rgba(251, 146, 60, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Low Risks',
+                    data: [20, 18, 19, 17, 16, 15],
+                    borderColor: 'rgb(34, 197, 94)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        function showRiskDetails(riskName, probability, impact) {
+            const riskScore = Math.round(probability * impact * 100);
+            const level = riskScore > 70 ? 'Critical' : riskScore > 50 ? 'High' : riskScore > 30 ? 'Medium' : 'Low';
+            alert(`Risk Details: ${riskName}\n\nProbability: ${Math.round(probability * 100)}%\nImpact: ${Math.round(impact * 100)}%\nRisk Score: ${riskScore}\nRisk Level: ${level}\n\nClick to view full risk profile and mitigation plan.`);
+        }
+
+        function runRiskAssessment() {
+            alert('AI Risk Assessment Complete:\n\nFindings:\n• Overall risk profile: Moderate-High\n• 3 critical risks require immediate attention\n• 5 risks trending upward\n• 2 risks successfully mitigated\n\nRecommendations:\n• Prioritize critical server failure risk\n• Implement resource contingency planning\n• Enhance monitoring for integration complexity\n\nConfidence: 94%');
+        }
+
+        function addRisk() {
+            alert('Opening risk registration form...\n\nCapturing:\n• Risk description and categorization\n• Probability and impact assessment\n• Mitigation strategy planning\n• Owner assignment and timeline');
+        }
+
+        function updateRisk(id) {
+            alert(`Updating risk ${id} with latest status and mitigation progress...`);
+        }
+
+        function mitigateRisk(id) {
+            alert(`Initiating mitigation workflow for risk ${id}...\n\nActions:\n• Assign mitigation team\n• Set tracking milestones\n• Configure automated monitoring\n• Schedule review checkpoints`);
+        }
+
+        function refreshHeatmap() {
+            alert('Risk assessment matrix updated with latest AI predictions and manual assessments.');
+        }
+
+        function logout() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

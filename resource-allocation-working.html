@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Allocation - AI PPM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f1f5f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+        }
+
+        .resource-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .resource-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .resource-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8fafc;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .positive { color: var(--success); }
+        .negative { color: var(--danger); }
+
+        .resource-tabs {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 30px;
+        }
+
+        .tab {
+            padding: 16px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab:hover {
+            color: var(--dark);
+        }
+
+        .tab-content {
+            padding: 30px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .heatmap-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .heatmap-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: 120px repeat(6, 1fr);
+            gap: 4px;
+        }
+
+        .heatmap-header {
+            font-weight: 600;
+            text-align: center;
+            padding: 8px;
+            background: var(--light);
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .utilization-0 { background: #f3f4f6; color: #64748b; }
+        .utilization-25 { background: #fef3c7; color: #92400e; }
+        .utilization-50 { background: #fed7aa; color: #9a3412; }
+        .utilization-75 { background: #fbbf24; color: white; }
+        .utilization-100 { background: #ef4444; color: white; }
+
+        .request-form {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .form-input, .form-select {
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--dark);
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: var(--light);
+        }
+
+        .requests-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .requests-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .requests-table th {
+            background: var(--light);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .requests-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
+
+        .requests-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-approved {
+            background: #dcfce7;
+            color: var(--success);
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .status-in-progress {
+            background: #dbeafe;
+            color: #3b82f6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .approve-btn {
+            background: var(--success);
+            color: white;
+        }
+
+        .reject-btn {
+            background: var(--danger);
+            color: white;
+        }
+
+        .team-member-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .team-member-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .member-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .member-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 2px;
+        }
+
+        .member-role {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .member-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .skill-tag {
+            background: var(--light);
+            color: var(--dark);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .workload-bar {
+            height: 8px;
+            background: var(--light);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .workload-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .workload-low { background: var(--success); }
+        .workload-medium { background: var(--warning); }
+        .workload-high { background: var(--danger); }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .ai-suggestions {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .suggestion-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suggestion-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="min-h-screen bg-gray-50">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <button onclick="window.history.back()" class="mr-4 text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h1 class="text-xl font-semibold text-gray-900">Resource Allocation</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="text-gray-500 hover:text-gray-700" onclick="exportData()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <button class="text-gray-500 hover:text-gray-700" onclick="openSettings()">
+                            <i class="fas fa-cog"></i> Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Resource Stats -->
+            <div class="resource-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value">156</div>
+                    <div class="stat-label">Total Resources</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +12 this month
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-value">142</div>
+                    <div class="stat-label">Allocated</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> 91% utilization
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="stat-value">14</div>
+                    <div class="stat-label">Available</div>
+                    <div class="stat-change negative">
+                        <i class="fas fa-arrow-down"></i> 3 high priority roles
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-value">23</div>
+                    <div class="stat-label">Pending Requests</div>
+                    <div class="stat-change negative">
+                        <i class="fas fa-arrow-up"></i> 8 critical
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Suggestions -->
+            <div class="ai-suggestions">
+                <div class="suggestion-title">
+                    <i class="fas fa-brain"></i>
+                    AI Optimization Suggestions
+                </div>
+                <div class="suggestion-item">
+                    <div style="font-weight: 600; margin-bottom: 4px;">Resource Reallocation Opportunity</div>
+                    <div style="font-size: 14px; opacity: 0.9;">Reallocating Sarah Chen from Mobile App to E-commerce Platform could improve overall portfolio efficiency by 23% and reduce project delay risk by 45%.</div>
+                </div>
+                <div class="suggestion-item">
+                    <div style="font-weight: 600; margin-bottom: 4px;">Capacity Planning Alert</div>
+                    <div style="font-size: 14px; opacity: 0.9;">3 additional backend developers needed in next 2 weeks to meet Q2 deadlines. Consider hiring contractors to bridge the gap.</div>
+                </div>
+                <div class="suggestion-item">
+                    <div style="font-weight: 600; margin-bottom: 4px;">Burnout Risk Detected</div>
+                    <div style="font-size: 14px; opacity: 0.9;">2 team members showing 95%+ utilization for 4+ weeks. Recommend workload redistribution to prevent burnout.</div>
+                </div>
+            </div>
+
+            <!-- Resource Tabs -->
+            <div class="resource-container">
+                <div class="resource-tabs">
+                    <button class="tab active" onclick="switchTab('overview', this)">Overview</button>
+                    <button class="tab" onclick="switchTab('requests', this)">Requests</button>
+                    <button class="tab" onclick="switchTab('team', this)">Team Members</button>
+                    <button class="tab" onclick="switchTab('allocation', this)">Allocation</button>
+                </div>
+
+                <!-- Overview Tab -->
+                <div id="overview" class="tab-content active">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Department Utilization</h3>
+                        <canvas id="utilizationChart" height="80"></canvas>
+                    </div>
+
+                    <div class="heatmap-container">
+                        <h3 class="heatmap-title">Resource Utilization Heatmap</h3>
+                        <div class="heatmap-grid" id="heatmapGrid"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3 class="chart-title">Resource Demand Forecast</h3>
+                        <canvas id="demandChart" height="80"></canvas>
+                    </div>
+                </div>
+
+                <!-- Requests Tab -->
+                <div id="requests" class="tab-content">
+                    <div class="request-form">
+                        <h3 class="text-lg font-semibold mb-4">New Resource Request</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Project Name</label>
+                                <select class="form-select" id="projectSelect">
+                                    <option value="">Select Project</option>
+                                    <option value="website">Website Redesign</option>
+                                    <option value="mobile">Mobile App Development</option>
+                                    <option value="ecommerce">E-commerce Platform</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Role Required</label>
+                                <select class="form-select" id="roleSelect">
+                                    <option value="">Select Role</option>
+                                    <option value="developer">Frontend Developer</option>
+                                    <option value="backend">Backend Developer</option>
+                                    <option value="designer">UI/UX Designer</option>
+                                    <option value="qa">QA Engineer</option>
+                                    <option value="pm">Project Manager</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Skill Level</label>
+                                <select class="form-select" id="skillSelect">
+                                    <option value="">Select Level</option>
+                                    <option value="junior">Junior</option>
+                                    <option value="mid">Mid-Level</option>
+                                    <option value="senior">Senior</option>
+                                    <option value="lead">Lead</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Duration</label>
+                                <input type="number" class="form-input" id="durationInput" placeholder="Weeks">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" id="prioritySelect">
+                                    <option value="">Select Priority</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" class="form-input" id="startDateInput">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Justification</label>
+                            <textarea class="form-input" id="justificationInput" rows="3" placeholder="Explain why this resource is needed..."></textarea>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-primary" onclick="submitRequest()">
+                                <i class="fas fa-paper-plane"></i> Submit Request
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearForm()">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="requests-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Project</th>
+                                    <th>Role</th>
+                                    <th>Duration</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Requested By</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestsTableBody">
+                                <!-- Requests will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Team Members Tab -->
+                <div id="team" class="tab-content">
+                    <div class="form-group mb-4">
+                        <label class="form-label">Search Team Members</label>
+                        <input type="text" class="form-input" id="teamSearch" placeholder="Search by name, role, or skills..." onkeyup="filterTeam()">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="teamGrid">
+                        <!-- Team members will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Allocation Tab -->
+                <div id="allocation" class="tab-content">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Project Resource Allocation</h3>
+                        <canvas id="allocationChart" height="80"></canvas>
+                    </div>
+
+                    <div class="request-form">
+                        <h3 class="text-lg font-semibold mb-4">Quick Allocate Resource</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Team Member</label>
+                                <select class="form-select" id="memberSelect">
+                                    <option value="">Select Team Member</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Project</label>
+                                <select class="form-select" id="projectAllocateSelect">
+                                    <option value="">Select Project</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Allocation %</label>
+                                <input type="number" class="form-input" id="allocationPercent" min="1" max="100" value="100">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="allocateResource()">
+                            <i class="fas fa-user-plus"></i> Allocate Resource
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Details Modal -->
+    <div class="modal" id="resourceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-lg font-semibold">Resource Details</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Modal content will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data
+        const teamMembers = [
+            {
+                id: 1,
+                name: "Sarah Chen",
+                role: "Frontend Developer",
+                skills: ["React", "TypeScript", "CSS"],
+                availability: 75,
+                currentProject: "Website Redesign",
+                workload: "medium"
+            },
+            {
+                id: 2,
+                name: "Mike Johnson",
+                role: "Backend Developer",
+                skills: ["Node.js", "Python", "MongoDB"],
+                availability: 60,
+                currentProject: "Mobile App",
+                workload: "high"
+            },
+            {
+                id: 3,
+                name: "Emily Davis",
+                role: "UI/UX Designer",
+                skills: ["Figma", "Sketch", "Adobe XD"],
+                availability: 90,
+                currentProject: "E-commerce Platform",
+                workload: "low"
+            },
+            {
+                id: 4,
+                name: "Chris Wilson",
+                role: "QA Engineer",
+                skills: ["Selenium", "Jest", "Cypress"],
+                availability: 85,
+                currentProject: "Website Redesign",
+                workload: "low"
+            },
+            {
+                id: 5,
+                name: "Alex Brown",
+                role: "DevOps Engineer",
+                skills: ["AWS", "Docker", "Kubernetes"],
+                availability: 95,
+                currentProject: "Mobile App",
+                workload: "low"
+            },
+            {
+                id: 6,
+                name: "David Lee",
+                role: "Project Manager",
+                skills: ["Agile", "Scrum", "PMP"],
+                availability: 80,
+                currentProject: "E-commerce Platform",
+                workload: "medium"
+            }
+        ];
+
+        const resourceRequests = [
+            {
+                id: "REQ-001",
+                project: "Website Redesign",
+                role: "Backend Developer",
+                duration: 8,
+                priority: "High",
+                status: "Pending",
+                requestedBy: "John Smith",
+                date: "2024-03-15"
+            },
+            {
+                id: "REQ-002",
+                project: "Mobile App",
+                role: "UI/UX Designer",
+                duration: 6,
+                priority: "Medium",
+                status: "Approved",
+                requestedBy: "Sarah Chen",
+                date: "2024-03-14"
+            },
+            {
+                id: "REQ-003",
+                project: "E-commerce Platform",
+                role: "Frontend Developer",
+                duration: 12,
+                priority: "Critical",
+                status: "In Progress",
+                requestedBy: "Mike Johnson",
+                date: "2024-03-13"
+            }
+        ];
+
+        let charts = {};
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeOverview();
+            populateRequests();
+            populateTeam();
+            populateSelects();
+        });
+
+        // Switch tabs
+        function switchTab(tabName, element) {
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            element.classList.add('active');
+
+            // Show corresponding content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+
+            // Initialize charts for specific tabs
+            if (tabName === 'allocation') {
+                setTimeout(() => initializeAllocationCharts(), 100);
+            }
+        }
+
+        // Initialize Overview Tab
+        function initializeOverview() {
+            // Initialize utilization chart
+            const utilizationCtx = document.getElementById('utilizationChart').getContext('2d');
+            charts.utilization = new Chart(utilizationCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Development', 'Design', 'QA', 'DevOps', 'Management', 'Marketing'],
+                    datasets: [{
+                        label: 'Current Utilization %',
+                        data: [92, 88, 95, 78, 85, 70],
+                        backgroundColor: '#6366f1'
+                    }, {
+                        label: 'Optimal Utilization %',
+                        data: [85, 85, 85, 85, 85, 85],
+                        backgroundColor: '#10b981',
+                        type: 'line',
+                        borderColor: '#10b981',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Initialize demand chart
+            const demandCtx = document.getElementById('demandChart').getContext('2d');
+            charts.demand = new Chart(demandCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Demand',
+                        data: [120, 135, 142, 158, 165, 172],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Available',
+                        data: [150, 148, 156, 152, 160, 158],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Generate heatmap
+            generateHeatmap();
+        }
+
+        // Generate resource utilization heatmap
+        function generateHeatmap() {
+            const heatmapGrid = document.getElementById('heatmapGrid');
+            const departments = ['Dev', 'Design', 'QA', 'DevOps', 'PM', 'Sales'];
+            const weeks = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'];
+
+            let html = '';
+
+            // Headers
+            html += '<div class="heatmap-header">Team/Week</div>';
+            weeks.forEach(week => {
+                html += `<div class="heatmap-header">${week}</div>`;
+            });
+
+            // Rows
+            departments.forEach(dept => {
+                html += `<div class="heatmap-header">${dept}</div>`;
+                weeks.forEach(() => {
+                    const utilization = Math.floor(Math.random() * 101);
+                    const utilizationClass = getUtilizationClass(utilization);
+                    html += `<div class="heatmap-cell utilization-${utilizationClass}" title="${dept}: ${utilization}% utilized">${utilization}%</div>`;
+                });
+            });
+
+            heatmapGrid.innerHTML = html;
+        }
+
+        // Get utilization class for heatmap
+        function getUtilizationClass(utilization) {
+            if (utilization === 0) return '0';
+            if (utilization <= 25) return '25';
+            if (utilization <= 50) return '50';
+            if (utilization <= 75) return '75';
+            return '100';
+        }
+
+        // Populate requests table
+        function populateRequests() {
+            const tbody = document.getElementById('requestsTableBody');
+            let html = '';
+
+            resourceRequests.forEach(request => {
+                const statusClass = getStatusClass(request.status);
+                html += `
+                    <tr>
+                        <td><strong>${request.id}</strong></td>
+                        <td>${request.project}</td>
+                        <td>${request.role}</td>
+                        <td>${request.duration} weeks</td>
+                        <td><span class="status-badge status-${request.priority.toLowerCase()}">${request.priority}</span></td>
+                        <td><span class="status-badge ${statusClass}">${request.status}</span></td>
+                        <td>${request.requestedBy}</td>
+                        <td>
+                            <div class="action-buttons">
+                                ${request.status === 'Pending' ? `
+                                    <button class="action-btn approve-btn" onclick="approveRequest('${request.id}')">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="action-btn reject-btn" onclick="rejectRequest('${request.id}')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                ` : `
+                                    <button class="action-btn" onclick="viewRequest('${request.id}')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                `}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // Get status class
+        function getStatusClass(status) {
+            const classes = {
+                'Pending': 'status-pending',
+                'Approved': 'status-approved',
+                'Rejected': 'status-rejected',
+                'In Progress': 'status-in-progress'
+            };
+            return classes[status] || '';
+        }
+
+        // Populate team members
+        function populateTeam() {
+            const teamGrid = document.getElementById('teamGrid');
+            let html = '';
+
+            teamMembers.forEach(member => {
+                const workloadClass = member.workload === 'low' ? 'workload-low' : 
+                                     member.workload === 'medium' ? 'workload-medium' : 'workload-high';
+                
+                html += `
+                    <div class="team-member-card">
+                        <div class="member-header">
+                            <div class="member-avatar">${getInitials(member.name)}</div>
+                            <div class="member-info">
+                                <div class="member-name">${member.name}</div>
+                                <div class="member-role">${member.role}</div>
+                            </div>
+                        </div>
+                        <div class="member-skills">
+                            ${member.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                        </div>
+                        <div class="text-sm text-gray-600 mb-2">Current Project: ${member.currentProject}</div>
+                        <div class="text-sm text-gray-600 mb-2">Availability: ${member.availability}%</div>
+                        <div class="workload-bar">
+                            <div class="workload-fill ${workloadClass}" style="width: ${100 - member.availability}%"></div>
+                        </div>
+                        <div class="text-xs text-gray-500">Workload: ${member.workload.charAt(0).toUpperCase() + member.workload.slice(1)}</div>
+                        <div class="mt-4">
+                            <button class="btn btn-primary" style="width: 100%;" onclick="viewMemberDetails(${member.id})">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            teamGrid.innerHTML = html;
+        }
+
+        // Get initials
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase();
+        }
+
+        // Populate select dropdowns
+        function populateSelects() {
+            const memberSelect = document.getElementById('memberSelect');
+            const projectSelect = document.getElementById('projectAllocateSelect');
+
+            // Populate member select
+            teamMembers.forEach(member => {
+                memberSelect.innerHTML += `<option value="${member.id}">${member.name} - ${member.role}</option>`;
+            });
+
+            // Populate project select
+            const projects = ['Website Redesign', 'Mobile App', 'E-commerce Platform'];
+            projects.forEach(project => {
+                projectSelect.innerHTML += `<option value="${project.toLowerCase().replace(' ', '-')}">${project}</option>`;
+            });
+        }
+
+        // Submit resource request
+        function submitRequest() {
+            const project = document.getElementById('projectSelect').value;
+            const role = document.getElementById('roleSelect').value;
+            const duration = document.getElementById('durationInput').value;
+            const priority = document.getElementById('prioritySelect').value;
+            const startDate = document.getElementById('startDateInput').value;
+            const justification = document.getElementById('justificationInput').value;
+
+            if (!project || !role || !duration || !priority || !startDate || !justification) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Create new request
+            const newRequest = {
+                id: `REQ-${String(resourceRequests.length + 1).padStart(3, '0')}`,
+                project: document.getElementById('projectSelect').options[document.getElementById('projectSelect').selectedIndex].text,
+                role: document.getElementById('roleSelect').options[document.getElementById('roleSelect').selectedIndex].text,
+                duration: parseInt(duration),
+                priority: priority,
+                status: 'Pending',
+                requestedBy: 'Current User',
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            resourceRequests.push(newRequest);
+            populateRequests();
+            clearForm();
+
+            alert('Resource request submitted successfully!');
+        }
+
+        // Clear form
+        function clearForm() {
+            document.querySelectorAll('.form-input, .form-select').forEach(input => {
+                input.value = '';
+            });
+        }
+
+        // Approve request
+        function approveRequest(requestId) {
+            const request = resourceRequests.find(r => r.id === requestId);
+            if (request) {
+                request.status = 'Approved';
+                populateRequests();
+                alert(`Request ${requestId} approved successfully!`);
+            }
+        }
+
+        // Reject request
+        function rejectRequest(requestId) {
+            const request = resourceRequests.find(r => r.id === requestId);
+            if (request) {
+                request.status = 'Rejected';
+                populateRequests();
+                alert(`Request ${requestId} rejected.`);
+            }
+        }
+
+        // View request details
+        function viewRequest(requestId) {
+            const request = resourceRequests.find(r => r.id === requestId);
+            if (request) {
+                alert(`Request Details:\n\nID: ${request.id}\nProject: ${request.project}\nRole: ${request.role}\nDuration: ${request.duration} weeks\nPriority: ${request.priority}\nStatus: ${request.status}\nRequested By: ${request.requestedBy}\nDate: ${request.date}`);
+            }
+        }
+
+        // View member details
+        function viewMemberDetails(memberId) {
+            const member = teamMembers.find(m => m.id === memberId);
+            if (member) {
+                const modalBody = document.getElementById('modalBody');
+                modalBody.innerHTML = `
+                    <div class="member-header">
+                        <div class="member-avatar">${getInitials(member.name)}</div>
+                        <div class="member-info">
+                            <div class="member-name">${member.name}</div>
+                            <div class="member-role">${member.role}</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <div class="text-sm text-gray-600">Availability</div>
+                            <div class="font-semibold">${member.availability}%</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">Current Project</div>
+                            <div class="font-semibold">${member.currentProject}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">Workload</div>
+                            <div class="font-semibold">${member.workload.charAt(0).toUpperCase() + member.workload.slice(1)}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-600">Skills</div>
+                            <div class="member-skills mt-2">
+                                ${member.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('resourceModal').classList.add('active');
+            }
+        }
+
+        // Allocate resource
+        function allocateResource() {
+            const memberId = document.getElementById('memberSelect').value;
+            const projectId = document.getElementById('projectAllocateSelect').value;
+            const allocation = document.getElementById('allocationPercent').value;
+
+            if (!memberId || !projectId || !allocation) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            alert(`Resource allocated successfully!\n\nMember ID: ${memberId}\nProject: ${projectId}\nAllocation: ${allocation}%`);
+            
+            // Clear form
+            document.getElementById('memberSelect').value = '';
+            document.getElementById('projectAllocateSelect').value = '';
+            document.getElementById('allocationPercent').value = '100';
+        }
+
+        // Initialize allocation charts
+        function initializeAllocationCharts() {
+            const allocationCtx = document.getElementById('allocationChart').getContext('2d');
+            
+            if (charts.allocation) {
+                charts.allocation.destroy();
+            }
+
+            charts.allocation = new Chart(allocationCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Website Redesign', 'Mobile App', 'E-commerce Platform', 'Internal Projects'],
+                    datasets: [{
+                        data: [45, 38, 52, 21],
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Filter team members
+        function filterTeam() {
+            const searchTerm = document.getElementById('teamSearch').value.toLowerCase();
+            const teamGrid = document.getElementById('teamGrid');
+            const cards = teamGrid.querySelectorAll('.team-member-card');
+
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('resourceModal').classList.remove('active');
+        }
+
+        // Export data
+        function exportData() {
+            alert('Export functionality would generate CSV/PDF report with resource allocation data');
+        }
+
+        // Open settings
+        function openSettings() {
+            alert('Settings panel for configuring resource management preferences');
+        }
+    </script>
+</body>
+</html>

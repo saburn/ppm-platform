@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Allocation Optimization - AI-Enhanced PPM Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .slide-up { animation: slideUp 0.3s ease-out; }
+        
+        .resource-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: #3b82f6;
+        }
+        
+        .utilization-bar {
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .skill-match {
+            transition: all 0.2s ease;
+        }
+        
+        .skill-match:hover {
+            transform: scale(1.05);
+        }
+        
+        .optimization-score {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .capacity-indicator {
+            transition: all 0.3s ease;
+        }
+        
+        .over-allocated {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .under-allocated {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .optimal-allocated {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .resource-heatmap {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .resource-heatmap:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .optimization-suggestion {
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .allocation-preview {
+            border: 2px dashed #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .resource-avatar {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-users-cog text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Resource Allocation Optimization</h1>
+                        <p class="text-purple-100 text-sm">Intelligent resource management and capacity planning</p>
+                    </div>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="runOptimization()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-magic mr-2"></i>Run Optimization
+                    </button>
+                    <button onclick="goToDashboard()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Optimization Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <i class="fas fa-users text-3xl text-blue-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="totalResources">0</p>
+                <p class="text-sm text-gray-600">Total Resources</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <i class="fas fa-chart-pie text-3xl text-green-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="avgUtilization">0%</p>
+                <p class="text-sm text-gray-600">Avg Utilization</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <i class="fas fa-bolt text-3xl text-amber-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="optimizationScore">0%</p>
+                <p class="text-sm text-gray-600">Optimization Score</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <i class="fas fa-dollar-sign text-3xl text-purple-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="costSavings">$0</p>
+                <p class="text-sm text-gray-600">Potential Savings</p>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Resource Allocation Matrix (2/3 width) -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Current Allocation -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-th mr-2 text-blue-600"></i>Resource Allocation Matrix
+                        </h3>
+                        <div class="flex space-x-2">
+                            <select id="projectFilter" onchange="filterByProject()" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                                <option value="all">All Projects</option>
+                            </select>
+                            <select id="timeframeFilter" onchange="filterByTimeframe()" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                                <option value="current">Current</option>
+                                <option value="next-week">Next Week</option>
+                                <option value="next-month">Next Month</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Resource Heatmap -->
+                    <div class="overflow-x-auto">
+                        <div id="resourceHeatmap" class="min-w-full">
+                            <!-- Resource heatmap will be generated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Optimization Suggestions -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>AI Optimization Suggestions
+                        </h3>
+                        <button onclick="applyAllSuggestions()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-check-double mr-2"></i>Apply All
+                        </button>
+                    </div>
+
+                    <div id="optimizationSuggestions" class="space-y-4">
+                        <!-- Suggestions will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Capacity Planning -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-calendar-alt mr-2 text-purple-600"></i>Capacity Planning
+                        </h3>
+                        <button onclick="forecastCapacity()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-chart-line mr-2"></i>Forecast
+                        </button>
+                    </div>
+
+                    <canvas id="capacityChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Sidebar (1/3 width) -->
+            <div class="space-y-6">
+                <!-- Resource Utilization -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-tachometer-alt mr-2 text-green-600"></i>Resource Utilization
+                    </h3>
+                    <canvas id="utilizationChart" width="400" height="300"></canvas>
+                </div>
+
+                <!-- Skill Gap Analysis -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-graduation-cap mr-2 text-indigo-600"></i>Skill Gap Analysis
+                    </h3>
+                    <div id="skillGapAnalysis" class="space-y-3">
+                        <!-- Skill gap analysis will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Resource Pool Status -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-users mr-2 text-blue-600"></i>Resource Pool Status
+                    </h3>
+                    <div id="resourcePoolStatus" class="space-y-3">
+                        <!-- Resource pool status will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Resource Assignment Modal -->
+    <div id="resourceAssignmentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-2xl w-full mx-4 slide-up">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Optimize Resource Assignment</h3>
+            <div id="assignmentContent">
+                <!-- Assignment content will be populated here -->
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="closeAssignmentModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
+                    Cancel
+                </button>
+                <button onclick="applyOptimalAssignment()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                    Apply Assignment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Management
+        let resources = [];
+        let projects = [];
+        let allocations = [];
+        let optimizationSuggestions = [];
+        let utilizationChart = null;
+        let capacityChart = null;
+        let currentFilter = 'all';
+        let currentTimeframe = 'current';
+
+        // Initialize data
+        function initializeData() {
+            // Load data from localStorage
+            const savedProjects = localStorage.getItem('ppm_projects');
+            const savedTeamMembers = localStorage.getItem('ppm_team_members');
+            
+            if (savedProjects) {
+                projects = JSON.parse(savedProjects);
+            }
+            
+            if (savedTeamMembers) {
+                resources = JSON.parse(savedTeamMembers);
+            } else {
+                // Create sample resources if none exist
+                resources = [
+                    {
+                        id: 1,
+                        name: "Alex Johnson",
+                        role: "Frontend Developer",
+                        skills: ["React", "TypeScript", "CSS", "UI/UX"],
+                        maxWorkload: 80,
+                        currentWorkload: 75,
+                        hourlyRate: 85,
+                        available: true,
+                        efficiency: 92
+                    },
+                    {
+                        id: 2,
+                        name: "Sarah Chen",
+                        role: "Backend Developer",
+                        skills: ["Node.js", "Python", "Database", "API"],
+                        maxWorkload: 90,
+                        currentWorkload: 70,
+                        hourlyRate: 95,
+                        available: true,
+                        efficiency: 88
+                    },
+                    {
+                        id: 3,
+                        name: "Mike Wilson",
+                        role: "UI/UX Designer",
+                        skills: ["Figma", "Adobe XD", "Prototyping", "Design Systems"],
+                        maxWorkload: 70,
+                        currentWorkload: 45,
+                        hourlyRate: 75,
+                        available: true,
+                        efficiency: 95
+                    },
+                    {
+                        id: 4,
+                        name: "Emily Davis",
+                        role: "DevOps Engineer",
+                        skills: ["AWS", "Docker", "CI/CD", "Monitoring"],
+                        maxWorkload: 85,
+                        currentWorkload: 60,
+                        hourlyRate: 90,
+                        available: false,
+                        efficiency: 90
+                    },
+                    {
+                        id: 5,
+                        name: "James Brown",
+                        role: "QA Engineer",
+                        skills: ["Testing", "Automation", "Selenium", "Quality Assurance"],
+                        maxWorkload: 75,
+                        currentWorkload: 80,
+                        hourlyRate: 70,
+                        available: true,
+                        efficiency: 85
+                    }
+                ];
+            }
+            
+            // Generate sample allocations
+            generateAllocations();
+            generateOptimizationSuggestions();
+            updateUI();
+        }
+
+        // Generate allocations
+        function generateAllocations() {
+            allocations = [];
+            
+            projects.forEach(project => {
+                if (project.tasks) {
+                    project.tasks.forEach(task => {
+                        if (task.assignedTo) {
+                            allocations.push({
+                                taskId: task.id,
+                                taskName: task.name || task.title,
+                                projectId: project.id,
+                                projectName: project.name,
+                                resourceId: task.assignedTo,
+                                resourceName: resources.find(r => r.id === task.assignedTo)?.name || 'Unknown',
+                                percentage: 20 + Math.random() * 30, // 20-50% allocation
+                                estimatedHours: task.estimatedHours || 40,
+                                status: task.status || 'active'
+                            });
+                        }
+                    });
+                }
+            });
+            
+            // Add some sample allocations for demonstration
+            if (allocations.length < 5) {
+                allocations.push(
+                    {
+                        taskId: 101,
+                        taskName: "Database Optimization",
+                        projectId: 1,
+                        projectName: "AI Platform",
+                        resourceId: 2,
+                        resourceName: "Sarah Chen",
+                        percentage: 35,
+                        estimatedHours: 60,
+                        status: "active"
+                    },
+                    {
+                        taskId: 102,
+                        taskName: "UI Redesign",
+                        projectId: 2,
+                        projectName: "Mobile App",
+                        resourceId: 3,
+                        resourceName: "Mike Wilson",
+                        percentage: 25,
+                        estimatedHours: 45,
+                        status: "active"
+                    }
+                );
+            }
+        }
+
+        // Generate optimization suggestions
+        function generateOptimizationSuggestions() {
+            optimizationSuggestions = [];
+            
+            // Analyze over-allocated resources
+            const overAllocated = resources.filter(r => r.currentWorkload > r.maxWorkload * 0.9);
+            overAllocated.forEach(resource => {
+                optimizationSuggestions.push({
+                    id: Date.now() + Math.random(),
+                    type: 'over-allocation',
+                    title: `Over-allocation Detected: ${resource.name}`,
+                    description: `${resource.name} is at ${resource.currentWorkload}% capacity. Consider redistributing some tasks.`,
+                    resourceId: resource.id,
+                    resource: resource,
+                    impact: 'high',
+                    effort: 'medium',
+                    potentialSavings: '$' + Math.round(resource.hourlyRate * 20),
+                    suggestedActions: [
+                        'Move non-critical tasks to underutilized resources',
+                        'Hire temporary support for critical tasks',
+                        'Adjust project timelines'
+                    ]
+                });
+            });
+            
+            // Analyze under-allocated resources
+            const underAllocated = resources.filter(r => r.currentWorkload < r.maxWorkload * 0.5);
+            underAllocated.forEach(resource => {
+                optimizationSuggestions.push({
+                    id: Date.now() + Math.random(),
+                    type: 'under-allocation',
+                    title: `Under-utilization Opportunity: ${resource.name}`,
+                    description: `${resource.name} is only at ${resource.currentWorkload}% capacity. Can take on more responsibilities.`,
+                    resourceId: resource.id,
+                    resource: resource,
+                    impact: 'medium',
+                    effort: 'low',
+                    potentialSavings: '$' + Math.round(resource.hourlyRate * 10),
+                    suggestedActions: [
+                        'Assign additional tasks from backlog',
+                        'Cross-train for multiple roles',
+                        'Lead new project initiatives'
+                    ]
+                });
+            });
+            
+            // Skill-based optimization
+            optimizationSuggestions.push({
+                id: Date.now() + Math.random(),
+                type: 'skill-matching',
+                title: 'Skill-Based Task Assignment',
+                description: 'Optimize task assignments based on team member skills and expertise for 30% efficiency improvement.',
+                resourceId: null,
+                resource: null,
+                impact: 'high',
+                effort: 'medium',
+                potentialSavings: '$15,000',
+                suggestedActions: [
+                    'Map all tasks to required skills',
+                    'Create skill-resource matrix',
+                    'Automate skill-based assignments'
+                ]
+            });
+        }
+
+        // Update UI
+        function updateUI() {
+            updateOverviewStats();
+            renderResourceHeatmap();
+            renderOptimizationSuggestions();
+            updateUtilizationChart();
+            updateCapacityChart();
+            renderSkillGapAnalysis();
+            renderResourcePoolStatus();
+        }
+
+        // Update overview statistics
+        function updateOverviewStats() {
+            const totalResources = resources.length;
+            const avgUtilization = resources.length > 0 ? 
+                Math.round(resources.reduce((sum, r) => sum + r.currentWorkload, 0) / resources.length) : 0;
+            const optimizationScore = Math.round(85 + Math.random() * 10); // Simulated score
+            const costSavings = optimizationSuggestions.reduce((total, s) => {
+                const amount = parseInt(s.potentialSavings.replace(/[^0-9]/g, '')) || 0;
+                return total + amount;
+            }, 0);
+            
+            document.getElementById('totalResources').textContent = totalResources;
+            document.getElementById('avgUtilization').textContent = avgUtilization + '%';
+            document.getElementById('optimizationScore').textContent = optimizationScore + '%';
+            document.getElementById('costSavings').textContent = '$' + costSavings.toLocaleString();
+        }
+
+        // Render resource heatmap
+        function renderResourceHeatmap() {
+            const container = document.getElementById('resourceHeatmap');
+            
+            let html = `
+                <div class="grid grid-cols-6 gap-2 mb-4">
+                    <div class="font-semibold text-sm text-gray-700">Resource</div>
+                    <div class="font-semibold text-sm text-gray-700 text-center">Current Load</div>
+                    <div class="font-semibold text-sm text-gray-700 text-center">Efficiency</div>
+                    <div class="font-semibold text-sm text-gray-700 text-center">Skills Match</div>
+                    <div class="font-semibold text-sm text-gray-700 text-center">Cost/Hour</div>
+                    <div class="font-semibold text-sm text-gray-700 text-center">Status</div>
+                </div>
+            `;
+            
+            resources.forEach(resource => {
+                const utilizationClass = resource.currentWorkload > 90 ? 'over-allocated' :
+                                       resource.currentWorkload < 50 ? 'under-allocated' : 'optimal-allocated';
+                
+                const efficiencyColor = resource.efficiency > 90 ? 'text-green-600' :
+                                       resource.efficiency > 80 ? 'text-amber-600' : 'text-red-600';
+                
+                html += `
+                    <div class="resource-heatmap grid grid-cols-6 gap-2 p-3 bg-gray-50 rounded-lg mb-2">
+                        <div class="flex items-center">
+                            <div class="resource-avatar w-8 h-8 rounded-full text-xs mr-2">
+                                ${resource.name.split(' ').map(n => n[0]).join('')}
+                            </div>
+                            <div>
+                                <div class="font-medium text-sm">${resource.name}</div>
+                                <div class="text-xs text-gray-500">${resource.role}</div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="utilization-bar ${utilizationClass} h-2 rounded-full mb-1" style="width: ${resource.currentWorkload}%"></div>
+                            <span class="text-xs font-medium">${resource.currentWorkload}%</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="font-medium ${efficiencyColor}">${resource.efficiency}%</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="flex justify-center">
+                                ${resource.skills.slice(0, 2).map(skill => 
+                                    `<span class="skill-match px-1 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">${skill}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <span class="font-medium text-sm">$${resource.hourlyRate}</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="px-2 py-1 text-xs rounded ${resource.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${resource.available ? 'Available' : 'Busy'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Render optimization suggestions
+        function renderOptimizationSuggestions() {
+            const container = document.getElementById('optimizationSuggestions');
+            container.innerHTML = '';
+            
+            optimizationSuggestions.slice(0, 3).forEach((suggestion, index) => {
+                const suggestionCard = document.createElement('div');
+                suggestionCard.className = 'optimization-suggestion bg-gray-50 rounded-lg p-4 border-l-4 border-blue-500';
+                suggestionCard.style.animationDelay = `${index * 0.1}s`;
+                
+                const iconClass = suggestion.type === 'over-allocation' ? 'fa-exclamation-triangle text-red-500' :
+                                 suggestion.type === 'under-allocation' ? 'fa-info-circle text-amber-500' :
+                                 'fa-lightbulb text-blue-500';
+                
+                suggestionCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <i class="fas ${iconClass} mr-2"></i>
+                                <h4 class="font-semibold text-gray-800">${suggestion.title}</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">${suggestion.description}</p>
+                            <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                <span><i class="fas fa-signal mr-1"></i>${suggestion.impact} impact</span>
+                                <span><i class="fas fa-clock mr-1"></i>${suggestion.effort} effort</span>
+                                <span><i class="fas fa-dollar-sign mr-1"></i>${suggestion.potentialSavings} savings</span>
+                            </div>
+                        </div>
+                        <button onclick="applySuggestion(${suggestion.id})" class="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition">
+                            Apply
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(suggestionCard);
+            });
+            
+            if (optimizationSuggestions.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">Resource allocation is optimal. Great job!</p>';
+            }
+        }
+
+        // Update utilization chart
+        function updateUtilizationChart() {
+            const ctx = document.getElementById('utilizationChart').getContext('2d');
+            
+            if (utilizationChart) {
+                utilizationChart.destroy();
+            }
+            
+            utilizationChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: resources.map(r => r.name),
+                    datasets: [{
+                        data: resources.map(r => r.currentWorkload),
+                        backgroundColor: [
+                            '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 10,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update capacity chart
+        function updateCapacityChart() {
+            const ctx = document.getElementById('capacityChart').getContext('2d');
+            
+            if (capacityChart) {
+                capacityChart.destroy();
+            }
+            
+            // Generate forecast data
+            const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+            const currentCapacity = resources.map(r => r.maxWorkload - r.currentWorkload);
+            const forecastCapacity = currentCapacity.map(cap => Math.max(0, cap - Math.random() * 10));
+            
+            capacityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: weeks,
+                    datasets: [{
+                        label: 'Current Capacity',
+                        data: currentCapacity.concat(currentCapacity.slice(-1)),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Forecasted Capacity',
+                        data: forecastCapacity,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderDash: [5, 5],
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render skill gap analysis
+        function renderSkillGapAnalysis() {
+            const container = document.getElementById('skillGapAnalysis');
+            
+            // Analyze skill gaps
+            const requiredSkills = ['React', 'Node.js', 'Python', 'AWS', 'DevOps'];
+            const skillAnalysis = requiredSkills.map(skill => {
+                const availableCount = resources.filter(r => r.skills.includes(skill)).length;
+                const requiredCount = Math.floor(Math.random() * 3) + 1;
+                const gap = Math.max(0, requiredCount - availableCount);
+                const status = gap === 0 ? 'adequate' : gap === 1 ? 'minor-gap' : 'major-gap';
+                
+                return { skill, availableCount, requiredCount, gap, status };
+            });
+            
+            container.innerHTML = '';
+            skillAnalysis.forEach(analysis => {
+                const statusColor = analysis.status === 'adequate' ? 'green' :
+                                   analysis.status === 'minor-gap' ? 'amber' : 'red';
+                const statusIcon = analysis.status === 'adequate' ? 'check-circle' :
+                                  analysis.status === 'minor-gap' ? 'exclamation-triangle' : 'times-circle';
+                
+                const skillCard = document.createElement('div');
+                skillCard.className = `bg-${statusColor}-50 rounded-lg p-3 border border-${statusColor}-200`;
+                skillCard.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-${statusIcon} text-${statusColor}-600 mr-2"></i>
+                                <span class="font-medium text-gray-800">${analysis.skill}</span>
+                            </div>
+                            <div class="text-xs text-gray-600">
+                                Available: ${analysis.availableCount} • Required: ${analysis.requiredCount}
+                            </div>
+                        </div>
+                        ${analysis.gap > 0 ? `
+                            <span class="px-2 py-1 bg-${statusColor}-100 text-${statusColor}-800 text-xs rounded">
+                                Gap: ${analysis.gap}
+                            </span>
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(skillCard);
+            });
+        }
+
+        // Render resource pool status
+        function renderResourcePoolStatus() {
+            const container = document.getElementById('resourcePoolStatus');
+            
+            const availableCount = resources.filter(r => r.available).length;
+            const totalCount = resources.length;
+            const avgEfficiency = Math.round(resources.reduce((sum, r) => sum + r.efficiency, 0) / resources.length);
+            const totalCost = resources.reduce((sum, r) => sum + (r.hourlyRate * 40 * 4), 0); // Monthly cost estimate
+            
+            const statusItems = [
+                {
+                    label: 'Available Resources',
+                    value: `${availableCount}/${totalCount}`,
+                    color: availableCount > totalCount * 0.7 ? 'green' : 'amber',
+                    icon: 'users'
+                },
+                {
+                    label: 'Average Efficiency',
+                    value: `${avgEfficiency}%`,
+                    color: avgEfficiency > 85 ? 'green' : avgEfficiency > 75 ? 'amber' : 'red',
+                    icon: 'tachometer-alt'
+                },
+                {
+                    label: 'Monthly Cost',
+                    value: `$${totalCost.toLocaleString()}`,
+                    color: 'blue',
+                    icon: 'dollar-sign'
+                }
+            ];
+            
+            container.innerHTML = '';
+            statusItems.forEach(item => {
+                const statusCard = document.createElement('div');
+                statusCard.className = `bg-gray-50 rounded-lg p-3 border border-gray-200`;
+                statusCard.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <i class="fas fa-${item.icon} text-${item.color}-600 mr-2"></i>
+                            <span class="text-sm text-gray-600">${item.label}</span>
+                        </div>
+                        <span class="font-semibold text-${item.color}-600">${item.value}</span>
+                    </div>
+                `;
+                container.appendChild(statusCard);
+            });
+        }
+
+        // Interaction functions
+        function filterByProject() {
+            currentFilter = document.getElementById('projectFilter').value;
+            updateUI();
+        }
+
+        function filterByTimeframe() {
+            currentTimeframe = document.getElementById('timeframeFilter').value;
+            updateUI();
+        }
+
+        function runOptimization() {
+            // Show loading state
+            const container = document.getElementById('optimizationSuggestions');
+            container.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i><p class="text-gray-600 mt-2">AI is optimizing resource allocation...</p></div>';
+            
+            // Simulate optimization process
+            setTimeout(() => {
+                generateOptimizationSuggestions();
+                updateUI();
+                
+                // Show success message
+                alert('Resource optimization complete! Found ' + optimizationSuggestions.length + ' optimization opportunities.');
+            }, 2000);
+        }
+
+        function applySuggestion(suggestionId) {
+            const suggestion = optimizationSuggestions.find(s => s.id === suggestionId);
+            if (!suggestion) return;
+            
+            // In a real implementation, this would apply the suggestion
+            alert('Applied suggestion: ' + suggestion.title + '. This would update the resource allocation.');
+            
+            // Remove applied suggestion
+            optimizationSuggestions = optimizationSuggestions.filter(s => s.id !== suggestionId);
+            updateUI();
+        }
+
+        function applyAllSuggestions() {
+            if (optimizationSuggestions.length === 0) {
+                alert('No suggestions to apply.');
+                return;
+            }
+            
+            if (confirm('Apply all ' + optimizationSuggestions.length + ' optimization suggestions?')) {
+                alert('Applied all suggestions! Resource allocation has been optimized.');
+                optimizationSuggestions = [];
+                updateUI();
+            }
+        }
+
+        function forecastCapacity() {
+            // Update capacity forecast
+            updateCapacityChart();
+            alert('Capacity forecast updated for the next 4 weeks.');
+        }
+
+        function applyOptimalAssignment() {
+            alert('Optimal resource assignment applied successfully!');
+            closeAssignmentModal();
+        }
+
+        function closeAssignmentModal() {
+            document.getElementById('resourceAssignmentModal').classList.add('hidden');
+        }
+
+        function goToDashboard() {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeData();
+        });
+    </script>
+</body>
+</html>

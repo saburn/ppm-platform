@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roadmap View - Complete Suite | PPM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .roadmap-item { border-left: 4px solid; padding: 16px; margin-bottom: 16px; border-radius: 8px; transition: all 0.3s ease; }
+        .roadmap-item:hover { transform: translateX(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .roadmap-q1 { border-color: #10b981; background: #f0fdf4; }
+        .roadmap-q2 { border-color: #3b82f6; background: #eff6ff; }
+        .roadmap-q3 { border-color: #8b5cf6; background: #f5f3ff; }
+        .roadmap-q4 { border-color: #f59e0b; background: #fffbeb; }
+        .milestone { width: 16px; height: 16px; border-radius: 50%; border: 3px solid; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-map text-3xl"></i>
+                    <div>
+                        <h1 class="text-3xl font-bold">Roadmap View</h1>
+                        <p class="text-purple-200">Long-term Strategic Planning</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <select class="bg-white text-gray-900 px-4 py-2 rounded-lg font-semibold">
+                        <option>2024</option>
+                        <option>2025</option>
+                        <option>2026</option>
+                    </select>
+                    <button onclick="exportRoadmap()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="bg-green-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                    <i class="fas fa-calendar text-green-600 text-2xl"></i>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Total Initiatives</h3>
+                <p class="text-3xl font-bold text-gray-900">42</p>
+                <p class="text-sm text-gray-500 mt-2">Across 4 quarters</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="bg-blue-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                    <i class="fas fa-flag text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Milestones</h3>
+                <p class="text-3xl font-bold text-gray-900">18</p>
+                <p class="text-sm text-gray-500 mt-2">Key deliverables</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="bg-purple-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                    <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">On Track</h3>
+                <p class="text-3xl font-bold text-gray-900">85%</p>
+                <p class="text-sm text-gray-500 mt-2">Progress rate</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="bg-orange-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                    <i class="fas fa-users text-orange-600 text-2xl"></i>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Teams Involved</h3>
+                <p class="text-3xl font-bold text-gray-900">12</p>
+                <p class="text-sm text-gray-500 mt-2">Cross-functional</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">2024 Strategic Roadmap</h2>
+            
+            <div class="space-y-6">
+                <div>
+                    <h3 class="font-bold text-green-600 mb-4 flex items-center">
+                        <span class="milestone bg-green-500 border-green-600 mr-3"></span>
+                        Q1 2024 - Foundation
+                    </h3>
+                    <div class="roadmap-item roadmap-q1">
+                        <h4 class="font-semibold text-gray-900 mb-2">Cloud Migration Initiative</h4>
+                        <p class="text-sm text-gray-600 mb-2">Migrate core infrastructure to cloud platform</p>
+                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                            <span><i class="fas fa-calendar mr-1"></i>Jan - Mar</span>
+                            <span><i class="fas fa-users mr-1"></i>Engineering</span>
+                            <span><i class="fas fa-dollar-sign mr-1"></i>$450K</span>
+                        </div>
+                    </div>
+                    <div class="roadmap-item roadmap-q1">
+                        <h4 class="font-semibold text-gray-900 mb-2">Customer Portal Launch</h4>
+                        <p class="text-sm text-gray-600 mb-2">Self-service portal for customers</p>
+                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                            <span><i class="fas fa-calendar mr-1"></i>Feb - Mar</span>
+                            <span><i class="fas fa-users mr-1"></i>Product</span>
+                            <span><i class="fas fa-dollar-sign mr-1"></i>$280K</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-blue-600 mb-4 flex items-center">
+                        <span class="milestone bg-blue-500 border-blue-600 mr-3"></span>
+                        Q2 2024 - Growth
+                    </h3>
+                    <div class="roadmap-item roadmap-q2">
+                        <h4 class="font-semibold text-gray-900 mb-2">Mobile App Development</h4>
+                        <p class="text-sm text-gray-600 mb-2">iOS and Android native applications</p>
+                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                            <span><i class="fas fa-calendar mr-1"></i>Apr - Jun</span>
+                            <span><i class="fas fa-users mr-1"></i>Mobile Team</span>
+                            <span><i class="fas fa-dollar-sign mr-1"></i>$520K</span>
+                        </div>
+                    </div>
+                    <div class="roadmap-item roadmap-q2">
+                        <h4 class="font-semibold text-gray-900 mb-2">AI Integration Phase 1</h4>
+                        <p class="text-sm text-gray-600 mb-2">Machine learning capabilities</p>
+                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                            <span><i class="fas fa-calendar mr-1"></i>May - Jun</span>
+                            <span><i class="fas fa-users mr-1"></i>Data Science</span>
+                            <span><i class="fas fa-dollar-sign mr-1"></i>$380K</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-purple-600 mb-4 flex items-center">
+                        <span class="milestone bg-purple-500 border-purple-600 mr-3"></span>
+                        Q3 2024 - Expansion
+                    </h3>
+                    <div class="roadmap-item roadmap-q3">
+                        <h4 class="font-semibold text-gray-900 mb-2">International Expansion</h4>
+                        <p class="text-sm text-gray-600 mb-2">Launch in 5 new markets</p>
+                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                            <span><i class="fas fa-calendar mr-1"></i>Jul - Sep</span>
+                            <span><i class="fas fa-users mr-1"></i>Global Ops</span>
+                            <span><i class="fas fa-dollar-sign mr-1"></i>$650K</span>
+                        </div>
+                    </div>
+                    <div class="roadmap-item roadmap-q3">
+                        <h4 class="font-semibold text-gray-900 mb-2">Enterprise Features</h4>
+                        <p class="text-sm text-gray-600 mb-2">Advanced security and compliance</p>
+                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                            <span><i class="fas fa-calendar mr-1"></i>Aug - Sep</span>
+                            <span><i class="fas fa-users mr-1"></i>Security</span>
+                            <span><i class="fas fa-dollar-sign mr-1"></i>$420K</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-orange-600 mb-4 flex items-center">
+                        <span class="milestone bg-orange-500 border-orange-600 mr-3"></span>
+                        Q4 2024 - Optimization
+                    </h3>
+                    <div class="roadmap-item roadmap-q4">
+                        <h4 class="font-semibold text-gray-900 mb-2">Performance Optimization</h4>
+                        <p class="text-sm text-gray-600 mb-2">System-wide performance improvements</p>
+                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                            <span><i class="fas fa-calendar mr-1"></i>Oct - Dec</span>
+                            <span><i class="fas fa-users mr-1"></i>Engineering</span>
+                            <span><i class="fas fa-dollar-sign mr-1"></i>$180K</span>
+                        </div>
+                    </div>
+                    <div class="roadmap-item roadmap-q4">
+                        <h4 class="font-semibold text-gray-900 mb-2">Year-End Review & Planning</h4>
+                        <p class="text-sm text-gray-600 mb-2">Strategic planning for 2025</p>
+                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                            <span><i class="fas fa-calendar mr-1"></i>Nov - Dec</span>
+                            <span><i class="fas fa-users mr-1"></i>Leadership</span>
+                            <span><i class="fas fa-dollar-sign mr-1"></i>$50K</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Key Milestones</h2>
+            <div class="relative">
+                <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300"></div>
+                <div class="space-y-6 relative">
+                    ${generateMilestones()}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function generateMilestones() {
+            const milestones = [
+                { name: 'Cloud Migration Complete', date: 'Mar 31, 2024', status: 'completed', color: 'green' },
+                { name: 'Customer Portal Live', date: 'Mar 15, 2024', status: 'completed', color: 'green' },
+                { name: 'Mobile App Beta', date: 'Jun 30, 2024', status: 'in-progress', color: 'blue' },
+                { name: 'AI Features Launch', date: 'Jun 15, 2024', status: 'in-progress', color: 'blue' },
+                { name: 'International Launch', date: 'Sep 30, 2024', status: 'planned', color: 'purple' },
+                { name: 'Enterprise Certification', date: 'Sep 15, 2024', status: 'planned', color: 'purple' }
+            ];
+            return milestones.map(m => `
+                <div class="flex items-start space-x-4 pl-8">
+                    <div class="milestone bg-${m.color}-500 border-${m.color}-600 mt-1"></div>
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-900">${m.name}</h4>
+                        <p class="text-sm text-gray-600">${m.date}</p>
+                        <span class="inline-block mt-2 px-3 py-1 bg-${m.color}-100 text-${m.color}-600 rounded-full text-xs font-semibold">
+                            ${m.status.replace('-', ' ').toUpperCase()}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function exportRoadmap() {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50';
+            toast.innerHTML = '<div class="flex items-center space-x-3"><i class="fas fa-check-circle text-xl"></i><span class="font-semibold">Exporting roadmap...</span></div>';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

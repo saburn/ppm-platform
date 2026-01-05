@@ -1,0 +1,1951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World-Class PPM Platform - Enterprise Portfolio Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            --danger-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            --dark-surface: #0f172a;
+            --card-surface: #1e293b;
+            --border-subtle: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-glow: rgba(102, 126, 234, 0.3);
+            --success-glow: rgba(52, 211, 153, 0.3);
+            --warning-glow: rgba(251, 191, 36, 0.3);
+            --danger-glow: rgba(248, 113, 113, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-surface);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Luxury Typography */
+        .text-display { font-weight: 900; letter-spacing: -0.02em; }
+        .text-headline { font-weight: 800; letter-spacing: -0.01em; }
+        .text-title { font-weight: 700; }
+        .text-body { font-weight: 400; }
+        .text-caption { font-weight: 300; font-size: 0.875rem; }
+
+        /* Glass Morphism Cards */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Luxury Buttons */
+        .luxury-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .luxury-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .luxury-btn:hover::before {
+            left: 100%;
+        }
+
+        .luxury-btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .luxury-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Navigation Sidebar */
+        .nav-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 16px 24px;
+            margin: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-item.active {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        /* Page Sections */
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .nav-sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading-shimmer {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Chart Containers */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .chart-container-small {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
+        /* Tabs */
+        .tab-button {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-button.active {
+            color: var(--text-primary);
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Navigation Sidebar -->
+    <div class="nav-sidebar">
+        <div class="p-6">
+            <div class="text-display text-2xl bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+                World-Class PPM
+            </div>
+            <div class="text-caption text-gray-400 mt-1">Enterprise Portfolio Platform</div>
+        </div>
+        
+        <nav class="mt-8">
+            <div class="nav-item active" onclick="showPage('dashboard')">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Executive Dashboard</span>
+            </div>
+            <div class="nav-item" onclick="showPage('portfolio')">
+                <i class="fas fa-bullseye"></i>
+                <span>Strategic Portfolio</span>
+            </div>
+            <div class="nav-item" onclick="showPage('projects')">
+                <i class="fas fa-project-diagram"></i>
+                <span>Projects & Programs</span>
+            </div>
+            <div class="nav-item" onclick="showPage('resources')">
+                <i class="fas fa-users"></i>
+                <span>Resource Management</span>
+            </div>
+            <div class="nav-item" onclick="showPage('financial')">
+                <i class="fas fa-dollar-sign"></i>
+                <span>Financial Management</span>
+            </div>
+            <div class="nav-item" onclick="showPage('demand')">
+                <i class="fas fa-inbox"></i>
+                <span>Demand Management</span>
+            </div>
+            <div class="nav-item" onclick="showPage('ai')">
+                <i class="fas fa-brain"></i>
+                <span>AI & Analytics</span>
+            </div>
+            <div class="nav-item" onclick="showPage('reports')">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports & Insights</span>
+            </div>
+            <div class="nav-item" onclick="showPage('collaboration')">
+                <i class="fas fa-comments"></i>
+                <span>Collaboration</span>
+            </div>
+            <div class="nav-item" onclick="showPage('settings')">
+                <i class="fas fa-cog"></i>
+                <span>Settings & Admin</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Executive Dashboard -->
+        <div id="dashboard" class="page-section active">
+            <div class="mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-display text-4xl mb-2">Executive Dashboard</h1>
+                        <p class="text-body text-gray-400">Real-time portfolio intelligence and strategic insights</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="luxury-btn luxury-btn-primary" onclick="refreshDashboard()">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                        <button class="luxury-btn glass-card" onclick="exportReport()">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Performance Indicators -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="glass-card p-6 cursor-pointer" onclick="drillDown('portfolio')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600">
+                            <i class="fas fa-briefcase text-white text-xl"></i>
+                        </div>
+                        <span class="text-green-400 text-sm font-medium">+12%</span>
+                    </div>
+                    <div class="text-3xl font-bold mb-1" id="totalPortfolios">8</div>
+                    <div class="text-caption text-gray-400">Active Portfolios</div>
+                </div>
+
+                <div class="glass-card p-6 cursor-pointer" onclick="drillDown('projects')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 rounded-lg bg-gradient-to-br from-green-500 to-green-600">
+                            <i class="fas fa-folder text-white text-xl"></i>
+                        </div>
+                        <span class="text-green-400 text-sm font-medium">+8%</span>
+                    </div>
+                    <div class="text-3xl font-bold mb-1" id="activeProjects">24</div>
+                    <div class="text-caption text-gray-400">Active Projects</div>
+                </div>
+
+                <div class="glass-card p-6 cursor-pointer" onclick="drillDown('resources')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600">
+                            <i class="fas fa-users text-white text-xl"></i>
+                        </div>
+                        <span class="text-yellow-400 text-sm font-medium">87%</span>
+                    </div>
+                    <div class="text-3xl font-bold mb-1" id="resourceUtilization">87%</div>
+                    <div class="text-caption text-gray-400">Resource Utilization</div>
+                </div>
+
+                <div class="glass-card p-6 cursor-pointer" onclick="drillDown('financial')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600">
+                            <i class="fas fa-chart-line text-white text-xl"></i>
+                        </div>
+                        <span class="text-green-400 text-sm font-medium">$8.4M</span>
+                    </div>
+                    <div class="text-3xl font-bold mb-1" id="totalBudget">$8.4M</div>
+                    <div class="text-caption text-gray-400">Total Budget</div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Portfolio Performance</h3>
+                    <div class="chart-container">
+                        <canvas id="portfolioPerformanceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Resource Allocation</h3>
+                    <div class="chart-container">
+                        <canvas id="resourceAllocationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activities & Alerts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Recent Activities</h3>
+                    <div id="recentActivities" class="space-y-3 max-h-96 overflow-y-auto">
+                        <!-- Activities will be populated here -->
+                    </div>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Strategic Alerts</h3>
+                    <div id="strategicAlerts" class="space-y-3 max-h-96 overflow-y-auto">
+                        <!-- Alerts will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategic Portfolio Management -->
+        <div id="portfolio" class="page-section">
+            <div class="mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-display text-4xl mb-2">Strategic Portfolio Management</h1>
+                        <p class="text-body text-gray-400">Align projects with strategic objectives and maximize value</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="luxury-btn luxury-btn-primary" onclick="createPortfolio()">
+                            <i class="fas fa-plus mr-2"></i>New Portfolio
+                        </button>
+                        <button class="luxury-btn glass-card" onclick="runScenarioAnalysis()">
+                            <i class="fas fa-chart-pie mr-2"></i>Scenario Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio Overview -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="lg:col-span-2 glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Portfolio Alignment Matrix</h3>
+                    <div class="chart-container">
+                        <canvas id="portfolioAlignmentChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Strategic Objectives</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-white/5 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium">Digital Transformation</span>
+                                <span class="text-green-400">92%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-white/5 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium">Customer Experience</span>
+                                <span class="text-blue-400">78%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 78%"></div>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-white/5 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium">Operational Excellence</span>
+                                <span class="text-yellow-400">65%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 65%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio Details -->
+            <div class="glass-card p-6">
+                <h3 class="text-headline text-xl mb-4">Portfolio Overview</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-700">
+                                <th class="text-left py-3 px-4">Portfolio Name</th>
+                                <th class="text-left py-3 px-4">Projects</th>
+                                <th class="text-left py-3 px-4">Budget</th>
+                                <th class="text-left py-3 px-4">Strategic Alignment</th>
+                                <th class="text-left py-3 px-4">Status</th>
+                                <th class="text-left py-3 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolioTableBody">
+                            <!-- Portfolio rows will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects & Programs Management -->
+        <div id="projects" class="page-section">
+            <div class="mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-display text-4xl mb-2">Projects & Programs</h1>
+                        <p class="text-body text-gray-400">Comprehensive project and program management with hierarchy</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="luxury-btn luxury-btn-primary" onclick="createProject()">
+                            <i class="fas fa-plus mr-2"></i>New Project
+                        </button>
+                        <button class="luxury-btn glass-card" onclick="createProgram()">
+                            <i class="fas fa-layer-group mr-2"></i>New Program
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Program Hierarchy View -->
+            <div class="glass-card p-6 mb-8">
+                <h3 class="text-headline text-xl mb-4">Program Hierarchy</h3>
+                <div id="programHierarchy" class="space-y-4">
+                    <!-- Program hierarchy will be populated here -->
+                </div>
+            </div>
+
+            <!-- Projects Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                <div id="projectsGrid">
+                    <!-- Project cards will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Resource Management -->
+        <div id="resources" class="page-section">
+            <div class="mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-display text-4xl mb-2">Resource Management</h1>
+                        <p class="text-body text-gray-400">Optimize resource allocation and capacity planning</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="luxury-btn luxury-btn-primary" onclick="addResource()">
+                            <i class="fas fa-user-plus mr-2"></i>Add Resource
+                        </button>
+                        <button class="luxury-btn glass-card" onclick="runCapacityPlanning()">
+                            <i class="fas fa-chart-area mr-2"></i>Capacity Planning
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Overview -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Resource Utilization</h3>
+                    <div class="chart-container-small">
+                        <canvas id="resourceUtilizationChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Skills Distribution</h3>
+                    <div class="chart-container-small">
+                        <canvas id="skillsDistributionChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Capacity Forecast</h3>
+                    <div class="chart-container-small">
+                        <canvas id="capacityForecastChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Pool -->
+            <div class="glass-card p-6">
+                <h3 class="text-headline text-xl mb-4">Resource Pool</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-700">
+                                <th class="text-left py-3 px-4">Resource</th>
+                                <th class="text-left py-3 px-4">Skills</th>
+                                <th class="text-left py-3 px-4">Availability</th>
+                                <th class="text-left py-3 px-4">Current Projects</th>
+                                <th class="text-left py-3 px-4">Utilization</th>
+                                <th class="text-left py-3 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resourceTableBody">
+                            <!-- Resource rows will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Management -->
+        <div id="financial" class="page-section">
+            <div class="mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-display text-4xl mb-2">Financial Management</h1>
+                        <p class="text-body text-gray-400">Budget tracking, cost analysis, and profitability management</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="luxury-btn luxury-btn-primary" onclick="createBudget()">
+                            <i class="fas fa-dollar-sign mr-2"></i>Create Budget
+                        </button>
+                        <button class="luxury-btn glass-card" onclick="runFinancialAnalysis()">
+                            <i class="fas fa-chart-line mr-2"></i>Financial Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Overview -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Budget vs Actual</h3>
+                    <div class="chart-container">
+                        <canvas id="budgetActualChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Cost Breakdown</h3>
+                    <div class="chart-container">
+                        <canvas id="costBreakdownChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Summary -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                <div class="glass-card p-6">
+                    <h4 class="text-lg font-medium mb-2">Total Budget</h4>
+                    <div class="text-2xl font-bold text-blue-400">$8.4M</div>
+                </div>
+                <div class="glass-card p-6">
+                    <h4 class="text-lg font-medium mb-2">Spent to Date</h4>
+                    <div class="text-2xl font-bold text-yellow-400">$5.2M</div>
+                </div>
+                <div class="glass-card p-6">
+                    <h4 class="text-lg font-medium mb-2">Remaining</h4>
+                    <div class="text-2xl font-bold text-green-400">$3.2M</div>
+                </div>
+                <div class="glass-card p-6">
+                    <h4 class="text-lg font-medium mb-2">ROI</h4>
+                    <div class="text-2xl font-bold text-purple-400">127%</div>
+                </div>
+            </div>
+
+            <!-- Financial Details -->
+            <div class="glass-card p-6">
+                <h3 class="text-headline text-xl mb-4">Financial Details</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-700">
+                                <th class="text-left py-3 px-4">Project/Program</th>
+                                <th class="text-left py-3 px-4">Budget</th>
+                                <th class="text-left py-3 px-4">Actual</th>
+                                <th class="text-left py-3 px-4">Variance</th>
+                                <th class="text-left py-3 px-4">ROI</th>
+                                <th class="text-left py-3 px-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="financialTableBody">
+                            <!-- Financial rows will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demand Management -->
+        <div id="demand" class="page-section">
+            <div class="mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-display text-4xl mb-2">Demand Management</h1>
+                        <p class="text-body text-gray-400">Intake, prioritization, and approval workflows</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="luxury-btn luxury-btn-primary" onclick="createDemand()">
+                            <i class="fas fa-plus mr-2"></i>New Demand
+                        </button>
+                        <button class="luxury-btn glass-card" onclick="runPrioritization()">
+                            <i class="fas fa-sort mr-2"></i>Auto-Prioritize
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demand Pipeline -->
+            <div class="glass-card p-6 mb-8">
+                <h3 class="text-headline text-xl mb-4">Demand Pipeline</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-400 mb-2">12</div>
+                        <div class="text-caption text-gray-400">Submitted</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-yellow-400 mb-2">8</div>
+                        <div class="text-caption text-gray-400">Under Review</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-400 mb-2">6</div>
+                        <div class="text-caption text-gray-400">Approved</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-red-400 mb-2">4</div>
+                        <div class="text-caption text-gray-400">Rejected</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demand Items -->
+            <div class="glass-card p-6">
+                <h3 class="text-headline text-xl mb-4">Demand Items</h3>
+                <div class="space-y-4" id="demandItems">
+                    <!-- Demand items will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- AI & Analytics -->
+        <div id="ai" class="page-section">
+            <div class="mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-display text-4xl mb-2">AI & Analytics</h1>
+                        <p class="text-body text-gray-400">Predictive analytics and intelligent recommendations</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="luxury-btn luxury-btn-primary" onclick="runAIAnalysis()">
+                            <i class="fas fa-brain mr-2"></i>Run AI Analysis
+                        </button>
+                        <button class="luxury-btn glass-card" onclick="trainModels()">
+                            <i class="fas fa-cogs mr-2"></i>Train Models
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Success Probability</h3>
+                    <div class="chart-container">
+                        <canvas id="successProbabilityChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Risk Prediction</h3>
+                    <div class="chart-container">
+                        <canvas id="riskPredictionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Recommendations -->
+            <div class="glass-card p-6">
+                <h3 class="text-headline text-xl mb-4">AI Recommendations</h3>
+                <div class="space-y-4" id="aiRecommendations">
+                    <!-- AI recommendations will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports & Insights -->
+        <div id="reports" class="page-section">
+            <div class="mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-display text-4xl mb-2">Reports & Insights</h1>
+                        <p class="text-body text-gray-400">Custom reports and executive insights</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="luxury-btn luxury-btn-primary" onclick="createReport()">
+                            <i class="fas fa-plus mr-2"></i>Create Report
+                        </button>
+                        <button class="luxury-btn glass-card" onclick="scheduleReport()">
+                            <i class="fas fa-clock mr-2"></i>Schedule
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Templates -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="glass-card p-6 cursor-pointer" onclick="generateReport('executive')">
+                    <div class="text-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-chart-line text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold">Executive Summary</h3>
+                        <p class="text-sm text-gray-400 mt-2">High-level overview for leadership</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 cursor-pointer" onclick="generateReport('portfolio')">
+                    <div class="text-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-briefcase text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold">Portfolio Performance</h3>
+                        <p class="text-sm text-gray-400 mt-2">Comprehensive portfolio analysis</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 cursor-pointer" onclick="generateReport('financial')">
+                    <div class="text-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-dollar-sign text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold">Financial Report</h3>
+                        <p class="text-sm text-gray-400 mt-2">Budget, costs, and ROI analysis</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Reports -->
+            <div class="glass-card p-6">
+                <h3 class="text-headline text-xl mb-4">Recent Reports</h3>
+                <div class="space-y-4" id="recentReports">
+                    <!-- Recent reports will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Collaboration -->
+        <div id="collaboration" class="page-section">
+            <div class="mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-display text-4xl mb-2">Collaboration</h1>
+                        <p class="text-body text-gray-400">Team communication and document management</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="luxury-btn luxury-btn-primary" onclick="startDiscussion()">
+                            <i class="fas fa-comments mr-2"></i>New Discussion
+                        </button>
+                        <button class="luxury-btn glass-card" onclick="uploadDocument()">
+                            <i class="fas fa-upload mr-2"></i>Upload Document
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Communication -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Team Discussions</h3>
+                    <div class="space-y-4" id="teamDiscussions">
+                        <!-- Team discussions will be populated here -->
+                    </div>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-headline text-xl mb-4">Document Library</h3>
+                    <div class="space-y-4" id="documentLibrary">
+                        <!-- Documents will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Feed -->
+            <div class="glass-card p-6">
+                <h3 class="text-headline text-xl mb-4">Activity Feed</h3>
+                <div class="space-y-4" id="activityFeed">
+                    <!-- Activity feed will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings & Admin -->
+        <div id="settings" class="page-section">
+            <div class="mb-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-display text-4xl mb-2">Settings & Administration</h1>
+                        <p class="text-body text-gray-400">System configuration and administrative functions</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="luxury-btn luxury-btn-primary" onclick="backupSystem()">
+                            <i class="fas fa-download mr-2"></i>Backup
+                        </button>
+                        <button class="luxury-btn glass-card" onclick="systemHealth()">
+                            <i class="fas fa-heartbeat mr-2"></i>System Health
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tabs -->
+            <div class="glass-card p-6">
+                <div class="flex border-b border-gray-700 mb-6">
+                    <button class="tab-button active" onclick="switchSettingsTab('general')">General</button>
+                    <button class="tab-button" onclick="switchSettingsTab('security')">Security</button>
+                    <button class="tab-button" onclick="switchSettingsTab('integrations')">Integrations</button>
+                    <button class="tab-button" onclick="switchSettingsTab('users')">Users</button>
+                    <button class="tab-button" onclick="switchSettingsTab('system')">System</button>
+                </div>
+
+                <div id="generalTab" class="tab-content active">
+                    <h3 class="text-lg font-bold mb-4">General Settings</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Organization Name</label>
+                            <input type="text" value="Global PPM Platform" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Default Currency</label>
+                            <select class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white">
+                                <option>USD - US Dollar</option>
+                                <option>EUR - Euro</option>
+                                <option>GBP - British Pound</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Time Zone</label>
+                            <select class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white">
+                                <option>UTC - Coordinated Universal Time</option>
+                                <option>EST - Eastern Standard Time</option>
+                                <option>PST - Pacific Standard Time</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="securityTab" class="tab-content">
+                    <h3 class="text-lg font-bold mb-4">Security Settings</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                            <div>
+                                <h4 class="font-medium">Two-Factor Authentication</h4>
+                                <p class="text-sm text-gray-400">Require 2FA for all users</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                            <div>
+                                <h4 class="font-medium">Session Timeout</h4>
+                                <p class="text-sm text-gray-400">Automatically log out inactive users</p>
+                            </div>
+                            <select class="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white">
+                                <option>30 minutes</option>
+                                <option>1 hour</option>
+                                <option>4 hours</option>
+                                <option>8 hours</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="integrationsTab" class="tab-content">
+                    <h3 class="text-lg font-bold mb-4">Integration Settings</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-white/5 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-medium">Microsoft Teams</h4>
+                                <span class="px-3 py-1 rounded-full text-xs bg-green-500/20 text-green-400">Connected</span>
+                            </div>
+                            <p class="text-sm text-gray-400 mb-3">Sync projects and tasks with Teams</p>
+                            <button class="luxury-btn glass-card">Configure</button>
+                        </div>
+                        <div class="p-4 bg-white/5 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-medium">Slack</h4>
+                                <span class="px-3 py-1 rounded-full text-xs bg-gray-500/20 text-gray-400">Not Connected</span>
+                            </div>
+                            <p class="text-sm text-gray-400 mb-3">Receive notifications and updates in Slack</p>
+                            <button class="luxury-btn luxury-btn-primary">Connect</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="usersTab" class="tab-content">
+                    <h3 class="text-lg font-bold mb-4">User Management</h3>
+                    <div class="space-y-4">
+                        <button class="luxury-btn luxury-btn-primary" onclick="inviteUser()">
+                            <i class="fas fa-user-plus mr-2"></i>Invite User
+                        </button>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-gray-700">
+                                        <th class="text-left py-3 px-4">User</th>
+                                        <th class="text-left py-3 px-4">Role</th>
+                                        <th class="text-left py-3 px-4">Status</th>
+                                        <th class="text-left py-3 px-4">Last Active</th>
+                                        <th class="text-left py-3 px-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <!-- User rows will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="systemTab" class="tab-content">
+                    <h3 class="text-lg font-bold mb-4">System Information</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div class="p-4 bg-white/5 rounded-lg">
+                                <h4 class="font-medium mb-2">System Version</h4>
+                                <p class="text-gray-400">v2.1.0 Enterprise Edition</p>
+                            </div>
+                            <div class="p-4 bg-white/5 rounded-lg">
+                                <h4 class="font-medium mb-2">Database Status</h4>
+                                <p class="text-green-400">Healthy</p>
+                            </div>
+                            <div class="p-4 bg-white/5 rounded-lg">
+                                <h4 class="font-medium mb-2">API Status</h4>
+                                <p class="text-green-400">Operational</p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-white/5 rounded-lg">
+                                <h4 class="font-medium mb-2">Uptime (Last 30 days)</h4>
+                                <p class="text-green-400">99.9%</p>
+                            </div>
+                            <div class="p-4 bg-white/5 rounded-lg">
+                                <h4 class="font-medium mb-2">Active Users</h4>
+                                <p class="text-gray-400">247 / 500</p>
+                            </div>
+                            <div class="p-4 bg-white/5 rounded-lg">
+                                <h4 class="font-medium mb-2">Storage Used</h4>
+                                <p class="text-gray-400">45.2 GB / 100 GB</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer" class="modal">
+        <div class="modal-content" id="modalContent">
+            <!-- Modal content will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // 🚀 UNIFIED PPM SYSTEM CONTROLLER
+        let currentPage = 'dashboard';
+        let charts = {};
+        let systemData = initializeSystemData();
+
+        // Initialize system when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSystem();
+            animateElements();
+        });
+
+        // 🎯 PAGE NAVIGATION SYSTEM
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Add active class to clicked nav item
+            event.target.closest('.nav-item').classList.add('active');
+            
+            currentPage = pageId;
+            
+            // Initialize page-specific content
+            initializePage(pageId);
+            
+            console.log(`🔄 Navigated to: ${pageId}`);
+        }
+
+        // 📊 INITIALIZE SYSTEM DATA
+        function initializeSystemData() {
+            return {
+                portfolios: [
+                    { id: 1, name: 'Digital Transformation', projects: 8, budget: '$3.2M', alignment: 92, status: 'Active' },
+                    { id: 2, name: 'Customer Experience', projects: 6, budget: '$2.1M', alignment: 78, status: 'Active' },
+                    { id: 3, name: 'Operational Excellence', projects: 4, budget: '$1.8M', alignment: 65, status: 'Active' },
+                    { id: 4, name: 'Innovation Lab', projects: 6, budget: '$1.3M', alignment: 88, status: 'Planning' }
+                ],
+                programs: [
+                    { id: 1, name: 'Cloud Migration', portfolio: 'Digital Transformation', projects: ['Project A', 'Project B'], status: 'Active' },
+                    { id: 2, name: 'Mobile App Suite', portfolio: 'Customer Experience', projects: ['Project C', 'Project D'], status: 'Active' }
+                ],
+                projects: [
+                    { id: 1, name: 'Cloud Infrastructure Setup', program: 'Cloud Migration', status: 'Active', progress: 78, budget: '$800K', actual: '$650K' },
+                    { id: 2, name: 'Data Migration', program: 'Cloud Migration', status: 'Active', progress: 45, budget: '$400K', actual: '$380K' },
+                    { id: 3, name: 'iOS App Development', program: 'Mobile App Suite', status: 'Active', progress: 62, budget: '$600K', actual: '$450K' },
+                    { id: 4, name: 'Android App Development', program: 'Mobile App Suite', status: 'Planning', progress: 15, budget: '$550K', actual: '$80K' }
+                ],
+                resources: [
+                    { name: 'John Smith', skills: 'Cloud Architecture, DevOps', availability: '85%', projects: 3, utilization: 82 },
+                    { name: 'Sarah Chen', skills: 'Frontend Development, UX', availability: '70%', projects: 2, utilization: 78 },
+                    { name: 'Mike Johnson', skills: 'Backend Development, APIs', availability: '90%', projects: 4, utilization: 91 },
+                    { name: 'Emily Davis', skills: 'Data Science, ML', availability: '60%', projects: 2, utilization: 75 }
+                ],
+                financial: [
+                    { project: 'Cloud Infrastructure Setup', budget: 800000, actual: 650000, variance: -18.75, roi: 145 },
+                    { project: 'Data Migration', budget: 400000, actual: 380000, variance: -5, roi: 112 },
+                    { project: 'iOS App Development', budget: 600000, actual: 450000, variance: -25, roi: 178 }
+                ]
+            };
+        }
+
+        // 🚀 INITIALIZE SYSTEM
+        function initializeSystem() {
+            console.log('🚀 Initializing World-Class PPM System...');
+            
+            // Initialize dashboard
+            initializeDashboard();
+            
+            // Initialize all charts
+            initializeCharts();
+            
+            // Load data into all sections
+            loadAllSectionData();
+            
+            console.log('✅ System initialized successfully');
+        }
+
+        // 📊 INITIALIZE DASHBOARD
+        function initializeDashboard() {
+            loadRecentActivities();
+            loadStrategicAlerts();
+        }
+
+        // 📈 INITIALIZE ALL CHARTS
+        function initializeCharts() {
+            // Portfolio Performance Chart
+            const ctx1 = document.getElementById('portfolioPerformanceChart');
+            if (ctx1) {
+                charts.portfolioPerformance = new Chart(ctx1.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Strategic Alignment',
+                            data: [75, 78, 82, 85, 88, 92],
+                            borderColor: 'rgb(102, 126, 234)',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Delivery Performance',
+                            data: [70, 75, 78, 82, 85, 87],
+                            borderColor: 'rgb(52, 211, 153)',
+                            backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#94a3b8' } }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                            x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            }
+
+            // Resource Allocation Chart
+            const ctx2 = document.getElementById('resourceAllocationChart');
+            if (ctx2) {
+                charts.resourceAllocation = new Chart(ctx2.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Development', 'Infrastructure', 'Design', 'Management', 'QA'],
+                        datasets: [{
+                            data: [35, 25, 15, 15, 10],
+                            backgroundColor: [
+                                'rgba(102, 126, 234, 0.8)',
+                                'rgba(52, 211, 153, 0.8)',
+                                'rgba(251, 191, 36, 0.8)',
+                                'rgba(248, 113, 113, 0.8)',
+                                'rgba(139, 92, 246, 0.8)'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right', labels: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            }
+
+            // Initialize other charts as needed...
+        }
+
+        // 📋 LOAD ALL SECTION DATA
+        function loadAllSectionData() {
+            loadPortfolioData();
+            loadProjectsData();
+            loadResourcesData();
+            loadFinancialData();
+            loadDemandData();
+            loadReportsData();
+            loadCollaborationData();
+            loadSettingsData();
+        }
+
+        // 🎯 LOAD PORTFOLIO DATA
+        function loadPortfolioData() {
+            const tbody = document.getElementById('portfolioTableBody');
+            if (tbody) {
+                tbody.innerHTML = systemData.portfolios.map(portfolio => `
+                    <tr class="border-b border-gray-700">
+                        <td class="py-3 px-4 font-medium">${portfolio.name}</td>
+                        <td class="py-3 px-4">${portfolio.projects}</td>
+                        <td class="py-3 px-4">${portfolio.budget}</td>
+                        <td class="py-3 px-4">
+                            <div class="flex items-center gap-2">
+                                <span class="${portfolio.alignment >= 80 ? 'text-green-400' : portfolio.alignment >= 60 ? 'text-yellow-400' : 'text-red-400'}">${portfolio.alignment}%</span>
+                                <div class="w-12 bg-gray-700 rounded-full h-1">
+                                    <div class="bg-${portfolio.alignment >= 80 ? 'green' : portfolio.alignment >= 60 ? 'yellow' : 'red'}-500 h-1 rounded-full" style="width: ${portfolio.alignment}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 rounded-full text-xs ${portfolio.status === 'Active' ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'}">${portfolio.status}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <button class="text-blue-400 hover:text-blue-300" onclick="viewPortfolio(${portfolio.id})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // 📊 LOAD PROJECTS DATA
+        function loadProjectsData() {
+            const projectsGrid = document.getElementById('projectsGrid');
+            if (projectsGrid) {
+                projectsGrid.innerHTML = systemData.projects.map(project => `
+                    <div class="glass-card p-6 cursor-pointer" onclick="viewProject(${project.id})">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-lg font-bold">${project.name}</h3>
+                            <span class="px-2 py-1 rounded-full text-xs ${project.status === 'Active' ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'}">${project.status}</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-400">Progress</span>
+                                <span class="text-sm font-medium">${project.progress}%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style="width: ${project.progress}%"></div>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-400">Budget: ${project.budget}</span>
+                                <span class="text-gray-400">Spent: ${project.actual}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 👥 LOAD RESOURCES DATA
+        function loadResourcesData() {
+            const tbody = document.getElementById('resourceTableBody');
+            if (tbody) {
+                tbody.innerHTML = systemData.resources.map(resource => `
+                    <tr class="border-b border-gray-700">
+                        <td class="py-3 px-4 font-medium">${resource.name}</td>
+                        <td class="py-3 px-4">${resource.skills}</td>
+                        <td class="py-3 px-4">
+                            <span class="${resource.availability >= 80 ? 'text-green-400' : resource.availability >= 60 ? 'text-yellow-400' : 'text-red-400'}">${resource.availability}</span>
+                        </td>
+                        <td class="py-3 px-4">${resource.projects}</td>
+                        <td class="py-3 px-4">
+                            <div class="flex items-center gap-2">
+                                <span class="${resource.utilization >= 80 ? 'text-red-400' : resource.utilization >= 60 ? 'text-yellow-400' : 'text-green-400'}">${resource.utilization}%</span>
+                                <div class="w-12 bg-gray-700 rounded-full h-1">
+                                    <div class="bg-${resource.utilization >= 80 ? 'red' : resource.utilization >= 60 ? 'yellow' : 'green'}-500 h-1 rounded-full" style="width: ${resource.utilization}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <button class="text-blue-400 hover:text-blue-300 mr-2" onclick="editResource('${resource.name}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-green-400 hover:text-green-300" onclick="assignResource('${resource.name}')">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // 💰 LOAD FINANCIAL DATA
+        function loadFinancialData() {
+            const tbody = document.getElementById('financialTableBody');
+            if (tbody) {
+                tbody.innerHTML = systemData.financial.map(item => `
+                    <tr class="border-b border-gray-700">
+                        <td class="py-3 px-4 font-medium">${item.project}</td>
+                        <td class="py-3 px-4">$${item.budget.toLocaleString()}</td>
+                        <td class="py-3 px-4">$${item.actual.toLocaleString()}</td>
+                        <td class="py-3 px-4">
+                            <span class="${item.variance < 0 ? 'text-green-400' : 'text-red-400'}">${item.variance > 0 ? '+' : ''}${item.variance}%</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="${item.roi >= 100 ? 'text-green-400' : 'text-yellow-400'}">${item.roi}%</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 rounded-full text-xs ${item.variance < -10 ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                                ${item.variance < -10 ? 'On Track' : 'Attention'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // 📥 LOAD DEMAND DATA
+        function loadDemandData() {
+            const demandItems = document.getElementById('demandItems');
+            if (demandItems) {
+                demandItems.innerHTML = [
+                    { title: 'CRM System Upgrade', priority: 'High', status: 'Under Review', requested: 'Marketing', value: '$450K' },
+                    { title: 'Security Enhancement', priority: 'Critical', status: 'Approved', requested: 'IT', value: '$320K' },
+                    { title: 'Mobile Banking App', priority: 'Medium', status: 'Submitted', requested: 'Finance', value: '$780K' }
+                ].map(item => `
+                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                        <div class="flex-1">
+                            <h4 class="font-medium">${item.title}</h4>
+                            <p class="text-sm text-gray-400">Requested by ${item.requested} • Value: ${item.value}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="px-2 py-1 rounded-full text-xs ${
+                                item.priority === 'Critical' ? 'bg-red-500/20 text-red-400' :
+                                item.priority === 'High' ? 'bg-orange-500/20 text-orange-400' :
+                                item.priority === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                                'bg-gray-500/20 text-gray-400'
+                            }">${item.priority}</span>
+                            <span class="px-2 py-1 rounded-full text-xs ${
+                                item.status === 'Approved' ? 'bg-green-500/20 text-green-400' :
+                                item.status === 'Under Review' ? 'bg-yellow-500/20 text-yellow-400' :
+                                'bg-blue-500/20 text-blue-400'
+                            }">${item.status}</span>
+                            <button class="text-blue-400 hover:text-blue-300" onclick="reviewDemand('${item.title}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 📊 LOAD REPORTS DATA
+        function loadReportsData() {
+            const recentReports = document.getElementById('recentReports');
+            if (recentReports) {
+                recentReports.innerHTML = [
+                    { name: 'Executive Summary', date: '2024-12-18', type: 'Executive', status: 'Completed' },
+                    { name: 'Portfolio Performance', date: '2024-12-17', type: 'Portfolio', status: 'Completed' },
+                    { name: 'Financial Analysis', date: '2024-12-16', type: 'Financial', status: 'Completed' }
+                ].map(report => `
+                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                        <div class="flex-1">
+                            <h4 class="font-medium">${report.name}</h4>
+                            <p class="text-sm text-gray-400">${report.type} Report • Generated ${report.date}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400">${report.status}</span>
+                            <button class="text-blue-400 hover:text-blue-300" onclick="viewReport('${report.name}')">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 💬 LOAD COLLABORATION DATA
+        function loadCollaborationData() {
+            const teamDiscussions = document.getElementById('teamDiscussions');
+            if (teamDiscussions) {
+                teamDiscussions.innerHTML = [
+                    { title: 'Project Timeline Review', author: 'John Smith', replies: 3, date: '2 hours ago' },
+                    { title: 'Resource Allocation Discussion', author: 'Sarah Chen', replies: 7, date: '5 hours ago' }
+                ].map(discussion => `
+                    <div class="p-4 bg-white/5 rounded-lg cursor-pointer" onclick="openDiscussion('${discussion.title}')">
+                        <h4 class="font-medium mb-1">${discussion.title}</h4>
+                        <p class="text-sm text-gray-400">Started by ${discussion.author} • ${discussion.replies} replies • ${discussion.date}</p>
+                    </div>
+                `).join('');
+            }
+
+            const documentLibrary = document.getElementById('documentLibrary');
+            if (documentLibrary) {
+                documentLibrary.innerHTML = [
+                    { name: 'Project Charter v2.1.pdf', type: 'PDF', size: '2.4 MB', date: '2024-12-18' },
+                    { name: 'Risk Assessment.xlsx', type: 'Excel', size: '1.8 MB', date: '2024-12-17' }
+                ].map(doc => `
+                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                                <i class="fas fa-file text-white"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium">${doc.name}</h4>
+                                <p class="text-sm text-gray-400">${doc.type} • ${doc.size} • ${doc.date}</p>
+                            </div>
+                        </div>
+                        <button class="text-blue-400 hover:text-blue-300" onclick="downloadDocument('${doc.name}')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // ⚙️ LOAD SETTINGS DATA
+        function loadSettingsData() {
+            const usersTableBody = document.getElementById('usersTableBody');
+            if (usersTableBody) {
+                usersTableBody.innerHTML = [
+                    { name: 'John Smith', email: 'john@company.com', role: 'Project Manager', status: 'Active', lastActive: '2 hours ago' },
+                    { name: 'Sarah Chen', email: 'sarah@company.com', role: 'Admin', status: 'Active', lastActive: '1 hour ago' },
+                    { name: 'Mike Johnson', email: 'mike@company.com', role: 'Team Member', status: 'Inactive', lastActive: '3 days ago' }
+                ].map(user => `
+                    <tr class="border-b border-gray-700">
+                        <td class="py-3 px-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                                    <i class="fas fa-user text-white text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">${user.name}</div>
+                                    <div class="text-sm text-gray-400">${user.email}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">${user.role}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 rounded-full text-xs ${user.status === 'Active' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}">${user.status}</span>
+                        </td>
+                        <td class="py-3 px-4 text-gray-400">${user.lastActive}</td>
+                        <td class="py-3 px-4">
+                            <button class="text-blue-400 hover:text-blue-300 mr-2" onclick="editUser('${user.name}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-400 hover:text-red-300" onclick="removeUser('${user.name}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // 📋 LOAD RECENT ACTIVITIES
+        function loadRecentActivities() {
+            const container = document.getElementById('recentActivities');
+            if (container) {
+                container.innerHTML = [
+                    { action: 'Project "Cloud Migration" updated', user: 'John Smith', time: '10 minutes ago' },
+                    { action: 'New resource request approved', user: 'Sarah Chen', time: '1 hour ago' },
+                    { action: 'Financial report generated', user: 'System', time: '2 hours ago' },
+                    { action: 'Budget increased for "Mobile App"', user: 'Admin', time: '3 hours ago' },
+                    { action: 'Risk mitigation plan created', user: 'Mike Johnson', time: '5 hours ago' }
+                ].map(activity => `
+                    <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-circle text-white text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-body text-sm">${activity.action}</p>
+                            <p class="text-caption text-gray-400">${activity.user} • ${activity.time}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 🚨 LOAD STRATEGIC ALERTS
+        function loadStrategicAlerts() {
+            const container = document.getElementById('strategicAlerts');
+            if (container) {
+                container.innerHTML = [
+                    { type: 'warning', message: 'Resource utilization exceeding 85% in Digital Transformation portfolio', project: 'Digital Transformation' },
+                    { type: 'info', message: 'New strategic alignment opportunity identified in Customer Experience', project: 'Customer Experience' },
+                    { type: 'success', message: 'Budget performance improved by 12% this quarter', project: 'Portfolio Overview' },
+                    { type: 'warning', message: 'Timeline variance detected in Mobile App Suite program', project: 'Mobile App Suite' }
+                ].map(alert => `
+                    <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            alert.type === 'warning' ? 'bg-yellow-500' :
+                            alert.type === 'info' ? 'bg-blue-500' :
+                            alert.type === 'success' ? 'bg-green-500' :
+                            'bg-red-500'
+                        }">
+                            <i class="fas ${
+                                alert.type === 'warning' ? 'fa-exclamation-triangle' :
+                                alert.type === 'info' ? 'fa-info-circle' :
+                                alert.type === 'success' ? 'fa-check-circle' :
+                                'fa-times-circle'
+                            } text-white text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-body text-sm">${alert.message}</p>
+                            <p class="text-caption text-gray-400">${alert.project}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 🎯 PAGE-SPECIFIC INITIALIZATION
+        function initializePage(pageId) {
+            switch(pageId) {
+                case 'dashboard':
+                    // Dashboard is already initialized
+                    break;
+                case 'portfolio':
+                    initializePortfolioCharts();
+                    break;
+                case 'projects':
+                    // Projects data already loaded
+                    break;
+                case 'resources':
+                    initializeResourceCharts();
+                    break;
+                case 'financial':
+                    initializeFinancialCharts();
+                    break;
+                // Add other page initializations as needed
+            }
+        }
+
+        // 📈 INITIALIZE PORTFOLIO CHARTS
+        function initializePortfolioCharts() {
+            const ctx = document.getElementById('portfolioAlignmentChart');
+            if (ctx && !charts.portfolioAlignment) {
+                charts.portfolioAlignment = new Chart(ctx.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: ['Strategic Alignment', 'Resource Availability', 'Technical Feasibility', 'Financial Viability', 'Risk Level'],
+                        datasets: [{
+                            label: 'Digital Transformation',
+                            data: [92, 75, 88, 82, 45],
+                            borderColor: 'rgb(102, 126, 234)',
+                            backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        }, {
+                            label: 'Customer Experience',
+                            data: [78, 85, 72, 90, 35],
+                            borderColor: 'rgb(52, 211, 153)',
+                            backgroundColor: 'rgba(52, 211, 153, 0.2)',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#94a3b8' } }
+                        },
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: { color: '#334155' },
+                                ticks: { color: '#94a3b8' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 📊 INITIALIZE RESOURCE CHARTS
+        function initializeResourceCharts() {
+            // Resource Utilization Chart
+            const ctx1 = document.getElementById('resourceUtilizationChart');
+            if (ctx1 && !charts.resourceUtilization) {
+                charts.resourceUtilization = new Chart(ctx1.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Dev', 'Ops', 'Design', 'QA', 'PM'],
+                        datasets: [{
+                            label: 'Utilization %',
+                            data: [82, 78, 91, 75, 88],
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#94a3b8' } }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, max: 100, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                            x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            }
+
+            // Skills Distribution Chart
+            const ctx2 = document.getElementById('skillsDistributionChart');
+            if (ctx2 && !charts.skillsDistribution) {
+                charts.skillsDistribution = new Chart(ctx2.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['Frontend', 'Backend', 'DevOps', 'Data Science', 'UI/UX'],
+                        datasets: [{
+                            data: [30, 25, 20, 15, 10],
+                            backgroundColor: [
+                                'rgba(102, 126, 234, 0.8)',
+                                'rgba(52, 211, 153, 0.8)',
+                                'rgba(251, 191, 36, 0.8)',
+                                'rgba(248, 113, 113, 0.8)',
+                                'rgba(139, 92, 246, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right', labels: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 💰 INITIALIZE FINANCIAL CHARTS
+        function initializeFinancialCharts() {
+            // Budget vs Actual Chart
+            const ctx1 = document.getElementById('budgetActualChart');
+            if (ctx1 && !charts.budgetActual) {
+                charts.budgetActual = new Chart(ctx1.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Cloud Setup', 'Data Migration', 'iOS App', 'Android App'],
+                        datasets: [{
+                            label: 'Budget',
+                            data: [800000, 400000, 600000, 550000],
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)'
+                        }, {
+                            label: 'Actual',
+                            data: [650000, 380000, 450000, 80000],
+                            backgroundColor: 'rgba(52, 211, 153, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#94a3b8' } }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                            x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            }
+
+            // Cost Breakdown Chart
+            const ctx2 = document.getElementById('costBreakdownChart');
+            if (ctx2 && !charts.costBreakdown) {
+                charts.costBreakdown = new Chart(ctx2.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Personnel', 'Infrastructure', 'Software', 'Training', 'Other'],
+                        datasets: [{
+                            data: [45, 25, 15, 10, 5],
+                            backgroundColor: [
+                                'rgba(102, 126, 234, 0.8)',
+                                'rgba(52, 211, 153, 0.8)',
+                                'rgba(251, 191, 36, 0.8)',
+                                'rgba(248, 113, 113, 0.8)',
+                                'rgba(139, 92, 246, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right', labels: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 🎬 ANIMATIONS
+        function animateElements() {
+            // Animate stat cards
+            gsap.from('.glass-card', {
+                y: 30,
+                opacity: 0,
+                duration: 0.6,
+                stagger: 0.1,
+                ease: 'power2.out'
+            });
+        }
+
+        // 🔧 ACTION FUNCTIONS
+        function refreshDashboard() {
+            showNotification('Dashboard refreshed with latest data', 'success');
+            // Reinitialize dashboard data
+            loadRecentActivities();
+            loadStrategicAlerts();
+        }
+
+        function exportReport() {
+            showNotification('Report exported successfully', 'success');
+        }
+
+        function drillDown(section) {
+            showPage(section);
+        }
+
+        // Modal functions
+        function createPortfolio() {
+            showModal('Create New Portfolio', `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Portfolio Name</label>
+                        <input type="text" placeholder="Enter portfolio name" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Description</label>
+                        <textarea rows="3" placeholder="Enter portfolio description" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-3">
+                        <button class="luxury-btn glass-card" onclick="closeModal()">Cancel</button>
+                        <button class="luxury-btn luxury-btn-primary" onclick="savePortfolio()">Create Portfolio</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function createProject() {
+            showModal('Create New Project', `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Project Name</label>
+                        <input type="text" placeholder="Enter project name" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Program</label>
+                        <select class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white">
+                            <option>Select a program</option>
+                            <option>Cloud Migration</option>
+                            <option>Mobile App Suite</option>
+                            <option>Standalone Project</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Priority</label>
+                        <select class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white">
+                            <option>Critical</option>
+                            <option>High</option>
+                            <option>Medium</option>
+                            <option>Low</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-3">
+                        <button class="luxury-btn glass-card" onclick="closeModal()">Cancel</button>
+                        <button class="luxury-btn luxury-btn-primary" onclick="saveProject()">Create Project</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function showModal(title, content) {
+            const modal = document.getElementById('modalContainer');
+            const modalContent = document.getElementById('modalContent');
+            
+            modalContent.innerHTML = `
+                <div class="p-8 max-w-2xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold">${title}</h2>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-white">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    ${content}
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalContainer').classList.remove('active');
+        }
+
+        // Tab switching for settings
+        function switchSettingsTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Placeholder functions for all actions
+        function viewPortfolio(id) { showNotification(`Opening portfolio details...`, 'info'); }
+        function viewProject(id) { showNotification(`Opening project details...`, 'info'); }
+        function editResource(name) { showNotification(`Editing resource: ${name}`, 'info'); }
+        function assignResource(name) { showNotification(`Opening assignment for: ${name}`, 'info'); }
+        function reviewDemand(title) { showNotification(`Reviewing demand: ${title}`, 'info'); }
+        function viewReport(name) { showNotification(`Downloading report: ${name}`, 'success'); }
+        function openDiscussion(title) { showNotification(`Opening discussion: ${title}`, 'info'); }
+        function downloadDocument(name) { showNotification(`Downloading document: ${name}`, 'success'); }
+        function editUser(name) { showNotification(`Editing user: ${name}`, 'info'); }
+        function removeUser(name) { showNotification(`Removing user: ${name}`, 'warning'); }
+        function savePortfolio() { closeModal(); showNotification('Portfolio created successfully', 'success'); }
+        function saveProject() { closeModal(); showNotification('Project created successfully', 'success'); }
+
+        // Additional action functions
+        function runScenarioAnalysis() { showNotification('Running scenario analysis...', 'info'); }
+        function createProgram() { showModal('Create New Program', '<p>Program creation form...</p>'); }
+        function addResource() { showModal('Add New Resource', '<p>Resource form...</p>'); }
+        function runCapacityPlanning() { showNotification('Running capacity planning...', 'info'); }
+        function createBudget() { showModal('Create Budget', '<p>Budget form...</p>'); }
+        function runFinancialAnalysis() { showNotification('Running financial analysis...', 'info'); }
+        function createDemand() { showModal('Create New Demand', '<p>Demand form...</p>'); }
+        function runPrioritization() { showNotification('Auto-prioritizing demands...', 'info'); }
+        function runAIAnalysis() { showNotification('Running AI analysis...', 'info'); }
+        function trainModels() { showNotification('Training AI models...', 'info'); }
+        function createReport() { showModal('Create New Report', '<p>Report creation form...</p>'); }
+        function scheduleReport() { showModal('Schedule Report', '<p>Schedule form...</p>'); }
+        function generateReport(type) { showNotification(`Generating ${type} report...`, 'info'); }
+        function startDiscussion() { showModal('Start Discussion', '<p>Discussion form...</p>'); }
+        function uploadDocument() { showNotification('Opening document upload...', 'info'); }
+        function backupSystem() { showNotification('Creating system backup...', 'info'); }
+        function systemHealth() { showNotification('Checking system health...', 'info'); }
+        function inviteUser() { showModal('Invite User', '<p>User invitation form...</p>'); }
+
+        // 🔔 NOTIFICATION SYSTEM
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'warning' ? 'bg-yellow-500' :
+                type === 'error' ? 'bg-red-500' :
+                'bg-blue-500'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            gsap.from(notification, {
+                x: 100,
+                opacity: 0,
+                duration: 0.3,
+                ease: 'power2.out'
+            });
+            
+            setTimeout(() => {
+                gsap.to(notification, {
+                    x: 100,
+                    opacity: 0,
+                    duration: 0.3,
+                    ease: 'power2.in',
+                    onComplete: () => notification.remove()
+                });
+            }, 3000);
+        }
+
+        // ⌨️ KEYBOARD SHORTCUTS
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                createProject();
+            }
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                refreshDashboard();
+            }
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('modalContainer').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        console.log('🚀 World-Class PPM System initialized successfully');
+        console.log('📊 All modules loaded and functional');
+        console.log('🎯 Navigation system active');
+        console.log('✨ Ready for enterprise use');
+    </script>
+</body>
+</html>

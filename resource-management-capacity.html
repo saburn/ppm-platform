@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Management - Capacity Planning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Heat Map */
+        .heat-map-grid {
+            display: grid;
+            grid-template-columns: 200px repeat(12, 1fr);
+            gap: 2px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .heat-map-cell {
+            background: white;
+            padding: 12px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .heat-map-cell:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .heat-map-header {
+            background: #f9fafb;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .heat-map-name {
+            background: #f9fafb;
+            justify-content: flex-start;
+            padding-left: 16px;
+        }
+        
+        /* Heat Map Colors */
+        .heat-0 { background: #f3f4f6; color: #6b7280; }
+        .heat-25 { background: #dbeafe; color: #1e40af; }
+        .heat-50 { background: #bfdbfe; color: #1e3a8a; }
+        .heat-75 { background: #fef3c7; color: #92400e; }
+        .heat-90 { background: #fed7aa; color: #9a3412; }
+        .heat-100 { background: #fecaca; color: #991b1b; }
+        .heat-over { background: #ef4444; color: white; }
+
+        /* Team Planner */
+        .planner-grid {
+            display: grid;
+            grid-template-columns: 200px repeat(4, 1fr);
+            gap: 1px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .planner-cell {
+            background: white;
+            padding: 16px;
+            min-height: 80px;
+        }
+        .planner-header {
+            background: #f9fafb;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Allocation Bar */
+        .allocation-bar {
+            height: 24px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .allocation-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            transition: width 0.3s ease;
+        }
+
+        /* Draggable Allocation */
+        .allocation-item {
+            background: white;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-left: 4px solid;
+            cursor: move;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .allocation-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .allocation-item.dragging {
+            opacity: 0.5;
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 4px;
+        }
+        .view-toggle button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .view-toggle button.active {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Timeline */
+        .timeline-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .timeline-grid {
+            display: grid;
+            grid-template-columns: 150px repeat(12, 100px);
+            gap: 1px;
+            background: #e5e7eb;
+        }
+        .timeline-cell {
+            background: white;
+            padding: 12px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Forecast Chart */
+        .forecast-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 10000;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.info { border-left: 4px solid #3b82f6; }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Allocation Modal -->
+    <div id="allocation-modal" class="modal">
+        <div class="modal-content">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-900">Adjust Allocation</h3>
+                    <button onclick="closeAllocationModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <form id="allocation-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Resource</label>
+                        <input type="text" id="modal-resource" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Week</label>
+                        <input type="text" id="modal-week" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Allocation</label>
+                        <input type="text" id="modal-current" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">New Allocation (%)</label>
+                        <input type="range" id="modal-allocation" min="0" max="150" value="80" class="w-full">
+                        <div class="flex justify-between text-sm text-gray-600 mt-1">
+                            <span>0%</span>
+                            <span id="allocation-value" class="font-semibold text-blue-600">80%</span>
+                            <span>150%</span>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                        <p class="text-sm text-blue-800">
+                            <i class="fas fa-info-circle"></i>
+                            Allocations over 100% indicate overtime or overallocation.
+                        </p>
+                    </div>
+                </form>
+            </div>
+            <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
+                <button onclick="closeAllocationModal()" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                    Cancel
+                </button>
+                <button onclick="saveAllocation()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="min-h-screen p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+                    <i class="fas fa-calendar-alt text-green-600"></i>
+                    Capacity Planning
+                    <span class="text-sm font-normal px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full">
+                        Real-time
+                    </span>
+                </h1>
+                <p class="text-gray-600">Visual capacity planning with heat maps and drag & drop allocation</p>
+            </div>
+
+            <!-- Controls -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="view-toggle">
+                            <button onclick="switchView('heatmap')" id="btn-heatmap" class="active">
+                                <i class="fas fa-th"></i> Heat Map
+                            </button>
+                            <button onclick="switchView('planner')" id="btn-planner">
+                                <i class="fas fa-calendar"></i> Team Planner
+                            </button>
+                            <button onclick="switchView('timeline')" id="btn-timeline">
+                                <i class="fas fa-stream"></i> Timeline
+                            </button>
+                        </div>
+                        <div class="h-6 w-px bg-gray-300"></div>
+                        <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option>Next 12 Weeks</option>
+                            <option>Next 6 Weeks</option>
+                            <option>Next 3 Months</option>
+                            <option>Next 6 Months</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="runWhatIf()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                            <i class="fas fa-lightbulb"></i>
+                            What-If Analysis
+                        </button>
+                        <button onclick="exportCapacity()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                            <i class="fas fa-download"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-sm text-gray-600">Available Capacity</p>
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900">1,240</p>
+                    <p class="text-sm text-gray-600 mt-1">hours this month</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-sm text-gray-600">Allocated</p>
+                        <i class="fas fa-tasks text-blue-600 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900">905</p>
+                    <p class="text-sm text-gray-600 mt-1">hours (73%)</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-sm text-gray-600">Overallocated</p>
+                        <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900">3</p>
+                    <p class="text-sm text-gray-600 mt-1">resources need attention</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-sm text-gray-600">Utilization</p>
+                        <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900">73%</p>
+                    <p class="text-sm text-green-600 mt-1">↑ 8% from last month</p>
+                </div>
+            </div>
+
+            <!-- Heat Map View -->
+            <div id="heatmap-view" class="mb-6">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold text-gray-900">Allocation Heat Map</h2>
+                        <div class="flex items-center gap-4 text-sm">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 rounded heat-0"></div>
+                                <span class="text-gray-600">0-25%</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 rounded heat-50"></div>
+                                <span class="text-gray-600">50-75%</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 rounded heat-90"></div>
+                                <span class="text-gray-600">90-100%</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 rounded heat-over"></div>
+                                <span class="text-gray-600">>100%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <div class="heat-map-grid" id="heat-map-grid">
+                            <!-- Heat map will be generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Planner View -->
+            <div id="planner-view" style="display: none;" class="mb-6">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Team Planner - Compact Mode</h2>
+                    <div class="planner-grid" id="planner-grid">
+                        <!-- Planner will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline View -->
+            <div id="timeline-view" style="display: none;" class="mb-6">
+                <div class="timeline-container">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Resource Timeline</h2>
+                    <div class="timeline-grid" id="timeline-grid">
+                        <!-- Timeline will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demand vs Capacity -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="forecast-card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Demand vs Capacity Forecast</h3>
+                    <canvas id="demand-chart" height="250"></canvas>
+                </div>
+                <div class="forecast-card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Utilization Trend</h3>
+                    <canvas id="utilization-chart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-lightbulb text-purple-600"></i>
+                    AI Recommendations
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-900 mb-2">Overallocation Alert</h4>
+                        <p class="text-sm text-gray-600 mb-3">Maria Garcia is allocated at 120% for Week 8. Consider redistributing 2 tasks.</p>
+                        <button onclick="resolveConflict()" class="text-sm text-purple-600 hover:text-purple-700 font-semibold">
+                            View Solutions →
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-900 mb-2">Capacity Opportunity</h4>
+                        <p class="text-sm text-gray-600 mb-3">Tom Harris has 45% availability. Perfect for the new mobile project starting Week 10.</p>
+                        <button onclick="assignOpportunity()" class="text-sm text-purple-600 hover:text-purple-700 font-semibold">
+                            Assign Now →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample Data
+        const resources = [
+            { name: 'Alex Chen', allocations: [85, 90, 88, 92, 85, 80, 75, 85, 90, 88, 85, 82] },
+            { name: 'Maria Garcia', allocations: [92, 95, 98, 100, 105, 110, 115, 120, 95, 90, 88, 85] },
+            { name: 'James Wilson', allocations: [78, 80, 82, 85, 88, 90, 85, 80, 78, 75, 72, 70] },
+            { name: 'Sophie Turner', allocations: [95, 98, 100, 102, 100, 98, 95, 92, 90, 88, 85, 82] },
+            { name: 'Robert Lee', allocations: [70, 72, 75, 78, 80, 82, 85, 88, 90, 85, 80, 75] },
+            { name: 'Emily Davis', allocations: [88, 90, 92, 95, 92, 90, 88, 85, 82, 80, 78, 75] },
+            { name: 'Michael Brown', allocations: [82, 85, 88, 90, 92, 95, 92, 90, 88, 85, 82, 80] },
+            { name: 'Sarah Johnson', allocations: [65, 68, 70, 72, 75, 78, 80, 82, 85, 88, 90, 85] },
+            { name: 'David Martinez', allocations: [90, 92, 95, 98, 100, 98, 95, 92, 90, 88, 85, 82] },
+            { name: 'Lisa Anderson', allocations: [75, 78, 80, 82, 85, 88, 90, 88, 85, 82, 80, 78] },
+            { name: 'Tom Harris', allocations: [55, 58, 60, 62, 65, 68, 70, 72, 75, 78, 80, 75] },
+            { name: 'Jennifer White', allocations: [68, 70, 72, 75, 78, 80, 82, 85, 88, 85, 82, 80] }
+        ];
+
+        const weeks = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8', 'W9', 'W10', 'W11', 'W12'];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderHeatMap();
+            renderPlanner();
+            renderTimeline();
+            initializeCharts();
+            setupAllocationSlider();
+            showToast('Capacity Planning loaded successfully!', 'success');
+        });
+
+        // Render Heat Map
+        function renderHeatMap() {
+            const grid = document.getElementById('heat-map-grid');
+            let html = '<div class="heat-map-cell heat-map-header">Resource</div>';
+            
+            // Headers
+            weeks.forEach(week => {
+                html += `<div class="heat-map-cell heat-map-header">${week}</div>`;
+            });
+
+            // Rows
+            resources.forEach(resource => {
+                html += `<div class="heat-map-cell heat-map-name">${resource.name}</div>`;
+                resource.allocations.forEach((allocation, weekIndex) => {
+                    const heatClass = getHeatClass(allocation);
+                    html += `<div class="heat-map-cell ${heatClass}" onclick="openAllocationModal('${resource.name}', '${weeks[weekIndex]}', ${allocation})">${allocation}%</div>`;
+                });
+            });
+
+            grid.innerHTML = html;
+        }
+
+        // Get Heat Class
+        function getHeatClass(allocation) {
+            if (allocation > 100) return 'heat-over';
+            if (allocation >= 90) return 'heat-100';
+            if (allocation >= 75) return 'heat-90';
+            if (allocation >= 50) return 'heat-75';
+            if (allocation >= 25) return 'heat-50';
+            return 'heat-25';
+        }
+
+        // Render Planner
+        function renderPlanner() {
+            const grid = document.getElementById('planner-grid');
+            let html = '<div class="planner-cell planner-header">Resource</div>';
+            html += '<div class="planner-cell planner-header">This Week</div>';
+            html += '<div class="planner-cell planner-header">Next Week</div>';
+            html += '<div class="planner-cell planner-header">Week 3</div>';
+            html += '<div class="planner-cell planner-header">Week 4</div>';
+
+            resources.forEach(resource => {
+                html += `<div class="planner-cell"><strong>${resource.name}</strong></div>`;
+                for (let i = 0; i < 4; i++) {
+                    const allocation = resource.allocations[i];
+                    const color = allocation > 100 ? '#ef4444' : allocation >= 80 ? '#10b981' : allocation >= 60 ? '#f59e0b' : '#6b7280';
+                    html += `
+                        <div class="planner-cell">
+                            <div class="allocation-bar" onclick="openAllocationModal('${resource.name}', '${weeks[i]}', ${allocation})">
+                                <div class="allocation-fill" style="width: ${Math.min(allocation, 100)}%; background: ${color};">
+                                    ${allocation}%
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            grid.innerHTML = html;
+        }
+
+        // Render Timeline
+        function renderTimeline() {
+            const grid = document.getElementById('timeline-grid');
+            let html = '<div class="timeline-cell" style="background: #f9fafb; font-weight: 700;">Resource</div>';
+            
+            weeks.forEach(week => {
+                html += `<div class="timeline-cell" style="background: #f9fafb; font-weight: 700;">${week}</div>`;
+            });
+
+            resources.slice(0, 6).forEach(resource => {
+                html += `<div class="timeline-cell" style="background: #f9fafb;">${resource.name}</div>`;
+                resource.allocations.forEach(allocation => {
+                    const color = allocation > 100 ? '#ef4444' : allocation >= 80 ? '#10b981' : allocation >= 60 ? '#f59e0b' : '#6b7280';
+                    html += `<div class="timeline-cell" style="background: ${color}; color: white; font-weight: 600;">${allocation}%</div>`;
+                });
+            });
+
+            grid.innerHTML = html;
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Demand vs Capacity Chart
+            const demandCtx = document.getElementById('demand-chart').getContext('2d');
+            new Chart(demandCtx, {
+                type: 'line',
+                data: {
+                    labels: weeks,
+                    datasets: [{
+                        label: 'Demand',
+                        data: [900, 950, 1000, 1050, 1100, 1150, 1200, 1250, 1200, 1150, 1100, 1050],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Capacity',
+                        data: [1240, 1240, 1240, 1240, 1240, 1240, 1240, 1240, 1240, 1240, 1240, 1240],
+                        borderColor: '#10b981',
+                        borderDash: [5, 5],
+                        tension: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Utilization Chart
+            const utilizationCtx = document.getElementById('utilization-chart').getContext('2d');
+            new Chart(utilizationCtx, {
+                type: 'bar',
+                data: {
+                    labels: weeks,
+                    datasets: [{
+                        label: 'Utilization %',
+                        data: [73, 77, 81, 85, 89, 93, 97, 101, 97, 93, 89, 85],
+                        backgroundColor: weeks.map((_, i) => {
+                            const val = [73, 77, 81, 85, 89, 93, 97, 101, 97, 93, 89, 85][i];
+                            return val > 100 ? '#ef4444' : val >= 80 ? '#10b981' : val >= 60 ? '#f59e0b' : '#6b7280';
+                        }),
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 120,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Switch View
+        function switchView(view) {
+            document.querySelectorAll('.view-toggle button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${view}`).classList.add('active');
+
+            document.getElementById('heatmap-view').style.display = view === 'heatmap' ? 'block' : 'none';
+            document.getElementById('planner-view').style.display = view === 'planner' ? 'block' : 'none';
+            document.getElementById('timeline-view').style.display = view === 'timeline' ? 'block' : 'none';
+
+            showToast(`Switched to ${view} view`, 'info');
+        }
+
+        // Allocation Modal
+        function openAllocationModal(resource, week, current) {
+            document.getElementById('modal-resource').value = resource;
+            document.getElementById('modal-week').value = week;
+            document.getElementById('modal-current').value = current + '%';
+            document.getElementById('modal-allocation').value = current;
+            document.getElementById('allocation-value').textContent = current + '%';
+            document.getElementById('allocation-modal').classList.add('show');
+        }
+
+        function closeAllocationModal() {
+            document.getElementById('allocation-modal').classList.remove('show');
+        }
+
+        function setupAllocationSlider() {
+            const slider = document.getElementById('modal-allocation');
+            const valueDisplay = document.getElementById('allocation-value');
+            
+            slider.addEventListener('input', function() {
+                valueDisplay.textContent = this.value + '%';
+                if (this.value > 100) {
+                    valueDisplay.classList.add('text-red-600');
+                    valueDisplay.classList.remove('text-blue-600');
+                } else {
+                    valueDisplay.classList.add('text-blue-600');
+                    valueDisplay.classList.remove('text-red-600');
+                }
+            });
+        }
+
+        function saveAllocation() {
+            const newValue = document.getElementById('modal-allocation').value;
+            showToast(`Allocation updated to ${newValue}%`, 'success');
+            closeAllocationModal();
+            // Refresh views
+            renderHeatMap();
+            renderPlanner();
+            renderTimeline();
+        }
+
+        // Actions
+        function runWhatIf() {
+            showToast('Running what-if analysis...', 'info');
+            setTimeout(() => {
+                showToast('What-if analysis complete! View results in reports.', 'success');
+            }, 2000);
+        }
+
+        function exportCapacity() {
+            showToast('Exporting capacity plan...', 'info');
+            setTimeout(() => {
+                showToast('Capacity plan exported successfully!', 'success');
+            }, 1000);
+        }
+
+        function resolveConflict() {
+            showToast('Opening conflict resolution wizard...', 'info');
+        }
+
+        function assignOpportunity() {
+            showToast('Assigning resource to project...', 'info');
+            setTimeout(() => {
+                showToast('Resource assigned successfully!', 'success');
+            }, 1000);
+        }
+
+        // Toast
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                info: 'fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <i class="fas ${icons[type]} text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-semibold text-gray-900">${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                    <p class="text-sm text-gray-600">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

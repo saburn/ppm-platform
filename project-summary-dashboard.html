@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Summary Dashboard - PPM Champion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .project-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .project-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .portfolio-level-0 { margin-left: 0px; }
+        .portfolio-level-1 { margin-left: 20px; }
+        .portfolio-level-2 { margin-left: 40px; }
+        .nested-projects {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .nested-projects.expanded {
+            max-height: 2000px;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fas fa-th-large text-blue-600 text-2xl mr-3"></i>
+                    <h1 class="text-xl font-bold text-gray-800">Project Portfolio Dashboard</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center bg-gray-100 rounded-lg px-3 py-2">
+                        <i class="fas fa-search text-gray-400 mr-2"></i>
+                        <input type="text" id="globalSearch" placeholder="Search projects..." class="bg-transparent outline-none">
+                    </div>
+                    <button onclick="createNewProject()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-plus mr-2"></i>New Project
+                    </button>
+                    <div class="relative">
+                        <button class="text-gray-600 hover:text-gray-800">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">3</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Portfolio & Program Filter -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-800">Portfolio & Program View</h2>
+                <div class="flex space-x-2">
+                    <button onclick="toggleView('portfolio')" id="portfolioViewBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                        <i class="fas fa-sitemap mr-2"></i>Portfolio
+                    </button>
+                    <button onclick="toggleView('program')" id="programViewBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                        <i class="fas fa-project-diagram mr-2"></i>Program
+                    </button>
+                    <button onclick="toggleView('timeline')" id="timelineViewBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                        <i class="fas fa-calendar-alt mr-2"></i>Timeline
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Portfolio Breadcrumb -->
+            <div class="flex items-center text-sm text-gray-600 mb-4">
+                <span>Enterprise Portfolio</span>
+                <i class="fas fa-chevron-right mx-2"></i>
+                <span class="text-blue-600 font-medium">Technology Programs</span>
+                <i class="fas fa-chevron-right mx-2"></i>
+                <span>Digital Transformation</span>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600 text-sm">Total Projects</span>
+                    <span class="text-green-600 text-xs bg-green-100 px-2 py-1 rounded">+12%</span>
+                </div>
+                <div class="text-3xl font-bold text-gray-800">24</div>
+                <div class="text-sm text-gray-600">3 Programs • 2 Portfolios</div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600 text-sm">Portfolio Health</span>
+                    <span class="text-green-600 text-xs bg-green-100 px-2 py-1 rounded">Excellent</span>
+                </div>
+                <div class="text-3xl font-bold text-green-600">92%</div>
+                <div class="text-sm text-gray-600">On Track / On Budget</div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600 text-sm">Resource Utilization</span>
+                    <span class="text-yellow-600 text-xs bg-yellow-100 px-2 py-1 rounded">Optimal</span>
+                </div>
+                <div class="text-3xl font-bold text-blue-600">78%</div>
+                <div class="text-sm text-gray-600">48 of 62 resources allocated</div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600 text-sm">Total Budget</span>
+                    <span class="text-blue-600 text-xs bg-blue-100 px-2 py-1 rounded">Q1 2024</span>
+                </div>
+                <div class="text-3xl font-bold text-gray-800">$8.7M</div>
+                <div class="text-sm text-gray-600">$6.2M spent • 71% utilized</div>
+            </div>
+        </div>
+
+        <!-- Projects Grid - Portfolio View -->
+        <div id="portfolioView" class="space-y-6">
+            <!-- Portfolio: Technology Transformation -->
+            <div class="bg-white rounded-lg shadow-sm">
+                <div class="p-6 border-b cursor-pointer hover:bg-gray-50" onclick="togglePortfolio('tech-portfolio')">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-chevron-right text-gray-400 mr-3 transition-transform" id="tech-portfolio-chevron"></i>
+                            <i class="fas fa-microchip text-blue-600 text-xl mr-3"></i>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">Technology Transformation Portfolio</h3>
+                                <p class="text-sm text-gray-600">8 Projects • $4.2M Budget • 65% Complete</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right">
+                                <div class="text-sm text-gray-600">Health Score</div>
+                                <div class="text-lg font-semibold text-green-600">94%</div>
+                            </div>
+                            <div class="w-24 h-24">
+                                <canvas id="techPortfolioChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tech-portfolio-projects" class="nested-projects">
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                        <!-- Project 1 -->
+                        <div class="project-card bg-gray-50 rounded-lg p-4 border border-gray-200" onclick="openProjectDetail(1)">
+                            <div class="flex items-start justify-between mb-3">
+                                <h4 class="font-semibold text-gray-800">Cloud Migration</h4>
+                                <span class="status-indicator bg-green-500"></span>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Progress</span>
+                                    <span class="font-medium">78%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 78%"></div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Budget</span>
+                                    <span class="font-medium">$1.2M</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Due</span>
+                                    <span class="font-medium">Mar 15, 2024</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-center text-xs text-gray-500">
+                                <i class="fas fa-user mr-1"></i>
+                                <span>Sarah Chen • 8 team members</span>
+                            </div>
+                        </div>
+
+                        <!-- Project 2 -->
+                        <div class="project-card bg-gray-50 rounded-lg p-4 border border-gray-200" onclick="openProjectDetail(2)">
+                            <div class="flex items-start justify-between mb-3">
+                                <h4 class="font-semibold text-gray-800">CRM Implementation</h4>
+                                <span class="status-indicator bg-yellow-500"></span>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Progress</span>
+                                    <span class="font-medium">45%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: 45%"></div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Budget</span>
+                                    <span class="font-medium">$850K</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Due</span>
+                                    <span class="font-medium">Apr 30, 2024</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-center text-xs text-gray-500">
+                                <i class="fas fa-user mr-1"></i>
+                                <span>Mike Johnson • 6 team members</span>
+                            </div>
+                        </div>
+
+                        <!-- Project 3 -->
+                        <div class="project-card bg-gray-50 rounded-lg p-4 border border-gray-200" onclick="openProjectDetail(3)">
+                            <div class="flex items-start justify-between mb-3">
+                                <h4 class="font-semibold text-gray-800">Mobile App Development</h4>
+                                <span class="status-indicator bg-green-500"></span>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Progress</span>
+                                    <span class="font-medium">92%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 92%"></div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Budget</span>
+                                    <span class="font-medium">$1.5M</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Due</span>
+                                    <span class="font-medium">Feb 28, 2024</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-center text-xs text-gray-500">
+                                <i class="fas fa-user mr-1"></i>
+                                <span>Emily Davis • 12 team members</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio: Business Operations -->
+            <div class="bg-white rounded-lg shadow-sm">
+                <div class="p-6 border-b cursor-pointer hover:bg-gray-50" onclick="togglePortfolio('business-portfolio')">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-chevron-right text-gray-400 mr-3 transition-transform" id="business-portfolio-chevron"></i>
+                            <i class="fas fa-briefcase text-green-600 text-xl mr-3"></i>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">Business Operations Portfolio</h3>
+                                <p class="text-sm text-gray-600">6 Projects • $2.8M Budget • 48% Complete</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right">
+                                <div class="text-sm text-gray-600">Health Score</div>
+                                <div class="text-lg font-semibold text-yellow-600">87%</div>
+                            </div>
+                            <div class="w-24 h-24">
+                                <canvas id="businessPortfolioChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="business-portfolio-projects" class="nested-projects">
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                        <!-- Additional projects here -->
+                        <div class="project-card bg-gray-50 rounded-lg p-4 border border-gray-200" onclick="openProjectDetail(4)">
+                            <div class="flex items-start justify-between mb-3">
+                                <h4 class="font-semibold text-gray-800">Process Automation</h4>
+                                <span class="status-indicator bg-blue-500"></span>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Progress</span>
+                                    <span class="font-medium">35%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 35%"></div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Budget</span>
+                                    <span class="font-medium">$650K</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Due</span>
+                                    <span class="font-medium">May 15, 2024</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-center text-xs text-gray-500">
+                                <i class="fas fa-user mr-1"></i>
+                                <span>David Kim • 5 team members</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Program View (Initially Hidden) -->
+        <div id="programView" class="hidden">
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Program Cards -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-rocket text-blue-600 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Digital Transformation Program</h3>
+                            <p class="text-sm text-gray-600">4 Projects • Cross-functional</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Overall Progress</span>
+                            <span class="font-medium">72%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 72%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline View (Initially Hidden) -->
+        <div id="timelineView" class="hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Project Timeline Overview</h3>
+                <div class="relative">
+                    <!-- Timeline visualization would go here -->
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-calendar-alt text-4xl mb-3"></i>
+                        <p>Interactive timeline view coming next...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Detail Modal -->
+    <div id="projectDetailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] overflow-hidden">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">Project Details</h3>
+                <button onclick="closeProjectDetail()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <!-- Project detail content will be loaded here -->
+                <div id="projectDetailContent">
+                    <div class="text-center py-8">
+                        <i class="fas fa-spinner fa-spin text-4xl text-blue-600"></i>
+                        <p class="mt-2 text-gray-600">Loading project details...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample project data
+        const projectsData = {
+            1: {
+                name: "Cloud Migration",
+                status: "Active",
+                priority: "High",
+                progress: 78,
+                budget: 1200000,
+                spent: 936000,
+                manager: "Sarah Chen",
+                team: 8,
+                startDate: "2023-09-01",
+                endDate: "2024-03-15",
+                description: "Migrate all enterprise applications to cloud infrastructure",
+                objectives: ["Reduce infrastructure costs by 40%", "Improve scalability", "Enhance security posture"],
+                risks: ["Data migration complexity", "Vendor lock-in", "Performance degradation"],
+                milestones: [
+                    { name: "Infrastructure Setup", completed: true, date: "2023-10-15" },
+                    { name: "Data Migration", completed: true, date: "2023-12-01" },
+                    { name: "Application Migration", completed: false, date: "2024-02-15" },
+                    { name: "Testing & Validation", completed: false, date: "2024-03-01" }
+                ]
+            },
+            2: {
+                name: "CRM Implementation",
+                status: "At Risk",
+                priority: "Critical",
+                progress: 45,
+                budget: 850000,
+                spent: 382500,
+                manager: "Mike Johnson",
+                team: 6,
+                startDate: "2023-10-01",
+                endDate: "2024-04-30",
+                description: "Implement new CRM system across sales and customer service",
+                objectives: ["Improve customer satisfaction", "Increase sales efficiency", "Better data analytics"],
+                risks: ["User adoption", "Data quality issues", "Integration complexity"],
+                milestones: [
+                    { name: "Vendor Selection", completed: true, date: "2023-10-15" },
+                    { name: "System Configuration", completed: false, date: "2024-01-15" },
+                    { name: "Data Migration", completed: false, date: "2024-02-28" },
+                    { name: "User Training", completed: false, date: "2024-04-01" }
+                ]
+            }
+        };
+
+        // Toggle portfolio expansion
+        function togglePortfolio(portfolioId) {
+            const projectsDiv = document.getElementById(portfolioId + '-projects');
+            const chevron = document.getElementById(portfolioId + '-chevron');
+            
+            projectsDiv.classList.toggle('expanded');
+            chevron.style.transform = projectsDiv.classList.contains('expanded') ? 'rotate(90deg)' : 'rotate(0)';
+        }
+
+        // Toggle view modes
+        function toggleView(viewType) {
+            // Hide all views
+            document.getElementById('portfolioView').classList.add('hidden');
+            document.getElementById('programView').classList.add('hidden');
+            document.getElementById('timelineView').classList.add('hidden');
+            
+            // Reset all buttons
+            document.getElementById('portfolioViewBtn').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300';
+            document.getElementById('programViewBtn').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300';
+            document.getElementById('timelineViewBtn').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300';
+            
+            // Show selected view and highlight button
+            switch(viewType) {
+                case 'portfolio':
+                    document.getElementById('portfolioView').classList.remove('hidden');
+                    document.getElementById('portfolioViewBtn').className = 'px-4 py-2 bg-blue-600 text-white rounded-lg';
+                    break;
+                case 'program':
+                    document.getElementById('programView').classList.remove('hidden');
+                    document.getElementById('programViewBtn').className = 'px-4 py-2 bg-blue-600 text-white rounded-lg';
+                    break;
+                case 'timeline':
+                    document.getElementById('timelineView').classList.remove('hidden');
+                    document.getElementById('timelineViewBtn').className = 'px-4 py-2 bg-blue-600 text-white rounded-lg';
+                    break;
+            }
+        }
+
+        // Open project detail
+        function openProjectDetail(projectId) {
+            const modal = document.getElementById('projectDetailModal');
+            const content = document.getElementById('projectDetailContent');
+            const project = projectsData[projectId];
+            
+            if (project) {
+                content.innerHTML = `
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <!-- Left Column - Project Info -->
+                        <div class="md:col-span-2 space-y-6">
+                            <div>
+                                <h4 class="text-2xl font-bold text-gray-800 mb-2">${project.name}</h4>
+                                <p class="text-gray-600">${project.description}</p>
+                            </div>
+                            
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h5 class="font-semibold text-gray-800 mb-2">Project Details</h5>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Status</span>
+                                            <span class="font-medium">${project.status}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Priority</span>
+                                            <span class="font-medium">${project.priority}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Manager</span>
+                                            <span class="font-medium">${project.manager}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Team Size</span>
+                                            <span class="font-medium">${project.team} members</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Start Date</span>
+                                            <span class="font-medium">${project.startDate}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">End Date</span>
+                                            <span class="font-medium">${project.endDate}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h5 class="font-semibold text-gray-800 mb-2">Budget Status</h5>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span class="text-gray-600">Total Budget</span>
+                                                <span class="font-medium">$${project.budget.toLocaleString()}</span>
+                                            </div>
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span class="text-gray-600">Spent</span>
+                                                <span class="font-medium">$${project.spent.toLocaleString()}</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                                <div class="bg-blue-500 h-2 rounded-full" style="width: ${(project.spent/project.budget)*100}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h5 class="font-semibold text-gray-800 mb-3">Milestones</h5>
+                                <div class="space-y-2">
+                                    ${project.milestones.map(milestone => `
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                            <div class="flex items-center">
+                                                <div class="w-4 h-4 rounded-full ${milestone.completed ? 'bg-green-500' : 'bg-gray-300'} mr-3"></div>
+                                                <span class="${milestone.completed ? 'text-gray-800' : 'text-gray-600'}">${milestone.name}</span>
+                                            </div>
+                                            <span class="text-sm text-gray-500">${milestone.date}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column - Objectives & Risks -->
+                        <div class="space-y-6">
+                            <div>
+                                <h5 class="font-semibold text-gray-800 mb-3">Objectives</h5>
+                                <ul class="space-y-2">
+                                    ${project.objectives.map(obj => `
+                                        <li class="flex items-start">
+                                            <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                                            <span class="text-sm text-gray-700">${obj}</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h5 class="font-semibold text-gray-800 mb-3">Risks</h5>
+                                <ul class="space-y-2">
+                                    ${project.risks.map(risk => `
+                                        <li class="flex items-start">
+                                            <i class="fas fa-exclamation-triangle text-yellow-500 mr-2 mt-1"></i>
+                                            <span class="text-sm text-gray-700">${risk}</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                            
+                            <div class="flex space-x-3">
+                                <button onclick="editProject(${projectId})" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-edit mr-2"></i>Edit Project
+                                </button>
+                                <button onclick="viewGantt(${projectId})" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+                                    <i class="fas fa-chart-gantt mr-2"></i>Gantt View
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeProjectDetail() {
+            document.getElementById('projectDetailModal').classList.add('hidden');
+        }
+
+        function createNewProject() {
+            // Open project creation modal
+            alert('Project creation wizard coming next...');
+        }
+
+        function editProject(projectId) {
+            // Open project edit modal
+            alert('Edit project functionality coming next...');
+        }
+
+        function viewGantt(projectId) {
+            // Navigate to Gantt chart view
+            alert('Gantt chart view coming next...');
+        }
+
+        // Initialize charts
+        window.addEventListener('load', function() {
+            // Tech Portfolio Chart
+            const techCtx = document.getElementById('techPortfolioChart');
+            if (techCtx) {
+                new Chart(techCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['On Track', 'At Risk', 'Completed'],
+                        datasets: [{
+                            data: [65, 20, 15],
+                            backgroundColor: ['#10B981', '#F59E0B', '#6B7280'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+
+            // Business Portfolio Chart
+            const businessCtx = document.getElementById('businessPortfolioChart');
+            if (businessCtx) {
+                new Chart(businessCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['On Track', 'At Risk', 'Completed'],
+                        datasets: [{
+                            data: [48, 35, 17],
+                            backgroundColor: ['#10B981', '#F59E0B', '#6B7280'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+        });
+
+        // Global search functionality
+        document.getElementById('globalSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            // Implement search logic here
+            console.log('Searching for:', searchTerm);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resource Optimization - Intelligent Resource Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .optimization-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            transition: all 0.3s ease;
+        }
+        .optimization-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.3);
+        }
+        .ai-glow {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.4),
+                        0 0 50px rgba(16, 185, 129, 0.2),
+                        0 0 75px rgba(16, 185, 129, 0.1);
+        }
+        .resource-heatmap {
+            background: linear-gradient(135deg, #10b981 0%, #22c55e 50%, #86efac 100%);
+        }
+        .underutilized { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); }
+        .optimal { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); }
+        .overutilized { background: rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.4); }
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900 text-white min-h-screen">
+    
+    <!-- Header -->
+    <header class="glass-morphism border-b border-white/10 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="ai-glow rounded-lg p-2 bg-green-600/20">
+                        <i class="fas fa-users-cog text-2xl text-green-400"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                            AI Resource Optimization
+                        </h1>
+                        <p class="text-sm text-green-300">Intelligent Resource Management & Allocation</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 bg-green-500/20 px-3 py-1 rounded-full">
+                        <div class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></div>
+                        <span class="text-sm text-green-400">AI Optimizing</span>
+                    </div>
+                    <button onclick="runOptimization()" class="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-2 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105">
+                        <i class="fas fa-magic mr-2"></i>Optimize Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- Optimization Overview -->
+        <section class="mb-8">
+            <div class="glass-morphism rounded-2xl p-8 ai-glow">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-400">89.2%</div>
+                        <div class="text-sm text-gray-400">Current Utilization</div>
+                        <div class="text-xs text-green-400 mt-1">↑ 4.2% optimized</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-emerald-400">94.7%</div>
+                        <div class="text-sm text-gray-400">Target Utilization</div>
+                        <div class="text-xs text-emerald-400 mt-1">AI Recommended</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-400">23</div>
+                        <div class="text-sm text-gray-400">Resources Optimized</div>
+                        <div class="text-xs text-blue-400 mt-1">12 teams affected</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-purple-400">$1.8M</div>
+                        <div class="text-sm text-gray-400">Cost Savings</div>
+                        <div class="text-xs text-purple-400 mt-1">Annualized</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-orange-400">42%</div>
+                        <div class="text-sm text-gray-400">Efficiency Gain</div>
+                        <div class="text-xs text-orange-400 mt-1">Productivity boost</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Optimization Recommendations -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                <i class="fas fa-robot mr-3"></i>AI Optimization Recommendations
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Critical Optimizations -->
+                <div class="optimization-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-red-300">Critical Actions</h3>
+                        <span class="bg-red-500/20 text-red-400 text-xs px-2 py-1 rounded-full">3 Urgent</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-red-600/10 p-3 rounded-lg border border-red-500/20">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-exclamation-triangle text-red-400 mt-1"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-red-300">Reallocate 3 Developers</div>
+                                    <div class="text-xs text-gray-400 mt-1">Move from Project C to A for 23% efficiency gain</div>
+                                    <div class="text-xs text-green-400 mt-1">Impact: $320K savings</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-red-600/10 p-3 rounded-lg border border-red-500/20">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-user-times text-orange-400 mt-1"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-orange-300">Reduce Overstaffing</div>
+                                    <div class="text-xs text-gray-400 mt-1">Project D has 4 excess team members</div>
+                                    <div class="text-xs text-orange-400 mt-1">Cost: $480K/year waste</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-red-600/10 p-3 rounded-lg border border-red-500/20">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-clock text-yellow-400 mt-1"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-yellow-300">Address Bottlenecks</div>
+                                    <div class="text-xs text-gray-400 mt-1">QA team at 125% capacity causing delays</div>
+                                    <div class="text-xs text-yellow-400 mt-1">Action: Hire 2 QA engineers</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Optimization Opportunities -->
+                <div class="optimization-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-yellow-300">Quick Wins</h3>
+                        <span class="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded-full">5 Available</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-yellow-600/10 p-3 rounded-lg border border-yellow-500/20">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-chart-line text-green-400 mt-1"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-green-300">Cross-Training Initiative</div>
+                                    <div class="text-xs text-gray-400 mt-1">Train 5 developers in React for flexibility</div>
+                                    <div class="text-xs text-green-400 mt-1">ROI: 280% in 6 months</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-yellow-600/10 p-3 rounded-lg border border-yellow-500/20">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-sync text-blue-400 mt-1"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-blue-300">Automation Opportunity</div>
+                                    <div class="text-xs text-gray-400 mt-1">Automate 23 tasks across 4 teams</div>
+                                    <div class="text-xs text-blue-400 mt-1">Savings: 67 hours/week</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-yellow-600/10 p-3 rounded-lg border border-yellow-500/20">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-calendar text-purple-400 mt-1"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-purple-300">Shift Optimization</div>
+                                    <div class="text-xs text-gray-400 mt-1">Adjust work schedules for 15% better coverage</div>
+                                    <div class="text-xs text-purple-400 mt-1">Impact: +12% productivity</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategic Improvements -->
+                <div class="optimization-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-green-300">Strategic Gains</h3>
+                        <span class="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full">4 Long-term</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-green-600/10 p-3 rounded-lg border border-green-500/20">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-graduation-cap text-green-400 mt-1"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-green-300">Skill Development</div>
+                                    <div class="text-xs text-gray-400 mt-1">Invest $120K in advanced training</div>
+                                    <div class="text-xs text-green-400 mt-1">Value: $850K capability gain</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-green-600/10 p-3 rounded-lg border border-green-500/20">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-globe text-blue-400 mt-1"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-blue-300">Remote Integration</div>
+                                    <div class="text-xs text-gray-400 mt-1">Expand to global talent pool</div>
+                                    <div class="text-xs text-blue-400 mt-1">Cost reduction: 35%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-green-600/10 p-3 rounded-lg border border-green-500/20">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-rocket text-purple-400 mt-1"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-purple-300">AI Augmentation</div>
+                                    <div class="text-xs text-gray-400 mt-1">AI tools to boost team productivity</div>
+                                    <div class="text-xs text-purple-400 mt-1">Efficiency: +45% per team</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resource Utilization Heat Map -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                <i class="fas fa-th mr-3"></i>Resource Utilization Heat Map
+            </h2>
+            <div class="glass-morphism rounded-xl p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- Team Utilization Grid -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-green-300 mb-4">Team Utilization Overview</h3>
+                        <div class="grid grid-cols-4 gap-2">
+                            <div class="text-center text-xs text-gray-400 pb-2">Dev Team A</div>
+                            <div class="text-center text-xs text-gray-400 pb-2">Dev Team B</div>
+                            <div class="text-center text-xs text-gray-400 pb-2">Dev Team C</div>
+                            <div class="text-center text-xs text-gray-400 pb-2">QA Team</div>
+                            
+                            <div class="optimal p-4 rounded-lg text-center cursor-pointer hover:scale-105 transition-all" onclick="showTeamDetails('Dev Team A')">
+                                <div class="text-2xl font-bold text-green-400">87%</div>
+                                <div class="text-xs text-gray-300">Optimal</div>
+                            </div>
+                            <div class="overutilized p-4 rounded-lg text-center cursor-pointer hover:scale-105 transition-all" onclick="showTeamDetails('Dev Team B')">
+                                <div class="text-2xl font-bold text-orange-400">112%</div>
+                                <div class="text-xs text-gray-300">Overloaded</div>
+                            </div>
+                            <div class="underutilized p-4 rounded-lg text-center cursor-pointer hover:scale-105 transition-all" onclick="showTeamDetails('Dev Team C')">
+                                <div class="text-2xl font-bold text-red-400">63%</div>
+                                <div class="text-xs text-gray-300">Underused</div>
+                            </div>
+                            <div class="overutilized p-4 rounded-lg text-center cursor-pointer hover:scale-105 transition-all" onclick="showTeamDetails('QA Team')">
+                                <div class="text-2xl font-bold text-orange-400">125%</div>
+                                <div class="text-xs text-gray-300">Critical</div>
+                            </div>
+                            
+                            <div class="text-center text-xs text-gray-400 pt-2">Design Team</div>
+                            <div class="text-center text-xs text-gray-400 pt-2">DevOps Team</div>
+                            <div class="text-center text-xs text-gray-400 pt-2">Data Team</div>
+                            <div class="text-center text-xs text-gray-400 pt-2">Product Team</div>
+                            
+                            <div class="optimal p-4 rounded-lg text-center cursor-pointer hover:scale-105 transition-all" onclick="showTeamDetails('Design Team')">
+                                <div class="text-2xl font-bold text-green-400">92%</div>
+                                <div class="text-xs text-gray-300">Optimal</div>
+                            </div>
+                            <div class="optimal p-4 rounded-lg text-center cursor-pointer hover:scale-105 transition-all" onclick="showTeamDetails('DevOps Team')">
+                                <div class="text-2xl font-bold text-green-400">89%</div>
+                                <div class="text-xs text-gray-300">Optimal</div>
+                            </div>
+                            <div class="underutilized p-4 rounded-lg text-center cursor-pointer hover:scale-105 transition-all" onclick="showTeamDetails('Data Team')">
+                                <div class="text-2xl font-bold text-red-400">71%</div>
+                                <div class="text-xs text-gray-300">Available</div>
+                            </div>
+                            <div class="optimal p-4 rounded-lg text-center cursor-pointer hover:scale-105 transition-all" onclick="showTeamDetails('Product Team')">
+                                <div class="text-2xl font-bold text-green-400">85%</div>
+                                <div class="text-xs text-gray-300">Balanced</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Utilization Trends -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-emerald-300 mb-4">30-Day Utilization Trends</h3>
+                        <div class="h-64" id="utilizationTrendsChart"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Resource Matching -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                <i class="fas fa-puzzle-piece mr-3"></i>AI Resource Matching Engine
+            </h2>
+            <div class="glass-morphism rounded-xl p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Demand Input -->
+                    <div class="bg-white/5 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-green-300 mb-4">Resource Requirements</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-sm text-gray-300">Project Type</label>
+                                <select class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 mt-1">
+                                    <option>Web Development</option>
+                                    <option>Mobile App</option>
+                                    <option>Data Science</option>
+                                    <option>Infrastructure</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-300">Skills Required</label>
+                                <div class="flex flex-wrap gap-2 mt-1">
+                                    <span class="bg-blue-600/20 text-blue-400 px-2 py-1 rounded-full text-xs">React</span>
+                                    <span class="bg-purple-600/20 text-purple-400 px-2 py-1 rounded-full text-xs">Node.js</span>
+                                    <span class="bg-green-600/20 text-green-400 px-2 py-1 rounded-full text-xs">AWS</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-300">Duration (weeks)</label>
+                                <input type="number" value="12" class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 mt-1">
+                            </div>
+                            <button onclick="findMatches()" class="w-full bg-green-600 hover:bg-green-700 py-2 rounded-lg transition-all">
+                                <i class="fas fa-search mr-2"></i>Find Matches
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Matching Results -->
+                    <div class="lg:col-span-2">
+                        <h3 class="text-lg font-semibold text-emerald-300 mb-4">Best Resource Matches</h3>
+                        <div class="space-y-3" id="matchingResults">
+                            <div class="bg-white/5 p-4 rounded-lg border border-green-500/20">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-green-600/20 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-users text-green-400"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-green-300">Dev Team Alpha</div>
+                                            <div class="text-xs text-gray-400">5 developers • 87% available</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-lg font-bold text-green-400">96% Match</div>
+                                        <div class="text-xs text-green-300">AI Recommended</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-4 text-xs text-gray-400">
+                                    <span><i class="fas fa-check-circle text-green-400 mr-1"></i>All skills match</span>
+                                    <span><i class="fas fa-calendar text-blue-400 mr-1"></i>Available in 2 days</span>
+                                    <span><i class="fas fa-dollar-sign text-yellow-400 mr-1"></i>$180K total</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white/5 p-4 rounded-lg border border-blue-500/20">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-blue-600/20 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-users text-blue-400"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-blue-300">Dev Team Beta</div>
+                                            <div class="text-xs text-gray-400">6 developers • 72% available</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-lg font-bold text-blue-400">89% Match</div>
+                                        <div class="text-xs text-blue-300">Strong Alternative</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-4 text-xs text-gray-400">
+                                    <span><i class="fas fa-check-circle text-green-400 mr-1"></i>4/5 skills match</span>
+                                    <span><i class="fas fa-calendar text-yellow-400 mr-1"></i>Available in 5 days</span>
+                                    <span><i class="fas fa-dollar-sign text-green-400 mr-1"></i>$195K total</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white/5 p-4 rounded-lg border border-purple-500/20">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-purple-600/20 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-users text-purple-400"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-purple-300">Dev Team Gamma</div>
+                                            <div class="text-xs text-gray-400">4 developers • 93% available</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-lg font-bold text-purple-400">82% Match</div>
+                                        <div class="text-xs text-purple-300">Cost Effective</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-4 text-xs text-gray-400">
+                                    <span><i class="fas fa-check-circle text-yellow-400 mr-1"></i>3/5 skills match</span>
+                                    <span><i class="fas fa-calendar text-green-400 mr-1"></i>Available today</span>
+                                    <span><i class="fas fa-dollar-sign text-green-400 mr-1"></i>$156K total</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cost Optimization Analysis -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                <i class="fas fa-chart-pie mr-3"></i>Cost Optimization Analysis
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Cost Breakdown -->
+                <div class="glass-morphism rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-green-300 mb-4">Current vs. Optimized Costs</h3>
+                    <div class="h-64" id="costOptimizationChart"></div>
+                </div>
+
+                <!-- Savings Opportunity -->
+                <div class="glass-morphism rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-emerald-300 mb-4">Savings Breakdown</h3>
+                    <div class="space-y-4">
+                        <div class="bg-white/5 p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-gray-300">Resource Reallocation</span>
+                                <span class="text-lg font-bold text-green-400">$420K</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 23%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-gray-300">Automation Savings</span>
+                                <span class="text-lg font-bold text-blue-400">$380K</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 21%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-gray-300">Process Optimization</span>
+                                <span class="text-lg font-bold text-purple-400">$290K</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-purple-500 h-2 rounded-full" style="width: 16%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-gray-300">Skill Training ROI</span>
+                                <span class="text-lg font-bold text-orange-400">$710K</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-orange-500 h-2 rounded-full" style="width: 40%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-green-600/10 to-emerald-600/10 p-4 rounded-lg border border-green-500/20">
+                            <div class="flex justify-between items-center">
+                                <span class="text-lg font-semibold text-green-300">Total Annual Savings</span>
+                                <span class="text-2xl font-bold text-green-400">$1.8M</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-morphism border-t border-white/10 mt-12">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-users-cog text-green-400"></i>
+                        <span class="text-sm text-green-300">AI Resource Optimization v2.0</span>
+                    </div>
+                    <div class="text-sm text-gray-400">23 resources optimized • $1.8M savings identified</div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="exportOptimizationPlan()" class="text-sm bg-green-600/20 hover:bg-green-600/30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-download mr-2"></i>Export Plan
+                    </button>
+                    <button onclick="implementOptimizations()" class="text-sm bg-emerald-600/20 hover:bg-emerald-600/30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-play mr-2"></i>Implement
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize the Resource Optimization Engine
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            initializeAIEngine();
+        });
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Utilization Trends Chart
+            const trendsCtx = document.getElementById('utilizationTrendsChart').getContext('2d');
+            new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 30}, (_, i) => `Day ${i + 1}`),
+                    datasets: [
+                        {
+                            label: 'Dev Teams',
+                            data: Array.from({length: 30}, () => Math.random() * 20 + 75),
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'QA Teams',
+                            data: Array.from({length: 30}, () => Math.random() * 25 + 85),
+                            borderColor: 'rgb(16, 185, 129)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Design Teams',
+                            data: Array.from({length: 30}, () => Math.random() * 15 + 80),
+                            borderColor: 'rgb(139, 92, 246)',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'rgba(255, 255, 255, 0.7)' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 60,
+                            max: 120,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        }
+                    }
+                }
+            });
+
+            // Cost Optimization Chart
+            const costCtx = document.getElementById('costOptimizationChart').getContext('2d');
+            new Chart(costCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Current Costs', 'Optimized Costs', 'Savings'],
+                    datasets: [{
+                        data: [8.2, 6.4, 1.8],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(59, 130, 246, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: 'rgba(255, 255, 255, 0.7)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // AI Engine Initialization
+        function initializeAIEngine() {
+            console.log('⚙️ AI Resource Optimization Engine initialized');
+            console.log('📊 Analyzing 156 resources across 12 teams');
+            console.log('🤖 Neural networks identifying optimization opportunities');
+        }
+
+        // Interactive Functions
+        function runOptimization() {
+            showNotification('🚀 Running comprehensive resource optimization analysis...', 'info');
+            setTimeout(() => {
+                showNotification('✅ Optimization complete! 23 improvements identified saving $1.8M annually', 'success');
+            }, 2000);
+        }
+
+        function showTeamDetails(teamName) {
+            showNotification(`📊 Loading detailed utilization analysis for ${teamName}...`, 'info');
+        }
+
+        function findMatches() {
+            showNotification('🔍 AI analyzing resource requirements and finding best matches...', 'info');
+            setTimeout(() => {
+                showNotification('✅ Found 3 optimal resource matches with 96% AI confidence score', 'success');
+            }, 1500);
+        }
+
+        function exportOptimizationPlan() {
+            showNotification('📄 Exporting comprehensive optimization plan with implementation timeline...', 'info');
+        }
+
+        function implementOptimizations() {
+            showNotification('⚡ Initiating automated optimization implementation...', 'info');
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-500 ${
+                type === 'success' ? 'bg-green-600' :
+                type === 'warning' ? 'bg-yellow-600' :
+                type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' :
+                        type === 'warning' ? 'fa-exclamation-triangle' :
+                        type === 'error' ? 'fa-times-circle' : 'fa-info-circle'
+                    }"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

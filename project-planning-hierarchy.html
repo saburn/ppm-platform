@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Planning - Hierarchy View</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Professional Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 10000;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.warning { border-left: 4px solid #f59e0b; }
+        .toast.info { border-left: 4px solid #3b82f6; }
+
+        /* Hierarchy Cards */
+        .hierarchy-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .hierarchy-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            border-color: #3b82f6;
+        }
+
+        /* Progress Ring */
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.5s;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 0;
+            font-size: 14px;
+        }
+        .breadcrumb-item {
+            color: #6b7280;
+            cursor: pointer;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .breadcrumb-item:hover {
+            color: #3b82f6;
+        }
+        .breadcrumb-item.active {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 4px;
+        }
+        .view-toggle button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .view-toggle button.active {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Compact Chart Container */
+        .chart-compact {
+            max-height: 250px;
+            position: relative;
+        }
+
+        /* Gantt Chart Styles */
+        .gantt-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .gantt-timeline {
+            position: relative;
+            min-height: 400px;
+        }
+        .gantt-bar {
+            position: absolute;
+            height: 30px;
+            border-radius: 4px;
+            cursor: move;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            font-size: 12px;
+            color: white;
+            transition: all 0.2s;
+        }
+        .gantt-bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .gantt-bar.dragging {
+            opacity: 0.7;
+            cursor: grabbing;
+        }
+        .gantt-resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            cursor: ew-resize;
+            background: rgba(255,255,255,0.3);
+        }
+        .gantt-resize-handle:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* Smooth Animations */
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Slide Panel */
+        .slide-panel {
+            position: fixed;
+            top: 0;
+            right: -600px;
+            width: 600px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 12px rgba(0,0,0,0.15);
+            transition: right 0.3s ease;
+            z-index: 9999;
+            overflow-y: auto;
+        }
+        .slide-panel.open {
+            right: 0;
+        }
+        .slide-panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 9998;
+        }
+        .slide-panel-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Slide Panel Overlay -->
+    <div id="slide-panel-overlay" class="slide-panel-overlay" onclick="closeAllPanels()"></div>
+
+    <!-- Resource Request Panel -->
+    <div id="resource-panel" class="slide-panel">
+        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-users text-white"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Request Resources</h3>
+                    <p class="text-sm text-gray-500">Find and assign team members</p>
+                </div>
+            </div>
+            <button onclick="closeAllPanels()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div id="resource-panel-content" class="p-6">
+            <!-- Resource search will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="min-h-screen p-6">
+        <!-- Header -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                        <i class="fas fa-layer-group text-blue-600"></i>
+                        <span id="view-title">Portfolio View</span>
+                        <span class="text-sm font-normal px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full">
+                            World Class Edition
+                        </span>
+                    </h1>
+                    <p class="text-gray-600 mt-1" id="view-description">Manage your entire portfolio of programmes and projects</p>
+                </div>
+                <div class="flex gap-3">
+                    <div class="view-toggle">
+                        <button onclick="switchView('portfolio')" id="btn-portfolio" class="active">
+                            <i class="fas fa-layer-group"></i> Portfolio
+                        </button>
+                        <button onclick="switchView('programme')" id="btn-programme">
+                            <i class="fas fa-folder"></i> Programme
+                        </button>
+                        <button onclick="switchView('project')" id="btn-project">
+                            <i class="fas fa-project-diagram"></i> Project
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hierarchy Breadcrumbs -->
+            <div class="breadcrumb bg-white rounded-lg px-4 py-2 shadow-sm" id="breadcrumb-container">
+                <!-- Breadcrumbs will be dynamically generated -->
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div id="content-area">
+            <!-- Content will be dynamically loaded based on view -->
+        </div>
+    </div>
+
+    <script>
+        // Data Structure
+        const portfolioData = {
+            id: 'portfolio-1',
+            name: 'Enterprise Portfolio',
+            programmes: [
+                {
+                    id: 'prog-1',
+                    name: 'Digital Transformation',
+                    budget: 5000000,
+                    spent: 3200000,
+                    projects: [
+                        {
+                            id: 'proj-1',
+                            name: 'Project Alpha',
+                            status: 'In Progress',
+                            progress: 65,
+                            budget: 1500000,
+                            spent: 980000,
+                            startDate: '2024-01-01',
+                            endDate: '2024-06-30',
+                            tasks: 45,
+                            completedTasks: 29,
+                            team: 12,
+                            health: 'green'
+                        },
+                        {
+                            id: 'proj-2',
+                            name: 'Project Beta',
+                            status: 'In Progress',
+                            progress: 40,
+                            budget: 1200000,
+                            spent: 480000,
+                            startDate: '2024-02-01',
+                            endDate: '2024-08-31',
+                            tasks: 38,
+                            completedTasks: 15,
+                            team: 10,
+                            health: 'yellow'
+                        },
+                        {
+                            id: 'proj-3',
+                            name: 'Project Gamma',
+                            status: 'Planning',
+                            progress: 15,
+                            budget: 2300000,
+                            spent: 340000,
+                            startDate: '2024-03-01',
+                            endDate: '2024-12-31',
+                            tasks: 52,
+                            completedTasks: 8,
+                            team: 15,
+                            health: 'green'
+                        }
+                    ]
+                },
+                {
+                    id: 'prog-2',
+                    name: 'Infrastructure Modernization',
+                    budget: 3500000,
+                    spent: 1800000,
+                    projects: [
+                        {
+                            id: 'proj-4',
+                            name: 'Cloud Migration',
+                            status: 'In Progress',
+                            progress: 75,
+                            budget: 1800000,
+                            spent: 1350000,
+                            startDate: '2023-10-01',
+                            endDate: '2024-04-30',
+                            tasks: 32,
+                            completedTasks: 24,
+                            team: 8,
+                            health: 'green'
+                        },
+                        {
+                            id: 'proj-5',
+                            name: 'Security Enhancement',
+                            status: 'In Progress',
+                            progress: 50,
+                            budget: 1700000,
+                            spent: 850000,
+                            startDate: '2024-01-15',
+                            endDate: '2024-07-15',
+                            tasks: 28,
+                            completedTasks: 14,
+                            team: 6,
+                            health: 'yellow'
+                        }
+                    ]
+                },
+                {
+                    id: 'prog-3',
+                    name: 'Customer Experience',
+                    budget: 2800000,
+                    spent: 1400000,
+                    projects: [
+                        {
+                            id: 'proj-6',
+                            name: 'Mobile App Redesign',
+                            status: 'In Progress',
+                            progress: 85,
+                            budget: 1200000,
+                            spent: 1020000,
+                            startDate: '2023-11-01',
+                            endDate: '2024-03-31',
+                            tasks: 25,
+                            completedTasks: 21,
+                            team: 7,
+                            health: 'green'
+                        },
+                        {
+                            id: 'proj-7',
+                            name: 'Web Portal Enhancement',
+                            status: 'Planning',
+                            progress: 20,
+                            budget: 1600000,
+                            spent: 320000,
+                            startDate: '2024-02-15',
+                            endDate: '2024-09-30',
+                            tasks: 35,
+                            completedTasks: 7,
+                            team: 9,
+                            health: 'green'
+                        }
+                    ]
+                }
+            ]
+        };
+
+        let currentView = 'portfolio';
+        let currentProgramme = null;
+        let currentProject = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            switchView('portfolio');
+            showToast('Welcome to Hierarchy View!', 'success');
+        });
+
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <i class="fas ${icons[type]} text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-semibold text-gray-900">${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                    <p class="text-sm text-gray-600">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Switch View
+        function switchView(view, programmeId = null, projectId = null) {
+            currentView = view;
+            
+            // Update active button
+            document.querySelectorAll('.view-toggle button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${view}`).classList.add('active');
+            
+            // Update breadcrumbs
+            updateBreadcrumbs(view, programmeId, projectId);
+            
+            // Load appropriate content
+            if (view === 'portfolio') {
+                loadPortfolioView();
+            } else if (view === 'programme') {
+                currentProgramme = programmeId || portfolioData.programmes[0].id;
+                loadProgrammeView(currentProgramme);
+            } else if (view === 'project') {
+                currentProject = projectId || portfolioData.programmes[0].projects[0].id;
+                loadProjectView(currentProject);
+            }
+        }
+
+        // Update Breadcrumbs
+        function updateBreadcrumbs(view, programmeId, projectId) {
+            const container = document.getElementById('breadcrumb-container');
+            let breadcrumbs = `
+                <i class="fas fa-layer-group text-gray-400"></i>
+                <span class="breadcrumb-item ${view === 'portfolio' ? 'active' : ''}" onclick="switchView('portfolio')">
+                    <i class="fas fa-layer-group"></i>
+                    ${portfolioData.name}
+                </span>
+            `;
+            
+            if (view === 'programme' || view === 'project') {
+                const programme = portfolioData.programmes.find(p => p.id === (programmeId || currentProgramme));
+                if (programme) {
+                    breadcrumbs += `
+                        <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                        <span class="breadcrumb-item ${view === 'programme' ? 'active' : ''}" onclick="switchView('programme', '${programme.id}')">
+                            <i class="fas fa-folder"></i>
+                            ${programme.name}
+                        </span>
+                    `;
+                }
+            }
+            
+            if (view === 'project') {
+                const programme = portfolioData.programmes.find(p => p.id === (programmeId || currentProgramme));
+                const project = programme?.projects.find(p => p.id === (projectId || currentProject));
+                if (project) {
+                    breadcrumbs += `
+                        <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                        <span class="breadcrumb-item active" onclick="switchView('project', '${programme.id}', '${project.id}')">
+                            <i class="fas fa-project-diagram"></i>
+                            ${project.name}
+                        </span>
+                    `;
+                }
+            }
+            
+            container.innerHTML = breadcrumbs;
+        }
+
+        // Load Portfolio View
+        function loadPortfolioView() {
+            document.getElementById('view-title').textContent = 'Portfolio View';
+            document.getElementById('view-description').textContent = 'Manage your entire portfolio of programmes and projects';
+            
+            const totalBudget = portfolioData.programmes.reduce((sum, p) => sum + p.budget, 0);
+            const totalSpent = portfolioData.programmes.reduce((sum, p) => sum + p.spent, 0);
+            const totalProjects = portfolioData.programmes.reduce((sum, p) => sum + p.projects.length, 0);
+            const totalTasks = portfolioData.programmes.reduce((sum, p) => 
+                sum + p.projects.reduce((s, pr) => s + pr.tasks, 0), 0);
+            
+            const content = `
+                <div class="fade-in">
+                    <!-- Portfolio KPIs -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm opacity-90">Total Budget</span>
+                                <i class="fas fa-dollar-sign text-2xl opacity-75"></i>
+                            </div>
+                            <div class="text-3xl font-bold mb-1">$${(totalBudget / 1000000).toFixed(1)}M</div>
+                            <div class="text-sm opacity-75">Across ${portfolioData.programmes.length} programmes</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm opacity-90">Budget Spent</span>
+                                <i class="fas fa-chart-line text-2xl opacity-75"></i>
+                            </div>
+                            <div class="text-3xl font-bold mb-1">$${(totalSpent / 1000000).toFixed(1)}M</div>
+                            <div class="text-sm opacity-75">${Math.round((totalSpent / totalBudget) * 100)}% utilized</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm opacity-90">Active Projects</span>
+                                <i class="fas fa-project-diagram text-2xl opacity-75"></i>
+                            </div>
+                            <div class="text-3xl font-bold mb-1">${totalProjects}</div>
+                            <div class="text-sm opacity-75">Across all programmes</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm opacity-90">Total Tasks</span>
+                                <i class="fas fa-tasks text-2xl opacity-75"></i>
+                            </div>
+                            <div class="text-3xl font-bold mb-1">${totalTasks}</div>
+                            <div class="text-sm opacity-75">In progress</div>
+                        </div>
+                    </div>
+
+                    <!-- Programmes Grid -->
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4">Programmes</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${portfolioData.programmes.map(programme => {
+                                const progress = Math.round((programme.spent / programme.budget) * 100);
+                                const projectCount = programme.projects.length;
+                                const avgHealth = calculateProgrammeHealth(programme);
+                                
+                                return `
+                                    <div class="hierarchy-card" onclick="switchView('programme', '${programme.id}')">
+                                        <div class="flex items-start justify-between mb-4">
+                                            <div class="flex-1">
+                                                <h3 class="text-lg font-semibold text-gray-900 mb-1">${programme.name}</h3>
+                                                <p class="text-sm text-gray-600">${projectCount} projects</p>
+                                            </div>
+                                            <div class="w-16 h-16">
+                                                ${createProgressRing(progress, avgHealth)}
+                                            </div>
+                                        </div>
+                                        <div class="space-y-3">
+                                            <div>
+                                                <div class="flex items-center justify-between text-sm mb-1">
+                                                    <span class="text-gray-600">Budget</span>
+                                                    <span class="font-semibold text-gray-900">$${(programme.budget / 1000000).toFixed(1)}M</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-blue-600 h-2 rounded-full" style="width: ${progress}%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between text-sm">
+                                                <span class="text-gray-600">Spent</span>
+                                                <span class="font-semibold text-gray-900">$${(programme.spent / 1000000).toFixed(1)}M</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${getHealthBadge(avgHealth)}">
+                                                    ${avgHealth.toUpperCase()}
+                                                </span>
+                                                <span class="text-xs text-gray-500">${progress}% complete</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Portfolio Chart -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Budget Distribution</h3>
+                            <div class="chart-compact">
+                                <canvas id="budget-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Programme Health</h3>
+                            <div class="chart-compact">
+                                <canvas id="health-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('content-area').innerHTML = content;
+            
+            // Initialize charts
+            setTimeout(() => {
+                initializeBudgetChart();
+                initializeHealthChart();
+            }, 100);
+        }
+
+        // Load Programme View
+        function loadProgrammeView(programmeId) {
+            const programme = portfolioData.programmes.find(p => p.id === programmeId);
+            if (!programme) return;
+            
+            document.getElementById('view-title').textContent = 'Programme View';
+            document.getElementById('view-description').textContent = `Managing ${programme.name} programme`;
+            
+            const totalTasks = programme.projects.reduce((sum, p) => sum + p.tasks, 0);
+            const completedTasks = programme.projects.reduce((sum, p) => sum + p.completedTasks, 0);
+            const totalTeam = programme.projects.reduce((sum, p) => sum + p.team, 0);
+            
+            const content = `
+                <div class="fade-in">
+                    <!-- Programme KPIs -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg shadow-lg p-6 text-white">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm opacity-90">Programme Budget</span>
+                                <i class="fas fa-wallet text-2xl opacity-75"></i>
+                            </div>
+                            <div class="text-3xl font-bold mb-1">$${(programme.budget / 1000000).toFixed(1)}M</div>
+                            <div class="text-sm opacity-75">${programme.projects.length} projects</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg shadow-lg p-6 text-white">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm opacity-90">Total Tasks</span>
+                                <i class="fas fa-tasks text-2xl opacity-75"></i>
+                            </div>
+                            <div class="text-3xl font-bold mb-1">${totalTasks}</div>
+                            <div class="text-sm opacity-75">${completedTasks} completed</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg shadow-lg p-6 text-white">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm opacity-90">Team Size</span>
+                                <i class="fas fa-users text-2xl opacity-75"></i>
+                            </div>
+                            <div class="text-3xl font-bold mb-1">${totalTeam}</div>
+                            <div class="text-sm opacity-75">Across all projects</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg shadow-lg p-6 text-white">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm opacity-90">Completion</span>
+                                <i class="fas fa-chart-pie text-2xl opacity-75"></i>
+                            </div>
+                            <div class="text-3xl font-bold mb-1">${Math.round((completedTasks / totalTasks) * 100)}%</div>
+                            <div class="text-sm opacity-75">Overall progress</div>
+                        </div>
+                    </div>
+
+                    <!-- Projects Grid -->
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4">Projects in ${programme.name}</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${programme.projects.map(project => `
+                                <div class="hierarchy-card" onclick="switchView('project', '${programme.id}', '${project.id}')">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex-1">
+                                            <h3 class="text-lg font-semibold text-gray-900 mb-1">${project.name}</h3>
+                                            <p class="text-sm text-gray-600">${project.tasks} tasks • ${project.team} team members</p>
+                                        </div>
+                                        <div class="w-16 h-16">
+                                            ${createProgressRing(project.progress, project.health)}
+                                        </div>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <div class="flex items-center justify-between text-sm mb-1">
+                                                <span class="text-gray-600">Progress</span>
+                                                <span class="font-semibold text-gray-900">${project.progress}%</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                                <div class="bg-blue-600 h-2 rounded-full" style="width: ${project.progress}%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center justify-between text-sm">
+                                            <span class="text-gray-600">Budget</span>
+                                            <span class="font-semibold text-gray-900">$${(project.budget / 1000000).toFixed(1)}M</span>
+                                        </div>
+                                        <div class="flex items-center justify-between text-sm">
+                                            <span class="text-gray-600">Status</span>
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(project.status)}">
+                                                ${project.status}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${getHealthBadge(project.health)}">
+                                                ${project.health.toUpperCase()}
+                                            </span>
+                                            <span class="text-xs text-gray-500">${project.completedTasks}/${project.tasks} tasks</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('content-area').innerHTML = content;
+        }
+
+        // Load Project View
+        function loadProjectView(projectId) {
+            const programme = portfolioData.programmes.find(p => 
+                p.projects.some(pr => pr.id === projectId)
+            );
+            const project = programme?.projects.find(p => p.id === projectId);
+            
+            if (!project) return;
+            
+            document.getElementById('view-title').textContent = 'Project View';
+            document.getElementById('view-description').textContent = `Managing ${project.name}`;
+            
+            // Load the full project planning view (from world-class version)
+            window.location.href = 'project-planning-world-class.html';
+        }
+
+        // Helper Functions
+        function calculateProgrammeHealth(programme) {
+            const healthScores = { green: 3, yellow: 2, red: 1 };
+            const avgScore = programme.projects.reduce((sum, p) => sum + healthScores[p.health], 0) / programme.projects.length;
+            if (avgScore >= 2.5) return 'green';
+            if (avgScore >= 1.5) return 'yellow';
+            return 'red';
+        }
+
+        function createProgressRing(progress, health) {
+            const colors = {
+                green: '#10b981',
+                yellow: '#f59e0b',
+                red: '#ef4444'
+            };
+            const color = colors[health] || colors.green;
+            const circumference = 2 * Math.PI * 24;
+            const offset = circumference - (progress / 100) * circumference;
+            
+            return `
+                <svg class="progress-ring" width="64" height="64">
+                    <circle cx="32" cy="32" r="24" stroke="#e5e7eb" stroke-width="4" fill="none"/>
+                    <circle class="progress-ring-circle" cx="32" cy="32" r="24" 
+                            stroke="${color}" stroke-width="4" fill="none"
+                            stroke-dasharray="${circumference}" 
+                            stroke-dashoffset="${offset}"
+                            stroke-linecap="round"/>
+                    <text x="32" y="36" text-anchor="middle" font-size="14" font-weight="bold" fill="#1f2937">
+                        ${progress}%
+                    </text>
+                </svg>
+            `;
+        }
+
+        function getHealthBadge(health) {
+            const badges = {
+                green: 'bg-green-100 text-green-800',
+                yellow: 'bg-yellow-100 text-yellow-800',
+                red: 'bg-red-100 text-red-800'
+            };
+            return badges[health] || badges.green;
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'Planning': 'bg-gray-100 text-gray-800',
+                'In Progress': 'bg-blue-100 text-blue-800',
+                'Completed': 'bg-green-100 text-green-800',
+                'On Hold': 'bg-yellow-100 text-yellow-800'
+            };
+            return badges[status] || badges['Planning'];
+        }
+
+        function initializeBudgetChart() {
+            const ctx = document.getElementById('budget-chart')?.getContext('2d');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: portfolioData.programmes.map(p => p.name),
+                    datasets: [{
+                        data: portfolioData.programmes.map(p => p.budget),
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        function initializeHealthChart() {
+            const ctx = document.getElementById('health-chart')?.getContext('2d');
+            if (!ctx) return;
+            
+            const healthCounts = { green: 0, yellow: 0, red: 0 };
+            portfolioData.programmes.forEach(prog => {
+                prog.projects.forEach(proj => {
+                    healthCounts[proj.health]++;
+                });
+            });
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Healthy', 'At Risk', 'Critical'],
+                    datasets: [{
+                        data: [healthCounts.green, healthCounts.yellow, healthCounts.red],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function closeAllPanels() {
+            document.querySelectorAll('.slide-panel').forEach(panel => panel.classList.remove('open'));
+            document.getElementById('slide-panel-overlay').classList.remove('show');
+        }
+    </script>
+</body>
+</html>

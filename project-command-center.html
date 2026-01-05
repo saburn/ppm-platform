@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise PPM - Project Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+        .ai-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="text-white">
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-card mx-4 mt-4 px-6 py-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="programme-hybrid.html" class="flex items-center space-x-2 hover:text-purple-400 transition-all duration-300">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </a>
+                <div class="w-px h-8 bg-white/20"></div>
+                <i class="fas fa-project-diagram text-3xl text-purple-400"></i>
+                <div>
+                    <h1 class="text-2xl font-bold gradient-text">Project Command Center</h1>
+                    <p class="text-xs text-gray-400">Website Redesign Project</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-2 bg-green-500/20 px-4 py-2 rounded-full">
+                    <div class="w-2 h-2 bg-green-400 rounded-full ai-pulse"></div>
+                    <span class="text-sm font-semibold text-green-400">94.7% AI Active</span>
+                </div>
+                <div class="relative">
+                    <i class="fas fa-bell text-xl text-gray-400 hover:text-white cursor-pointer"></i>
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-xs w-5 h-5 rounded-full flex items-center justify-center">3</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <img src="https://ui-avatars.com/api/?name=Sarah+Chen&background=667eea&color=fff" class="w-10 h-10 rounded-full" alt="User">
+                    <div>
+                        <p class="text-sm font-semibold">Sarah Chen</p>
+                        <p class="text-xs text-gray-400">Project Manager</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="pt-24 px-4">
+        <div class="glass-card px-6 py-3 mb-4">
+            <div class="flex items-center space-x-2 text-sm">
+                <a href="index-hybrid.html" class="text-purple-400 hover:text-purple-300">Portfolio</a>
+                <i class="fas fa-chevron-right text-gray-500 text-xs"></i>
+                <a href="programme-hybrid.html" class="text-purple-400 hover:text-purple-300">Digital Transformation</a>
+                <i class="fas fa-chevron-right text-gray-500 text-xs"></i>
+                <span class="text-white font-semibold">Website Redesign</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="px-4 pb-8">
+        <!-- Project Header -->
+        <div class="glass-card p-6 mb-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="flex items-center space-x-3 mb-2">
+                        <h2 class="text-3xl font-bold gradient-text">Website Redesign Project</h2>
+                        <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-semibold">On Track</span>
+                        <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm font-semibold">Health: 85/100</span>
+                    </div>
+                    <p class="text-gray-400">Complete redesign of corporate website with modern UX and responsive design</p>
+                    <div class="flex items-center space-x-6 mt-3">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-user text-purple-400"></i>
+                            <span class="text-sm">Manager: Sarah Chen</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-calendar text-blue-400"></i>
+                            <span class="text-sm">Due: Jun 30, 2024</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-dollar-sign text-green-400"></i>
+                            <span class="text-sm">Budget: $250K</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-users text-yellow-400"></i>
+                            <span class="text-sm">Team: 8 members</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex space-x-3">
+                    <button class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                        <i class="fas fa-sync-alt mr-2"></i>AI Optimize
+                    </button>
+                    <button class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="glass-card p-6 mb-6">
+            <div class="flex space-x-2 overflow-x-auto">
+                <button class="tab-button active px-6 py-3 rounded-lg font-semibold border-2 border-transparent whitespace-nowrap" onclick="switchTab('executive')">
+                    <i class="fas fa-chart-line mr-2"></i>Executive Dashboard
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-semibold border-2 border-transparent hover:bg-white/10 whitespace-nowrap" onclick="switchTab('strategic')">
+                    <i class="fas fa-bullseye mr-2"></i>Strategic Alignment
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-semibold border-2 border-transparent hover:bg-white/10 whitespace-nowrap" onclick="switchTab('tasks')">
+                    <i class="fas fa-tasks mr-2"></i>Task Management
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-semibold border-2 border-transparent hover:bg-white/10 whitespace-nowrap" onclick="switchTab('resources')">
+                    <i class="fas fa-users mr-2"></i>Resources
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-semibold border-2 border-transparent hover:bg-white/10 whitespace-nowrap" onclick="switchTab('financials')">
+                    <i class="fas fa-dollar-sign mr-2"></i>Financials
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-semibold border-2 border-transparent hover:bg-white/10 whitespace-nowrap" onclick="switchTab('raid')">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>RAID
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-semibold border-2 border-transparent hover:bg-white/10 whitespace-nowrap" onclick="switchTab('governance')">
+                    <i class="fas fa-shield-alt mr-2"></i>Governance
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-semibold border-2 border-transparent hover:bg-white/10 whitespace-nowrap" onclick="switchTab('documents')">
+                    <i class="fas fa-folder mr-2"></i>Documents
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-semibold border-2 border-transparent hover:bg-white/10 whitespace-nowrap" onclick="switchTab('audit')">
+                    <i class="fas fa-history mr-2"></i>Audit Trail
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-semibold border-2 border-transparent hover:bg-white/10 whitespace-nowrap" onclick="switchTab('ai')">
+                    <i class="fas fa-brain mr-2"></i>AI Analytics
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-semibold border-2 border-transparent hover:bg-white/10 whitespace-nowrap" onclick="switchTab('settings')">
+                    <i class="fas fa-cog mr-2"></i>Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tab-content">
+            <!-- Executive Dashboard Tab -->
+            <div id="executive-tab" class="tab-content active">
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="glass-card p-6 hover:scale-105 transition-all">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-check-circle text-2xl text-green-400"></i>
+                            </div>
+                            <span class="text-green-400 text-sm font-semibold">+5%</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-1">75%</h3>
+                        <p class="text-gray-400 text-sm">Progress Complete</p>
+                        <div class="mt-3 bg-gray-700/50 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 hover:scale-105 transition-all">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-dollar-sign text-2xl text-blue-400"></i>
+                            </div>
+                            <span class="text-green-400 text-sm font-semibold">On Budget</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-1">$187K</h3>
+                        <p class="text-gray-400 text-sm">Spent of $250K</p>
+                        <div class="mt-3 bg-gray-700/50 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 hover:scale-105 transition-all">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar text-2xl text-purple-400"></i>
+                            </div>
+                            <span class="text-green-400 text-sm font-semibold">On Time</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-1">2.5</h3>
+                        <p class="text-gray-400 text-sm">Months Remaining</p>
+                        <div class="mt-3 bg-gray-700/50 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 hover:scale-105 transition-all">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-exclamation-triangle text-2xl text-yellow-400"></i>
+                            </div>
+                            <span class="text-yellow-400 text-sm font-semibold">2 Active</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-1">2</h3>
+                        <p class="text-gray-400 text-sm">Open Risks</p>
+                        <div class="mt-3 bg-gray-700/50 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="glass-card p-6">
+                        <h3 class="text-lg font-bold mb-4 text-purple-400">Project Timeline</h3>
+                        <div style="height: 200px; position: relative;">
+                            <canvas id="timelineChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6">
+                        <h3 class="text-lg font-bold mb-4 text-green-400">Budget Burn Rate</h3>
+                        <div style="height: 200px; position: relative;">
+                            <canvas id="budgetChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategic Alignment Tab -->
+            <div id="strategic-tab" class="tab-content">
+                <div class="glass-card p-6 mb-6">
+                    <h3 class="text-2xl font-bold gradient-text mb-4">Strategic Alignment</h3>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3 text-purple-400">Business Context</h4>
+                            <div class="space-y-3">
+                                <div class="bg-white/5 p-4 rounded-lg">
+                                    <p class="text-sm font-semibold mb-2">Strategic Objective</p>
+                                    <p class="text-gray-400 text-sm">Enhance digital presence and improve customer engagement through modern web experience</p>
+                                </div>
+                                <div class="bg-white/5 p-4 rounded-lg">
+                                    <p class="text-sm font-semibold mb-2">Expected Outcomes</p>
+                                    <ul class="text-gray-400 text-sm space-y-1">
+                                        <li>• 40% increase in user engagement</li>
+                                        <li>• 25% reduction in bounce rate</li>
+                                        <li>• 50% improvement in mobile experience</li>
+                                        <li>• 30% increase in conversion rate</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3 text-cyan-400">Stakeholder Mapping</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between bg-white/5 p-4 rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <img src="https://ui-avatars.com/api/?name=John+Smith&background=667eea&color=fff" class="w-10 h-10 rounded-full" alt="Sponsor">
+                                        <div>
+                                            <p class="font-semibold text-sm">John Smith</p>
+                                            <p class="text-xs text-gray-400">Executive Sponsor</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">High Influence</span>
+                                </div>
+                                <div class="flex items-center justify-between bg-white/5 p-4 rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <img src="https://ui-avatars.com/api/?name=Sarah+Chen&background=667eea&color=fff" class="w-10 h-10 rounded-full" alt="PM">
+                                        <div>
+                                            <p class="font-semibold text-sm">Sarah Chen</p>
+                                            <p class="text-xs text-gray-400">Project Manager</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded">Accountable</span>
+                                </div>
+                                <div class="flex items-center justify-between bg-white/5 p-4 rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <img src="https://ui-avatars.com/api/?name=Marketing+Team&background=667eea&color=fff" class="w-10 h-10 rounded-full" alt="Marketing">
+                                        <div>
+                                            <p class="font-semibold text-sm">Marketing Team</p>
+                                            <p class="text-xs text-gray-400">Business Owner</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">Consulted</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Management Tab -->
+            <div id="tasks-tab" class="tab-content">
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold gradient-text">Task Management</h3>
+                        <button class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold">
+                            <i class="fas fa-plus mr-2"></i>Add Task
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-white/10">
+                                    <th class="text-left py-3 px-4 text-gray-400 font-semibold">Task Name</th>
+                                    <th class="text-left py-3 px-4 text-gray-400 font-semibold">Assignee</th>
+                                    <th class="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
+                                    <th class="text-left py-3 px-4 text-gray-400 font-semibold">Priority</th>
+                                    <th class="text-left py-3 px-4 text-gray-400 font-semibold">Due Date</th>
+                                    <th class="text-left py-3 px-4 text-gray-400 font-semibold">Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-white/5 hover:bg-white/5">
+                                    <td class="py-4 px-4">
+                                        <p class="font-semibold">Design Homepage Mockup</p>
+                                        <p class="text-xs text-gray-400">Create initial design concepts</p>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <div class="flex items-center space-x-2">
+                                            <img src="https://ui-avatars.com/api/?name=Jane+Doe&background=667eea&color=fff" class="w-8 h-8 rounded-full" alt="Jane">
+                                            <span class="text-sm">Jane Doe</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold">Completed</span>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-semibold">High</span>
+                                    </td>
+                                    <td class="py-4 px-4 text-sm">Mar 15, 2024</td>
+                                    <td class="py-4 px-4">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="flex-1 bg-gray-700/50 rounded-full h-2">
+                                                <div class="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" style="width: 100%"></div>
+                                            </div>
+                                            <span class="text-xs font-semibold">100%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-white/5 hover:bg-white/5">
+                                    <td class="py-4 px-4">
+                                        <p class="font-semibold">Develop Frontend Components</p>
+                                        <p class="text-xs text-gray-400">Build reusable React components</p>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <div class="flex items-center space-x-2">
+                                            <img src="https://ui-avatars.com/api/?name=Mike+Johnson&background=667eea&color=fff" class="w-8 h-8 rounded-full" alt="Mike">
+                                            <span class="text-sm">Mike Johnson</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-semibold">In Progress</span>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-semibold">Medium</span>
+                                    </td>
+                                    <td class="py-4 px-4 text-sm">Apr 30, 2024</td>
+                                    <td class="py-4 px-4">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="flex-1 bg-gray-700/50 rounded-full h-2">
+                                                <div class="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style="width: 65%"></div>
+                                            </div>
+                                            <span class="text-xs font-semibold">65%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resources Tab -->
+            <div id="resources-tab" class="tab-content">
+                <div class="glass-card p-6">
+                    <h3 class="text-2xl font-bold gradient-text mb-6">Team Resources</h3>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="bg-white/5 p-4 rounded-lg text-center">
+                            <img src="https://ui-avatars.com/api/?name=Sarah+Chen&background=667eea&color=fff" class="w-20 h-20 rounded-full mx-auto mb-3" alt="Sarah">
+                            <p class="font-semibold">Sarah Chen</p>
+                            <p class="text-xs text-gray-400 mb-2">Project Manager</p>
+                            <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">Available</span>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-lg text-center">
+                            <img src="https://ui-avatars.com/api/?name=Jane+Doe&background=667eea&color=fff" class="w-20 h-20 rounded-full mx-auto mb-3" alt="Jane">
+                            <p class="font-semibold">Jane Doe</p>
+                            <p class="text-xs text-gray-400 mb-2">UX Designer</p>
+                            <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">Available</span>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-lg text-center">
+                            <img src="https://ui-avatars.com/api/?name=Mike+Johnson&background=667eea&color=fff" class="w-20 h-20 rounded-full mx-auto mb-3" alt="Mike">
+                            <p class="font-semibold">Mike Johnson</p>
+                            <p class="text-xs text-gray-400 mb-2">Frontend Developer</p>
+                            <span class="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs">Busy</span>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-lg text-center">
+                            <img src="https://ui-avatars.com/api/?name=Alex+Rivera&background=667eea&color=fff" class="w-20 h-20 rounded-full mx-auto mb-3" alt="Alex">
+                            <p class="font-semibold">Alex Rivera</p>
+                            <p class="text-xs text-gray-400 mb-2">Backend Developer</p>
+                            <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">Available</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financials Tab -->
+            <div id="financials-tab" class="tab-content">
+                <div class="glass-card p-6">
+                    <h3 class="text-2xl font-bold gradient-text mb-6">Financial Overview</h3>
+                    <div class="grid grid-cols-3 gap-6">
+                        <div class="bg-white/5 p-6 rounded-lg">
+                            <p class="text-gray-400 text-sm mb-2">Total Budget</p>
+                            <p class="text-3xl font-bold text-green-400">$250,000</p>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-lg">
+                            <p class="text-gray-400 text-sm mb-2">Spent to Date</p>
+                            <p class="text-3xl font-bold text-blue-400">$187,500</p>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-lg">
+                            <p class="text-gray-400 text-sm mb-2">Remaining</p>
+                            <p class="text-3xl font-bold text-purple-400">$62,500</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RAID Tab -->
+            <div id="raid-tab" class="tab-content">
+                <div class="glass-card p-6">
+                    <h3 class="text-2xl font-bold gradient-text mb-6">RAID Management</h3>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3 text-red-400">Active Risks</h4>
+                            <div class="space-y-3">
+                                <div class="bg-red-500/10 border-l-4 border-red-500 p-4 rounded-r-lg">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <p class="font-semibold">Resource Availability</p>
+                                        <span class="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs">High</span>
+                                    </div>
+                                    <p class="text-sm text-gray-400">Key developer may be unavailable during critical phase</p>
+                                </div>
+                                <div class="bg-yellow-500/10 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <p class="font-semibold">Third-party Integration</p>
+                                        <span class="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs">Medium</span>
+                                    </div>
+                                    <p class="text-sm text-gray-400">API integration complexity may cause delays</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3 text-blue-400">Open Issues</h4>
+                            <div class="space-y-3">
+                                <div class="bg-blue-500/10 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <p class="font-semibold">Design Approval Pending</p>
+                                        <span class="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">Open</span>
+                                    </div>
+                                    <p class="text-sm text-gray-400">Waiting for stakeholder sign-off on final designs</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Governance Tab -->
+            <div id="governance-tab" class="tab-content">
+                <div class="glass-card p-6">
+                    <h3 class="text-2xl font-bold gradient-text mb-6">Governance & Compliance</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between bg-white/5 rounded-lg p-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-green-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Stage-Gate 1: Initiation</p>
+                                    <p class="text-xs text-gray-400">Approved on Jan 15, 2024</p>
+                                </div>
+                            </div>
+                            <span class="text-green-400 font-semibold">Approved</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-white/5 rounded-lg p-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-green-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Stage-Gate 2: Planning</p>
+                                    <p class="text-xs text-gray-400">Approved on Feb 20, 2024</p>
+                                </div>
+                            </div>
+                            <span class="text-green-400 font-semibold">Approved</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-white/5 rounded-lg p-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-clock text-yellow-400"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Stage-Gate 3: Execution</p>
+                                    <p class="text-xs text-gray-400">Due Jun 30, 2024</p>
+                                </div>
+                            </div>
+                            <span class="text-yellow-400 font-semibold">In Progress</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Tab -->
+            <div id="documents-tab" class="tab-content">
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold gradient-text">Project Documents</h3>
+                        <button class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold">
+                            <i class="fas fa-upload mr-2"></i>Upload Document
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-white/5 p-4 rounded-lg hover:bg-white/10 cursor-pointer">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-file-pdf text-3xl text-red-400"></i>
+                                <div>
+                                    <p class="font-semibold">Project Charter.pdf</p>
+                                    <p class="text-xs text-gray-400">Updated 2 days ago • 2.4 MB</p>
+                                </div>
+                            </div>
+                            <button class="text-purple-400 hover:text-purple-300">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between bg-white/5 p-4 rounded-lg hover:bg-white/10 cursor-pointer">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-file-word text-3xl text-blue-400"></i>
+                                <div>
+                                    <p class="font-semibold">Requirements Document.docx</p>
+                                    <p class="text-xs text-gray-400">Updated 5 days ago • 1.8 MB</p>
+                                </div>
+                            </div>
+                            <button class="text-purple-400 hover:text-purple-300">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Trail Tab -->
+            <div id="audit-tab" class="tab-content">
+                <div class="glass-card p-6">
+                    <h3 class="text-2xl font-bold gradient-text mb-6">Audit Trail</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start space-x-3 bg-white/5 p-4 rounded-lg">
+                            <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-check text-green-400"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">Task Completed: Design Homepage Mockup</p>
+                                <p class="text-sm text-gray-400">Jane Doe completed the task • 2 hours ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3 bg-white/5 p-4 rounded-lg">
+                            <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-edit text-blue-400"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">Budget Updated</p>
+                                <p class="text-sm text-gray-400">Sarah Chen updated project budget • 1 day ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Analytics Tab -->
+            <div id="ai-tab" class="tab-content">
+                <div class="glass-card p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold gradient-text">AI-Powered Analytics</h3>
+                        <div class="flex items-center space-x-2 bg-cyan-500/20 px-4 py-2 rounded-full">
+                            <i class="fas fa-brain text-cyan-400 ai-pulse"></i>
+                            <span class="text-sm font-semibold text-cyan-400">94.7% Accuracy</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="bg-green-500/10 border-l-4 border-green-500 p-4 rounded-r-lg">
+                            <p class="font-semibold text-green-400 mb-2">Success Prediction</p>
+                            <p class="text-3xl font-bold mb-2">92%</p>
+                            <p class="text-sm text-gray-400">AI predicts 92% probability of on-time, on-budget delivery</p>
+                        </div>
+                        <div class="bg-blue-500/10 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                            <p class="font-semibold text-blue-400 mb-2">Optimization Opportunity</p>
+                            <p class="text-3xl font-bold mb-2">15%</p>
+                            <p class="text-sm text-gray-400">Potential timeline reduction through resource reallocation</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content">
+                <div class="glass-card p-6">
+                    <h3 class="text-2xl font-bold gradient-text mb-6">Project Settings</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Project Name</label>
+                            <input type="text" value="Website Redesign Project" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Project Description</label>
+                            <textarea rows="3" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500">Complete redesign of corporate website with modern UX and responsive design</textarea>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold">
+                                Save Changes
+                            </button>
+                            <button class="bg-white/10 hover:bg-white/20 px-6 py-3 rounded-lg font-semibold">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass-card mx-4 mb-4 px-6 py-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-400">Last Updated: <span class="text-white font-semibold">Just now</span></span>
+                <span class="text-sm text-gray-400">|</span>
+                <span class="text-sm text-gray-400">AI Version: <span class="text-cyan-400 font-semibold">4.7.2</span></span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-green-400 rounded-full ai-pulse"></div>
+                    <span class="text-sm text-gray-400">All Systems Operational</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Tab Switching Function
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.closest('.tab-button').classList.add('active');
+        }
+
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Timeline Chart
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+            new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'],
+                    datasets: [{
+                        label: 'Planned Progress',
+                        data: [10, 20, 30, 40, 50, 60, 70, 80],
+                        borderColor: '#667eea',
+                        borderDash: [5, 5],
+                        fill: false
+                    }, {
+                        label: 'Actual Progress',
+                        data: [12, 22, 35, 45, 58, 68, 75, null],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#9ca3af' } } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' }, min: 0, max: 100 }
+                    }
+                }
+            });
+
+            // Budget Chart
+            const budgetCtx = document.getElementById('budgetChart').getContext('2d');
+            new Chart(budgetCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Planned Spend',
+                        data: [30, 50, 70, 90, 110, 130],
+                        backgroundColor: 'rgba(102, 126, 234, 0.5)',
+                        borderRadius: 8
+                    }, {
+                        label: 'Actual Spend',
+                        data: [28, 48, 72, 95, null, null],
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#9ca3af' } } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#9ca3af' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af', callback: value => '$' + value + 'K' } }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

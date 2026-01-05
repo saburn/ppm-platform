@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project-Specific Modules System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .module-card {
+            transition: all 0.3s ease;
+            transform: translateY(0);
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .project-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .breadcrumb-item::after {
+            content: '/';
+            margin: 0 8px;
+            color: #9ca3af;
+        }
+        .breadcrumb-item:last-child::after {
+            content: '';
+        }
+        .active-module {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .project-indicator {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Project Header with Context -->
+    <header class="project-header text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <!-- Breadcrumb Navigation -->
+                    <nav class="flex items-center text-sm mb-2">
+                        <span class="breadcrumb-item hover:text-gray-200 cursor-pointer" onclick="navigateToPortfolio()">
+                            <i class="fas fa-briefcase mr-1"></i> Portfolio
+                        </span>
+                        <span class="breadcrumb-item hover:text-gray-200 cursor-pointer" onclick="navigateToProgramme()">
+                            <i class="fas fa-project-diagram mr-1"></i> Digital Transformation
+                        </span>
+                        <span class="breadcrumb-item text-white font-semibold">
+                            <i class="fas fa-tasks mr-1"></i> <span id="currentProjectName">Website Redesign</span>
+                        </span>
+                    </nav>
+                    <h1 class="text-2xl font-bold">Project Management Dashboard</h1>
+                    <p class="text-purple-100 text-sm mt-1">All modules scoped to this specific project</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Project Quick Info -->
+                    <div class="text-right">
+                        <p class="text-sm text-purple-100">Project Manager</p>
+                        <p class="font-semibold">Sarah Chen</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-purple-100">Budget</p>
+                        <p class="font-semibold">$450,000</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-purple-100">Timeline</p>
+                        <p class="font-semibold">Jan - Jun 2024</p>
+                    </div>
+                    <!-- Project Switcher -->
+                    <div class="relative">
+                        <button onclick="toggleProjectSwitcher()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg flex items-center space-x-2 transition">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>Switch Project</span>
+                        </button>
+                        <div id="projectSwitcher" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-50">
+                            <div class="p-4">
+                                <h3 class="font-semibold text-gray-800 mb-3">Select Project</h3>
+                                <div class="space-y-2">
+                                    <div class="project-option p-3 bg-gray-50 rounded-lg hover:bg-purple-50 cursor-pointer border-2 border-purple-500" onclick="switchProject('Website Redesign')">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="font-medium text-gray-800">Website Redesign</p>
+                                                <p class="text-sm text-gray-500">Digital Transformation • $450K</p>
+                                            </div>
+                                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Active</span>
+                                        </div>
+                                    </div>
+                                    <div class="project-option p-3 bg-gray-50 rounded-lg hover:bg-purple-50 cursor-pointer" onclick="switchProject('Mobile App Development')">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="font-medium text-gray-800">Mobile App Development</p>
+                                                <p class="text-sm text-gray-500">Digital Transformation • $680K</p>
+                                            </div>
+                                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Planning</span>
+                                        </div>
+                                    </div>
+                                    <div class="project-option p-3 bg-gray-50 rounded-lg hover:bg-purple-50 cursor-pointer" onclick="switchProject('Cloud Migration')">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="font-medium text-gray-800">Cloud Migration</p>
+                                                <p class="text-sm text-gray-500">Infrastructure • $820K</p>
+                                            </div>
+                                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">In Progress</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Project KPIs Bar -->
+    <div class="bg-white border-b shadow-sm">
+        <div class="container mx-auto px-6 py-4">
+            <div class="grid grid-cols-4 gap-6">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i class="fas fa-tasks text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Project Tasks</p>
+                        <p class="text-xl font-bold text-gray-800">24 / 32</p>
+                        <p class="text-xs text-green-600">75% Complete</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-users text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Team Size</p>
+                        <p class="text-xl font-bold text-gray-800">8 Members</p>
+                        <p class="text-xs text-blue-600">87% Utilized</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <i class="fas fa-dollar-sign text-purple-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Budget Used</p>
+                        <p class="text-xl font-bold text-gray-800">$285K</p>
+                        <p class="text-xs text-yellow-600">63% of $450K</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-red-100 p-3 rounded-lg">
+                        <i class="fas fa-exclamation-triangle text-red-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Risks & Issues</p>
+                        <p class="text-xl font-bold text-gray-800">3 Active</p>
+                        <p class="text-xs text-orange-600">2 High Priority</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content: Project-Specific Modules -->
+    <main class="container mx-auto px-6 py-8">
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Project Modules</h2>
+            <p class="text-gray-600">All modules below are scoped specifically to <span class="project-indicator font-semibold text-purple-600">"Website Redesign"</span> project</p>
+        </div>
+
+        <!-- Module Categories -->
+        <div class="space-y-8">
+            <!-- Core Planning Modules -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-calendar-alt mr-2 text-purple-600"></i>
+                    Planning & Scheduling
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- Project Planning Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('planning')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
+                            </div>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Core</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Project Planning</h4>
+                        <p class="text-sm text-gray-600 mb-4">Manage tasks, Gantt charts, and milestones for this project</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-tasks mr-1"></i> 32 tasks</span>
+                            <span><i class="fas fa-chart-line mr-1"></i> 75% complete</span>
+                        </div>
+                    </div>
+
+                    <!-- Time Tracking Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('time-tracking')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-green-100 p-3 rounded-lg">
+                                <i class="fas fa-clock text-green-600 text-xl"></i>
+                            </div>
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Tracking</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Time Tracking</h4>
+                        <p class="text-sm text-gray-600 mb-4">Track time spent on project tasks and activities</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-users mr-1"></i> 8 team members</span>
+                            <span><i class="fas fa-clock mr-1"></i> 1,247 hrs</span>
+                        </div>
+                    </div>
+
+                    <!-- Milestones Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('milestones')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-purple-100 p-3 rounded-lg">
+                                <i class="fas fa-flag text-purple-600 text-xl"></i>
+                            </div>
+                            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Tracking</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Milestones</h4>
+                        <p class="text-sm text-gray-600 mb-4">Track key project milestones and deliverables</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-flag mr-1"></i> 8 milestones</span>
+                            <span><i class="fas fa-check-circle mr-1"></i> 6 achieved</span>
+                        </div>
+                    </div>
+
+                    <!-- Dependencies Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('dependencies')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-orange-100 p-3 rounded-lg">
+                                <i class="fas fa-link text-orange-600 text-xl"></i>
+                            </div>
+                            <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">Analysis</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Dependencies</h4>
+                        <p class="text-sm text-gray-600 mb-4">Manage task dependencies and critical path</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-link mr-1"></i> 15 dependencies</span>
+                            <span><i class="fas fa-exclamation-triangle mr-1"></i> 2 critical</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Management Modules -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-users mr-2 text-green-600"></i>
+                    Resource Management
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- Team Resources Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('resources')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-green-100 p-3 rounded-lg">
+                                <i class="fas fa-users text-green-600 text-xl"></i>
+                            </div>
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Core</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Team Resources</h4>
+                        <p class="text-sm text-gray-600 mb-4">Manage team assignments and workload for this project</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-users mr-1"></i> 8 members</span>
+                            <span><i class="fas fa-chart-pie mr-1"></i> 87% utilized</span>
+                        </div>
+                    </div>
+
+                    <!-- Skills Matrix Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('skills')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-indigo-100 p-3 rounded-lg">
+                                <i class="fas fa-graduation-cap text-indigo-600 text-xl"></i>
+                            </div>
+                            <span class="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">Analysis</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Skills Matrix</h4>
+                        <p class="text-sm text-gray-600 mb-4">View team skills and capabilities for project needs</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-certificate mr-1"></i> 12 skills</span>
+                            <span><i class="fas fa-star mr-1"></i> 85% coverage</span>
+                        </div>
+                    </div>
+
+                    <!-- Capacity Planning Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('capacity')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-teal-100 p-3 rounded-lg">
+                                <i class="fas fa-chart-line text-teal-600 text-xl"></i>
+                            </div>
+                            <span class="bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full">Planning</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Capacity Planning</h4>
+                        <p class="text-sm text-gray-600 mb-4">Plan resource capacity and availability for project</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-calendar mr-1"></i> 12 weeks</span>
+                            <span><i class="fas fa-battery-full mr-1"></i> 89% available</span>
+                        </div>
+                    </div>
+
+                    <!-- Resource Costs Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('resource-costs')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-yellow-100 p-3 rounded-lg">
+                                <i class="fas fa-dollar-sign text-yellow-600 text-xl"></i>
+                            </div>
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Financial</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Resource Costs</h4>
+                        <p class="text-sm text-gray-600 mb-4">Track resource costs and rates for project budget</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-dollar-sign mr-1"></i> $285K spent</span>
+                            <span><i class="fas fa-chart-pie mr-1"></i> 63% budget</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk & Issue Management Modules -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-shield-alt mr-2 text-red-600"></i>
+                    Risk & Issue Management
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- RAID Log Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer border-2 border-red-200" onclick="openProjectModule('raid')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-red-100 p-3 rounded-lg">
+                                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                            </div>
+                            <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">Critical</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">RAID Log</h4>
+                        <p class="text-sm text-gray-600 mb-4">Manage Risks, Assumptions, Issues, Dependencies for this project</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-exclamation-triangle mr-1"></i> 3 active</span>
+                            <span><i class="fas fa-fire mr-1 text-red-600"></i> 2 high priority</span>
+                        </div>
+                    </div>
+
+                    <!-- Risk Assessment Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('risk-assessment')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-orange-100 p-3 rounded-lg">
+                                <i class="fas fa-chart-area text-orange-600 text-xl"></i>
+                            </div>
+                            <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">Analysis</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Risk Assessment</h4>
+                        <p class="text-sm text-gray-600 mb-4">Assess and evaluate project risks with probability/impact</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-chart-area mr-1"></i> Risk score</span>
+                            <span><i class="fas fa-arrow-up mr-1 text-orange-600"></i> Medium</span>
+                        </div>
+                    </div>
+
+                    <!-- Mitigation Plans Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('mitigation')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-yellow-100 p-3 rounded-lg">
+                                <i class="fas fa-shield-alt text-yellow-600 text-xl"></i>
+                            </div>
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Action</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Mitigation Plans</h4>
+                        <p class="text-sm text-gray-600 mb-4">Create and track risk mitigation action plans</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-shield-alt mr-1"></i> 4 plans</span>
+                            <span><i class="fas fa-check mr-1 text-green-600"></i> 2 active</span>
+                        </div>
+                    </div>
+
+                    <!-- Issue Tracking Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('issues')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-pink-100 p-3 rounded-lg">
+                                <i class="fas fa-bug text-pink-600 text-xl"></i>
+                            </div>
+                            <span class="bg-pink-100 text-pink-800 text-xs px-2 py-1 rounded-full">Tracking</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Issue Tracking</h4>
+                        <p class="text-sm text-gray-600 mb-4">Track and resolve project issues and blockers</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-bug mr-1"></i> 2 open</span>
+                            <span><i class="fas fa-clock mr-1"></i> 1 pending</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Management Modules -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-dollar-sign mr-2 text-yellow-600"></i>
+                    Financial Management
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- Budget Tracking Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('budget')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-yellow-100 p-3 rounded-lg">
+                                <i class="fas fa-dollar-sign text-yellow-600 text-xl"></i>
+                            </div>
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Core</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Budget Tracking</h4>
+                        <p class="text-sm text-gray-600 mb-4">Track project budget, expenses, and financial performance</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-dollar-sign mr-1"></i> $285K/$450K</span>
+                            <span><i class="fas fa-chart-pie mr-1"></i> 63% used</span>
+                        </div>
+                    </div>
+
+                    <!-- Cost Control Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('cost-control')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-green-100 p-3 rounded-lg">
+                                <i class="fas fa-hand-holding-usd text-green-600 text-xl"></i>
+                            </div>
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Control</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Cost Control</h4>
+                        <p class="text-sm text-gray-600 mb-4">Control costs and manage project financial approvals</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-hand-holding-usd mr-1"></i> $12K saved</span>
+                            <span><i class="fas fa-arrow-down mr-1 text-green-600"></i> On track</span>
+                        </div>
+                    </div>
+
+                    <!-- Financial Reports Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('financial-reports')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <i class="fas fa-chart-bar text-blue-600 text-xl"></i>
+                            </div>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Reports</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Financial Reports</h4>
+                        <p class="text-sm text-gray-600 mb-4">Generate financial reports and variance analysis</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-chart-bar mr-1"></i> 5 reports</span>
+                            <span><i class="fas fa-download mr-1"></i> Monthly</span>
+                        </div>
+                    </div>
+
+                    <!-- ROI Analysis Module -->
+                    <div class="module-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="openProjectModule('roi')">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-purple-100 p-3 rounded-lg">
+                                <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                            </div>
+                            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Analysis</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">ROI Analysis</h4>
+                        <p class="text-sm text-gray-600 mb-4">Analyze return on investment and project value</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span><i class="fas fa-chart-line mr-1"></i> 142% ROI</span>
+                            <span><i class="fas fa-arrow-up mr-1 text-green-600"></i> Excellent</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Project Summary -->
+        <div class="mt-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-8 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-2xl font-bold mb-2">Active Project: Website Redesign</h3>
+                    <p class="text-purple-100 mb-4">All 17 modules above are currently scoped to this specific project. Switch projects to see different data.</p>
+                    <div class="flex items-center space-x-6 text-sm">
+                        <span><i class="fas fa-tasks mr-2"></i> 32 Tasks</span>
+                        <span><i class="fas fa-users mr-2"></i> 8 Team Members</span>
+                        <span><i class="fas fa-dollar-sign mr-2"></i> $450K Budget</span>
+                        <span><i class="fas fa-calendar mr-2"></i> 6 Months</span>
+                        <span><i class="fas fa-chart-line mr-2"></i> 75% Complete</span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="bg-white/20 rounded-lg p-6 backdrop-blur-sm">
+                        <p class="text-3xl font-bold">17</p>
+                        <p class="text-sm text-purple-100">Modules Available</p>
+                        <p class="text-xs text-purple-200 mt-2">All Project-Specific</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Module Modal -->
+    <div id="moduleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold" id="modalTitle">Module Name</h3>
+                        <p class="text-purple-100 text-sm" id="modalSubtitle">Project: Website Redesign</p>
+                    </div>
+                    <button onclick="closeModuleModal()" class="text-white hover:text-gray-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <div id="modalContent">
+                    <!-- Dynamic module content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Project context management
+        let currentProject = {
+            id: 'website-redesign',
+            name: 'Website Redesign',
+            programme: 'Digital Transformation',
+            budget: 450000,
+            manager: 'Sarah Chen',
+            teamSize: 8,
+            progress: 75
+        };
+
+        // Project data for different projects
+        const projectData = {
+            'Website Redesign': {
+                id: 'website-redesign',
+                name: 'Website Redesign',
+                programme: 'Digital Transformation',
+                budget: 450000,
+                manager: 'Sarah Chen',
+                teamSize: 8,
+                progress: 75,
+                tasks: 32,
+                completedTasks: 24,
+                budgetUsed: 285000,
+                activeRisks: 3,
+                milestones: 8,
+                achievedMilestones: 6
+            },
+            'Mobile App Development': {
+                id: 'mobile-app',
+                name: 'Mobile App Development',
+                programme: 'Digital Transformation',
+                budget: 680000,
+                manager: 'Mike Johnson',
+                teamSize: 12,
+                progress: 45,
+                tasks: 48,
+                completedTasks: 22,
+                budgetUsed: 320000,
+                activeRisks: 5,
+                milestones: 12,
+                achievedMilestones: 4
+            },
+            'Cloud Migration': {
+                id: 'cloud-migration',
+                name: 'Cloud Migration',
+                programme: 'Infrastructure',
+                budget: 820000,
+                manager: 'David Lee',
+                teamSize: 15,
+                progress: 60,
+                tasks: 56,
+                completedTasks: 34,
+                budgetUsed: 480000,
+                activeRisks: 7,
+                milestones: 15,
+                achievedMilestones: 8
+            }
+        };
+
+        // Toggle project switcher
+        function toggleProjectSwitcher() {
+            const switcher = document.getElementById('projectSwitcher');
+            switcher.classList.toggle('hidden');
+        }
+
+        // Switch project
+        function switchProject(projectName) {
+            currentProject = projectData[projectName];
+            
+            // Update UI with new project data
+            document.getElementById('currentProjectName').textContent = currentProject.name;
+            
+            // Update KPIs
+            updateProjectKPIs();
+            
+            // Close switcher
+            document.getElementById('projectSwitcher').classList.add('hidden');
+            
+            // Show success notification
+            showNotification(`Switched to project: ${projectName}`, 'success');
+        }
+
+        // Update project KPIs
+        function updateProjectKPIs() {
+            // This would update all the KPI displays with current project data
+            console.log('Updated KPIs for:', currentProject.name);
+        }
+
+        // Open project module
+        function openProjectModule(moduleType) {
+            const modal = document.getElementById('moduleModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalSubtitle = document.getElementById('modalSubtitle');
+            const modalContent = document.getElementById('modalContent');
+            
+            // Set modal title with project context
+            const moduleNames = {
+                'planning': 'Project Planning',
+                'time-tracking': 'Time Tracking',
+                'milestones': 'Milestones',
+                'dependencies': 'Dependencies',
+                'resources': 'Team Resources',
+                'skills': 'Skills Matrix',
+                'capacity': 'Capacity Planning',
+                'resource-costs': 'Resource Costs',
+                'raid': 'RAID Log',
+                'risk-assessment': 'Risk Assessment',
+                'mitigation': 'Mitigation Plans',
+                'issues': 'Issue Tracking',
+                'budget': 'Budget Tracking',
+                'cost-control': 'Cost Control',
+                'financial-reports': 'Financial Reports',
+                'roi': 'ROI Analysis'
+            };
+            
+            modalTitle.textContent = moduleNames[moduleType] || 'Module';
+            modalSubtitle.textContent = `Project: ${currentProject.name}`;
+            
+            // Load module-specific content based on module type and current project
+            modalContent.innerHTML = generateModuleContent(moduleType);
+            
+            // Show modal
+            modal.classList.remove('hidden');
+        }
+
+        // Generate module content based on project context
+        function generateModuleContent(moduleType) {
+            const project = currentProject;
+            
+            const moduleContent = {
+                'raid': `
+                    <div class="space-y-6">
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-yellow-800 mb-2">Project-Specific RAID Log</h4>
+                            <p class="text-sm text-yellow-700">Showing risks, assumptions, issues, and dependencies for: <strong>${project.name}</strong></p>
+                        </div>
+                        
+                        <div class="grid grid-cols-4 gap-4 mb-6">
+                            <div class="bg-red-50 rounded-lg p-4 text-center">
+                                <i class="fas fa-exclamation-triangle text-red-600 text-2xl mb-2"></i>
+                                <p class="text-2xl font-bold text-red-600">${project.activeRisks}</p>
+                                <p class="text-sm text-gray-600">Active Risks</p>
+                            </div>
+                            <div class="bg-blue-50 rounded-lg p-4 text-center">
+                                <i class="fas fa-lightbulb text-blue-600 text-2xl mb-2"></i>
+                                <p class="text-2xl font-bold text-blue-600">5</p>
+                                <p class="text-sm text-gray-600">Assumptions</p>
+                            </div>
+                            <div class="bg-orange-50 rounded-lg p-4 text-center">
+                                <i class="fas fa-bug text-orange-600 text-2xl mb-2"></i>
+                                <p class="text-2xl font-bold text-orange-600">2</p>
+                                <p class="text-sm text-gray-600">Open Issues</p>
+                            </div>
+                            <div class="bg-purple-50 rounded-lg p-4 text-center">
+                                <i class="fas fa-link text-purple-600 text-2xl mb-2"></i>
+                                <p class="text-2xl font-bold text-purple-600">8</p>
+                                <p class="text-sm text-gray-600">Dependencies</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg border">
+                            <div class="p-4 border-b bg-gray-50">
+                                <h5 class="font-semibold">Recent Risk Entries for ${project.name}</h5>
+                            </div>
+                            <div class="divide-y">
+                                <div class="p-4 hover:bg-gray-50">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="font-medium">Third-party API integration delay</p>
+                                            <p class="text-sm text-gray-600">Risk ID: R-${project.id.toUpperCase()}-001</p>
+                                        </div>
+                                        <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">High</span>
+                                    </div>
+                                </div>
+                                <div class="p-4 hover:bg-gray-50">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="font-medium">Design team availability during Q2</p>
+                                            <p class="text-sm text-gray-600">Risk ID: R-${project.id.toUpperCase()}-002</p>
+                                        </div>
+                                        <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">Medium</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3">
+                            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Export Report</button>
+                            <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Add New Risk</button>
+                        </div>
+                    </div>
+                `,
+                'planning': `
+                    <div class="space-y-6">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-blue-800 mb-2">Project Planning for: ${project.name}</h4>
+                            <p class="text-sm text-blue-700">Task management and Gantt charts specific to this project</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="bg-green-50 rounded-lg p-4 text-center">
+                                <i class="fas fa-tasks text-green-600 text-2xl mb-2"></i>
+                                <p class="text-2xl font-bold text-green-600">${project.completedTasks}/${project.tasks}</p>
+                                <p class="text-sm text-gray-600">Tasks Complete</p>
+                            </div>
+                            <div class="bg-blue-50 rounded-lg p-4 text-center">
+                                <i class="fas fa-chart-line text-blue-600 text-2xl mb-2"></i>
+                                <p class="text-2xl font-bold text-blue-600">${project.progress}%</p>
+                                <p class="text-sm text-gray-600">Progress</p>
+                            </div>
+                            <div class="bg-purple-50 rounded-lg p-4 text-center">
+                                <i class="fas fa-flag text-purple-600 text-2xl mb-2"></i>
+                                <p class="text-2xl font-bold text-purple-600">${project.achievedMilestones}/${project.milestones}</p>
+                                <p class="text-sm text-gray-600">Milestones</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg border">
+                            <div class="p-4 border-b bg-gray-50">
+                                <h5 class="font-semibold">Project Tasks for ${project.name}</h5>
+                            </div>
+                            <div class="p-4">
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                        <div class="flex items-center space-x-3">
+                                            <i class="fas fa-check-circle text-green-600"></i>
+                                            <div>
+                                                <p class="font-medium">Homepage Design</p>
+                                                <p class="text-sm text-gray-600">Completed 2 weeks ago</p>
+                                            </div>
+                                        </div>
+                                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Complete</span>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-blue-50 rounded">
+                                        <div class="flex items-center space-x-3">
+                                            <i class="fas fa-spinner text-blue-600"></i>
+                                            <div>
+                                                <p class="font-medium">Backend API Development</p>
+                                                <p class="text-sm text-gray-600">In progress - 60% complete</p>
+                                            </div>
+                                        </div>
+                                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">In Progress</span>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                        <div class="flex items-center space-x-3">
+                                            <i class="fas fa-clock text-gray-600"></i>
+                                            <div>
+                                                <p class="font-medium">User Testing Phase</p>
+                                                <p class="text-sm text-gray-600">Starting next week</p>
+                                            </div>
+                                        </div>
+                                        <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Pending</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3">
+                            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">View Gantt Chart</button>
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Add New Task</button>
+                        </div>
+                    </div>
+                `,
+                'budget': `
+                    <div class="space-y-6">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-green-800 mb-2">Budget Tracking for: ${project.name}</h4>
+                            <p class="text-sm text-green-700">Financial management specific to this project's $${project.budget.toLocaleString()} budget</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="bg-blue-50 rounded-lg p-4 text-center">
+                                <i class="fas fa-dollar-sign text-blue-600 text-2xl mb-2"></i>
+                                <p class="text-2xl font-bold text-blue-600">$${project.budgetUsed.toLocaleString()}</p>
+                                <p class="text-sm text-gray-600">Spent</p>
+                            </div>
+                            <div class="bg-green-50 rounded-lg p-4 text-center">
+                                <i class="fas fa-piggy-bank text-green-600 text-2xl mb-2"></i>
+                                <p class="text-2xl font-bold text-green-600">$${(project.budget - project.budgetUsed).toLocaleString()}</p>
+                                <p class="text-sm text-gray-600">Remaining</p>
+                            </div>
+                            <div class="bg-yellow-50 rounded-lg p-4 text-center">
+                                <i class="fas fa-chart-pie text-yellow-600 text-2xl mb-2"></i>
+                                <p class="text-2xl font-bold text-yellow-600">${Math.round(project.budgetUsed / project.budget * 100)}%</p>
+                                <p class="text-sm text-gray-600">Utilized</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg border">
+                            <div class="p-4 border-b bg-gray-50">
+                                <h5 class="font-semibold">Budget Breakdown for ${project.name}</h5>
+                            </div>
+                            <div class="p-4">
+                                <canvas id="projectBudgetChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3">
+                            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Export Financial Report</button>
+                            <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Add Expense</button>
+                        </div>
+                    </div>
+                `
+            };
+            
+            // Return specific module content or default
+            return moduleContent[moduleType] || `
+                <div class="text-center py-12">
+                    <i class="fas fa-cube text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">${moduleType} Module</h3>
+                    <p class="text-gray-500 mb-4">Project-specific content for: ${project.name}</p>
+                    <p class="text-sm text-gray-400">This module is scoped specifically to the current project context.</p>
+                </div>
+            `;
+        }
+
+        // Close module modal
+        function closeModuleModal() {
+            document.getElementById('moduleModal').classList.add('hidden');
+        }
+
+        // Navigation functions
+        function navigateToPortfolio() {
+            console.log('Navigate to Portfolio Dashboard');
+        }
+
+        function navigateToProgramme() {
+            console.log('Navigate to Programme Dashboard');
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full`;
+            
+            // Set color based on type
+            const colors = {
+                'success': 'bg-green-500 text-white',
+                'error': 'bg-red-500 text-white',
+                'warning': 'bg-yellow-500 text-white',
+                'info': 'bg-blue-500 text-white'
+            };
+            
+            notification.className += ` ${colors[type]}`;
+            notification.textContent = message;
+            
+            // Add to page
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const switcher = document.getElementById('projectSwitcher');
+            const switcherButton = event.target.closest('button[onclick="toggleProjectSwitcher()"]');
+            
+            if (!switcherButton && !switcher.contains(event.target)) {
+                switcher.classList.add('hidden');
+            }
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProjectKPIs();
+            console.log('Project Modules System loaded for:', currentProject.name);
+        });
+    </script>
+</body>
+</html>

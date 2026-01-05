@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management Hub - PPM Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fas fa-project-diagram text-blue-600 text-2xl mr-3"></i>
+                    <span class="text-xl font-semibold text-gray-800">Project Management</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.location.href='dashboard-working.html'" class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                    <button onclick="createNewProject()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-plus mr-2"></i>New Project
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        <!-- Statistics Overview -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Total Projects</p>
+                        <p class="text-2xl font-bold text-gray-800" id="totalProjects">6</p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <i class="fas fa-folder text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Active Projects</p>
+                        <p class="text-2xl font-bold text-green-600" id="activeProjects">4</p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-full">
+                        <i class="fas fa-play-circle text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">On Budget</p>
+                        <p class="text-2xl font-bold text-blue-600" id="onBudget">5</p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <i class="fas fa-dollar-sign text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">At Risk</p>
+                        <p class="text-2xl font-bold text-red-600" id="atRisk">1</p>
+                    </div>
+                    <div class="bg-red-100 p-3 rounded-full">
+                        <i class="fas fa-exclamation-triangle text-red-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+            <div class="flex flex-wrap gap-4 items-center">
+                <div class="flex-1 min-w-64">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="searchInput" placeholder="Search projects..." 
+                               class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <select id="statusFilter" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Status</option>
+                    <option value="planning">Planning</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                    <option value="on-hold">On Hold</option>
+                </select>
+                <select id="priorityFilter" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Priority</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                <button onclick="applyFilters()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+                    Apply Filters
+                </button>
+            </div>
+        </div>
+
+        <!-- Projects Grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="projectsGrid">
+            <!-- Project cards will be inserted here -->
+        </div>
+    </main>
+
+    <!-- Create Project Modal -->
+    <div id="createProjectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-6">Create New Project</h3>
+            <form onsubmit="saveNewProject(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Project Name</label>
+                    <input type="text" id="newProjectName" class="w-full px-4 py-2 border rounded-lg" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Description</label>
+                    <textarea id="newProjectDescription" rows="3" class="w-full px-4 py-2 border rounded-lg"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Priority</label>
+                    <select id="newProjectPriority" class="w-full px-4 py-2 border rounded-lg">
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Budget ($)</label>
+                    <input type="number" id="newProjectBudget" class="w-full px-4 py-2 border rounded-lg">
+                </div>
+                <div class="flex space-x-4">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                        Create Project
+                    </button>
+                    <button type="button" onclick="closeCreateModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="project-management-data.js"></script>
+    <script>
+        // Sample project data
+        const projects = [
+            {
+                id: 1,
+                name: "Website Redesign",
+                status: "active",
+                priority: "high",
+                progress: 65,
+                budget: 50000,
+                spent: 32500,
+                manager: "Sarah Johnson",
+                dueDate: "2024-03-15",
+                team: 5
+            },
+            {
+                id: 2,
+                name: "Mobile App Development",
+                status: "active",
+                priority: "critical",
+                progress: 40,
+                budget: 120000,
+                spent: 48000,
+                manager: "Mike Chen",
+                dueDate: "2024-04-30",
+                team: 8
+            },
+            {
+                id: 3,
+                name: "Data Migration",
+                status: "planning",
+                priority: "medium",
+                progress: 15,
+                budget: 75000,
+                spent: 11250,
+                manager: "Lisa Wang",
+                dueDate: "2024-05-15",
+                team: 4
+            },
+            {
+                id: 4,
+                name: "Security Audit",
+                status: "completed",
+                priority: "high",
+                progress: 100,
+                budget: 30000,
+                spent: 28500,
+                manager: "John Smith",
+                dueDate: "2024-01-30",
+                team: 3
+            },
+            {
+                id: 5,
+                name: "CRM Integration",
+                status: "active",
+                priority: "medium",
+                progress: 80,
+                budget: 60000,
+                spent: 51000,
+                manager: "Emily Davis",
+                dueDate: "2024-02-28",
+                team: 6
+            },
+            {
+                id: 6,
+                name: "Cloud Infrastructure",
+                status: "on-hold",
+                priority: "critical",
+                progress: 25,
+                budget: 150000,
+                spent: 37500,
+                manager: "David Brown",
+                dueDate: "2024-06-30",
+                team: 7
+            }
+        ];
+
+        function renderProjects(projectsToRender = projects) {
+            const grid = document.getElementById('projectsGrid');
+            grid.innerHTML = '';
+
+            projectsToRender.forEach(project => {
+                const statusColor = {
+                    active: 'green',
+                    planning: 'blue',
+                    completed: 'gray',
+                    'on-hold': 'yellow'
+                }[project.status];
+
+                const priorityColor = {
+                    critical: 'red',
+                    high: 'orange',
+                    medium: 'yellow',
+                    low: 'gray'
+                }[project.priority];
+
+                const projectCard = `
+                    <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">${project.name}</h3>
+                                <span class="px-2 py-1 text-xs rounded-full bg-${statusColor}-100 text-${statusColor}-800">
+                                    ${project.status}
+                                </span>
+                            </div>
+                            
+                            <p class="text-gray-600 text-sm mb-4">Managed by ${project.manager}</p>
+                            
+                            <div class="space-y-3">
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span class="text-gray-600">Progress</span>
+                                        <span class="font-medium">${project.progress}%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: ${project.progress}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Budget</span>
+                                    <span class="font-medium">$${project.budget.toLocaleString()}</span>
+                                </div>
+                                
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Team Size</span>
+                                    <span class="font-medium">${project.team} members</span>
+                                </div>
+                                
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Due Date</span>
+                                    <span class="font-medium">${project.dueDate}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 pt-4 border-t flex justify-between items-center">
+                                <span class="px-2 py-1 text-xs rounded-full bg-${priorityColor}-100 text-${priorityColor}-800">
+                                    ${project.priority} priority
+                                </span>
+                                <button onclick="viewProjectDetails(${project.id})" class="text-blue-600 hover:text-blue-800 text-sm">
+                                    View Details →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += projectCard;
+            });
+        }
+
+        function viewProjectDetails(projectId) {
+            // Navigate to project details or show modal
+            console.log('View project:', projectId);
+        }
+
+        function createNewProject() {
+            document.getElementById('createProjectModal').classList.remove('hidden');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createProjectModal').classList.add('hidden');
+        }
+
+        function saveNewProject(event) {
+            event.preventDefault();
+            // Logic to save new project
+            closeCreateModal();
+            renderProjects();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+
+            let filteredProjects = projects.filter(project => {
+                const matchesSearch = project.name.toLowerCase().includes(searchTerm);
+                const matchesStatus = !statusFilter || project.status === statusFilter;
+                const matchesPriority = !priorityFilter || project.priority === priorityFilter;
+                
+                return matchesSearch && matchesStatus && matchesPriority;
+            });
+
+            renderProjects(filteredProjects);
+        }
+
+        // Initialize
+        renderProjects();
+
+        // Update statistics
+        document.getElementById('activeProjects').textContent = projects.filter(p => p.status === 'active').length;
+        document.getElementById('atRisk').textContent = projects.filter(p => p.priority === 'critical').length;
+    </script>
+</body>
+</html>

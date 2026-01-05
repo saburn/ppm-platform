@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Modal Test</title>
+    <style>
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <h1>Modal Test</h1>
+    <button onclick="openTaskModal()">Add Task</button>
+    
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <h2>Task Modal</h2>
+            <p>This is the task modal!</p>
+            <button onclick="closeTaskModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function openTaskModal() {
+            console.log('openTaskModal called');
+            const modal = document.getElementById('task-modal');
+            console.log('Modal element:', modal);
+            if (modal) {
+                modal.classList.add('active');
+                console.log('Modal opened');
+            } else {
+                console.error('Modal not found!');
+            }
+        }
+        
+        function closeTaskModal() {
+            const modal = document.getElementById('task-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Tracking - Complete Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .tab-button {
+            padding: 12px 24px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab-button.active {
+            border-bottom-color: white;
+            background: rgba(255,255,255,0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            height: 280px;
+            margin-bottom: 20px;
+        }
+        .timer-display {
+            font-size: 3rem;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .metric-card {
+            transition: all 0.3s;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .ai-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .slide-panel {
+            position: fixed;
+            right: -500px;
+            top: 0;
+            width: 500px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.3);
+            transition: right 0.3s ease-out;
+            z-index: 999;
+            overflow-y: auto;
+        }
+        .slide-panel.active {
+            right: 0;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Time Entry Panel -->
+    <div id="entryPanel" class="slide-panel">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Log Time Entry</h3>
+                <button onclick="closeEntryPanel()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="timeEntryForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                    <input type="date" id="entryDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>
+                    <select id="entryProject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <option value="">Select Project</option>
+                        <option value="Website Redesign">Website Redesign</option>
+                        <option value="Mobile App Development">Mobile App Development</option>
+                        <option value="Cloud Migration">Cloud Migration</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Hours</label>
+                    <input type="number" id="entryHours" step="0.25" min="0.25" max="24" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="entryDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                    <i class="fas fa-save mr-2"></i>Save Entry
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold flex items-center">
+                        <i class="fas fa-clock mr-3"></i>
+                        Time Tracking - Complete Suite
+                    </h1>
+                    <p class="text-purple-100 mt-2">AI-powered time tracking with 50% error reduction & 95% billing accuracy</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="openEntryPanel()" class="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-plus mr-2"></i>Log Time
+                    </button>
+                    <button onclick="startTimer()" id="timerBtn" class="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-play mr-2"></i>Start Timer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="flex gap-2 border-b border-purple-400">
+                <button class="tab-button active" onclick="switchTab('overview')">
+                    <i class="fas fa-home mr-2"></i>Overview
+                </button>
+                <button class="tab-button" onclick="switchTab('timesheet')">
+                    <i class="fas fa-table mr-2"></i>Timesheet
+                </button>
+                <button class="tab-button" onclick="switchTab('analytics')">
+                    <i class="fas fa-chart-line mr-2"></i>Analytics
+                </button>
+                <button class="tab-button" onclick="switchTab('approvals')">
+                    <i class="fas fa-clipboard-check mr-2"></i>Approvals
+                    <span class="ml-2 bg-orange-500 text-white px-2 py-1 rounded-full text-xs">15</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- OVERVIEW TAB -->
+        <div id="overview" class="tab-content active">
+            <!-- Timer Widget -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Active Timer</h3>
+                        <div class="timer-display" id="timerDisplay">00:00:00</div>
+                        <p class="text-gray-600 mt-2" id="timerProject">No active timer</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="pauseTimer()" id="pauseBtn" class="bg-yellow-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all" disabled>
+                            <i class="fas fa-pause mr-2"></i>Pause
+                        </button>
+                        <button onclick="stopTimer()" id="stopBtn" class="bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all" disabled>
+                            <i class="fas fa-stop mr-2"></i>Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="metric-card bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-white bg-opacity-20 rounded-full p-3">
+                            <i class="fas fa-calendar-week text-2xl"></i>
+                        </div>
+                        <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">+5.5h</span>
+                    </div>
+                    <p class="text-blue-100 text-sm font-medium">This Week</p>
+                    <p class="text-3xl font-bold mt-2">42.5h</p>
+                </div>
+                <div class="metric-card bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-white bg-opacity-20 rounded-full p-3">
+                            <i class="fas fa-dollar-sign text-2xl"></i>
+                        </div>
+                        <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">89%</span>
+                    </div>
+                    <p class="text-green-100 text-sm font-medium">Billable Hours</p>
+                    <p class="text-3xl font-bold mt-2">38.0h</p>
+                </div>
+                <div class="metric-card bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-white bg-opacity-20 rounded-full p-3">
+                            <i class="fas fa-chart-line text-2xl"></i>
+                        </div>
+                        <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">+5%</span>
+                    </div>
+                    <p class="text-purple-100 text-sm font-medium">Utilization</p>
+                    <p class="text-3xl font-bold mt-2">85%</p>
+                </div>
+                <div class="metric-card bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-white bg-opacity-20 rounded-full p-3">
+                            <i class="fas fa-hourglass-half text-2xl"></i>
+                        </div>
+                        <span class="ai-badge"><i class="fas fa-robot"></i>AI</span>
+                    </div>
+                    <p class="text-orange-100 text-sm font-medium">Errors Detected</p>
+                    <p class="text-3xl font-bold mt-2">3</p>
+                </div>
+            </div>
+
+            <!-- Quick Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Time Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="overviewDistChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Weekly Trend</h3>
+                    <div class="chart-container">
+                        <canvas id="overviewTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-blue-500 text-white rounded-full p-3">
+                            <i class="fas fa-brain text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">AI Insights</h4>
+                            <span class="ai-badge"><i class="fas fa-robot"></i>Powered by AI</span>
+                        </div>
+                    </div>
+                    <ul class="space-y-2">
+                        <li class="flex items-start gap-2 text-sm text-gray-700">
+                            <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            <span>Peak productivity: 10 AM - 12 PM</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-gray-700">
+                            <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            <span>Consistent 8.5h daily average</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-lg p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-green-500 text-white rounded-full p-3">
+                            <i class="fas fa-trophy text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Achievements</h4>
+                            <p class="text-sm text-gray-600">This month</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-2">
+                        <li class="flex items-start gap-2 text-sm text-gray-700">
+                            <i class="fas fa-star text-yellow-500 mt-1"></i>
+                            <span>100% on-time submission</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-gray-700">
+                            <i class="fas fa-star text-yellow-500 mt-1"></i>
+                            <span>Zero billing errors</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-purple-500 text-white rounded-full p-3">
+                            <i class="fas fa-lightbulb text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Suggestions</h4>
+                            <p class="text-sm text-gray-600">Optimize time</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-2">
+                        <li class="flex items-start gap-2 text-sm text-gray-700">
+                            <i class="fas fa-arrow-right text-purple-500 mt-1"></i>
+                            <span>Block 2h for deep work</span>
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-gray-700">
+                            <i class="fas fa-arrow-right text-purple-500 mt-1"></i>
+                            <span>Reduce meetings by 15%</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TIMESHEET TAB -->
+        <div id="timesheet" class="tab-content">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Weekly Timesheet</h3>
+                    <div class="flex gap-3">
+                        <button class="text-gray-600 hover:text-gray-800">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span class="font-semibold text-gray-800">Week of Dec 18-24, 2024</span>
+                        <button class="text-gray-600 hover:text-gray-800">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all">
+                            <i class="fas fa-paper-plane mr-2"></i>Submit
+                        </button>
+                        <button class="border border-gray-300 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-all">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b-2 border-gray-200">
+                                <th class="text-left py-3 px-4 font-semibold text-gray-700">Project</th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700">Mon</th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700">Tue</th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700">Wed</th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700">Thu</th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700">Fri</th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700">Sat</th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700">Sun</th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4">
+                                    <div class="font-semibold text-gray-800">Website Redesign</div>
+                                    <div class="text-sm text-gray-500">Frontend Development</div>
+                                </td>
+                                <td class="text-center py-3 px-4">8.0</td>
+                                <td class="text-center py-3 px-4">7.5</td>
+                                <td class="text-center py-3 px-4">8.0</td>
+                                <td class="text-center py-3 px-4">6.5</td>
+                                <td class="text-center py-3 px-4">8.0</td>
+                                <td class="text-center py-3 px-4 text-gray-400">-</td>
+                                <td class="text-center py-3 px-4 text-gray-400">-</td>
+                                <td class="text-center py-3 px-4 font-bold text-blue-600">38.0</td>
+                            </tr>
+                            <tr class="bg-gray-50 font-bold">
+                                <td class="py-3 px-4">Daily Total</td>
+                                <td class="text-center py-3 px-4 text-blue-600">8.5</td>
+                                <td class="text-center py-3 px-4 text-blue-600">8.5</td>
+                                <td class="text-center py-3 px-4 text-blue-600">8.5</td>
+                                <td class="text-center py-3 px-4 text-blue-600">8.5</td>
+                                <td class="text-center py-3 px-4 text-blue-600">8.5</td>
+                                <td class="text-center py-3 px-4 text-gray-400">0.0</td>
+                                <td class="text-center py-3 px-4 text-gray-400">0.0</td>
+                                <td class="text-center py-3 px-4 text-blue-600 text-lg">42.5</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANALYTICS TAB -->
+        <div id="analytics" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Billable vs Non-Billable</h3>
+                    <div class="chart-container">
+                        <canvas id="billableChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Utilization Trend</h3>
+                    <div class="chart-container">
+                        <canvas id="utilizationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Planned vs Actual</h3>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="plannedActualChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- APPROVALS TAB -->
+        <div id="approvals" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                    <p class="text-orange-100 text-sm font-medium">Pending</p>
+                    <p class="text-3xl font-bold mt-2">15</p>
+                </div>
+                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                    <p class="text-green-100 text-sm font-medium">Approved Today</p>
+                    <p class="text-3xl font-bold mt-2">8</p>
+                </div>
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                    <p class="text-blue-100 text-sm font-medium">Avg Review Time</p>
+                    <p class="text-3xl font-bold mt-2">2.5m</p>
+                </div>
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                    <p class="text-purple-100 text-sm font-medium">Approval Rate</p>
+                    <p class="text-3xl font-bold mt-2">96%</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">Approval Queue</h3>
+                <div class="space-y-4">
+                    <div class="border-l-4 border-orange-500 bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <img src="https://i.pravatar.cc/60?img=12" alt="Employee" class="w-12 h-12 rounded-full">
+                                <div>
+                                    <h4 class="font-bold text-gray-800">Sarah Johnson</h4>
+                                    <p class="text-sm text-gray-600">42.5h • 89% billable</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="quickApprove()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700">
+                                    <i class="fas fa-check mr-1"></i>Approve
+                                </button>
+                                <button class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700">
+                                    <i class="fas fa-times mr-1"></i>Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toast notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-check-circle text-2xl"></i>
+                    <span class="font-semibold">${message}</span>
+                </div>
+            `;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            event.target.closest('.tab-button').classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // Entry panel
+        function openEntryPanel() {
+            document.getElementById('entryPanel').classList.add('active');
+            document.getElementById('entryDate').valueAsDate = new Date();
+        }
+
+        function closeEntryPanel() {
+            document.getElementById('entryPanel').classList.remove('active');
+        }
+
+        document.getElementById('timeEntryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showToast('Time entry saved successfully');
+            closeEntryPanel();
+        });
+
+        // Timer
+        let timerInterval = null;
+        let timerSeconds = 0;
+        let timerRunning = false;
+
+        function startTimer() {
+            if (!timerRunning) {
+                timerRunning = true;
+                document.getElementById('timerBtn').disabled = true;
+                document.getElementById('pauseBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('timerProject').textContent = 'Website Redesign - Frontend Development';
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    updateTimerDisplay();
+                }, 1000);
+                showToast('Timer started');
+            }
+        }
+
+        function pauseTimer() {
+            if (timerRunning) {
+                timerRunning = false;
+                clearInterval(timerInterval);
+                document.getElementById('timerBtn').disabled = false;
+                showToast('Timer paused');
+            }
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerRunning = false;
+                showToast(`Timer stopped: ${(timerSeconds / 3600).toFixed(2)} hours logged`);
+                timerSeconds = 0;
+                updateTimerDisplay();
+                document.getElementById('timerBtn').disabled = false;
+                document.getElementById('pauseBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('timerProject').textContent = 'No active timer';
+            }
+        }
+
+        function updateTimerDisplay() {
+            const hours = Math.floor(timerSeconds / 3600);
+            const minutes = Math.floor((timerSeconds % 3600) / 60);
+            const seconds = timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function quickApprove() {
+            showToast('Timesheet approved successfully');
+        }
+
+        // Charts
+        const overviewDistCtx = document.getElementById('overviewDistChart').getContext('2d');
+        new Chart(overviewDistCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Website Redesign', 'Mobile App', 'Cloud Migration', 'Internal'],
+                datasets: [{
+                    data: [75.8, 47.2, 25.3, 20.2],
+                    backgroundColor: ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+
+        const overviewTrendCtx = document.getElementById('overviewTrendChart').getContext('2d');
+        new Chart(overviewTrendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Hours',
+                    data: [40, 42, 41, 42.5],
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        const billableCtx = document.getElementById('billableChart').getContext('2d');
+        new Chart(billableCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [
+                    { label: 'Billable', data: [38, 40, 37, 37], backgroundColor: '#10b981' },
+                    { label: 'Non-Billable', data: [3, 2, 4, 3], backgroundColor: '#f59e0b' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { x: { stacked: true }, y: { stacked: true } }
+            }
+        });
+
+        const utilizationCtx = document.getElementById('utilizationChart').getContext('2d');
+        new Chart(utilizationCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Utilization %',
+                    data: [82, 85, 88, 92],
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, max: 100 } }
+            }
+        });
+
+        const plannedActualCtx = document.getElementById('plannedActualChart').getContext('2d');
+        new Chart(plannedActualCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Website', 'Mobile App', 'Cloud', 'Analytics', 'CRM'],
+                datasets: [
+                    { label: 'Planned', data: [70, 45, 25, 15, 5], backgroundColor: '#3b82f6' },
+                    { label: 'Actual', data: [75.8, 47.2, 25.3, 16.2, 4], backgroundColor: '#10b981' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showToast('Time Tracking Complete Suite loaded successfully');
+        });
+    </script>
+</body>
+</html>

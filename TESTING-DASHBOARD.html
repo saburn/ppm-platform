@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 1: Testing Dashboard | PPM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .test-status-pending { background: #fbbf24; }
+        .test-status-testing { background: #3b82f6; }
+        .test-status-passed { background: #10b981; }
+        .test-status-failed { background: #ef4444; }
+        .module-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .module-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-vial text-3xl"></i>
+                    <div>
+                        <h1 class="text-3xl font-bold">Phase 1: Testing Dashboard</h1>
+                        <p class="text-purple-200">Systematic Module Testing & Quality Assurance</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm text-purple-200">Overall Progress</p>
+                        <p class="text-2xl font-bold">0%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Testing Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-yellow-100 p-3 rounded-lg">
+                        <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Pending</h3>
+                <p class="text-3xl font-bold text-gray-900" id="pendingCount">10</p>
+                <p class="text-sm text-gray-500 mt-2">Modules to test</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i class="fas fa-spinner text-blue-600 text-2xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Testing</h3>
+                <p class="text-3xl font-bold text-gray-900" id="testingCount">0</p>
+                <p class="text-sm text-gray-500 mt-2">In progress</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Passed</h3>
+                <p class="text-3xl font-bold text-gray-900" id="passedCount">0</p>
+                <p class="text-sm text-gray-500 mt-2">Tests passed</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-red-100 p-3 rounded-lg">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Issues</h3>
+                <p class="text-3xl font-bold text-gray-900" id="issuesCount">0</p>
+                <p class="text-sm text-gray-500 mt-2">Found</p>
+            </div>
+        </div>
+
+        <!-- Module Testing Grid -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Module Testing Status</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="moduleGrid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Testing Instructions -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Testing Instructions</h2>
+            <div class="space-y-4">
+                <div class="flex items-start space-x-3">
+                    <div class="bg-purple-100 p-2 rounded-lg">
+                        <i class="fas fa-1 text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900">Click Module Card</h4>
+                        <p class="text-sm text-gray-600">Click on any module card to open it in a new tab</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="bg-purple-100 p-2 rounded-lg">
+                        <i class="fas fa-2 text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900">Test All Features</h4>
+                        <p class="text-sm text-gray-600">Check buttons, forms, charts, tables, and interactions</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="bg-purple-100 p-2 rounded-lg">
+                        <i class="fas fa-3 text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900">Document Issues</h4>
+                        <p class="text-sm text-gray-600">Note any bugs, errors, or improvements needed</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="bg-purple-100 p-2 rounded-lg">
+                        <i class="fas fa-4 text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900">Mark Complete</h4>
+                        <p class="text-sm text-gray-600">Return here and mark the module as tested</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const modules = [
+            {
+                id: 1,
+                name: 'Project Planning',
+                icon: 'fa-project-diagram',
+                files: [
+                    'project-planning-world-class.html',
+                    'project-planning-hierarchy.html',
+                    'project-planning-gantt-advanced.html',
+                    'project-planning-reports.html',
+                    'project-planning-advanced-features.html'
+                ],
+                mainFile: 'project-planning-world-class.html',
+                status: 'pending',
+                features: ['Gantt Charts', 'Task Management', 'AI Scheduling', 'Resource Allocation', 'Milestones']
+            },
+            {
+                id: 2,
+                name: 'Resource Management',
+                icon: 'fa-users',
+                files: [
+                    'resource-management-core.html',
+                    'resource-management-ai-matching.html',
+                    'resource-management-capacity.html',
+                    'resource-management-complete.html'
+                ],
+                mainFile: 'resource-management-complete.html',
+                status: 'pending',
+                features: ['AI Matching (92%)', 'Capacity Planning', 'Team Planner', 'Conflict Resolution']
+            },
+            {
+                id: 3,
+                name: 'Time Tracking',
+                icon: 'fa-clock',
+                files: [
+                    'time-tracking-core.html',
+                    'time-tracking-analytics.html',
+                    'time-tracking-approvals.html',
+                    'time-tracking-complete.html'
+                ],
+                mainFile: 'time-tracking-complete.html',
+                status: 'pending',
+                features: ['Timer Widget', 'Timesheets', 'Approvals', 'Analytics', 'Heat Maps']
+            },
+            {
+                id: 4,
+                name: 'Collaboration',
+                icon: 'fa-comments',
+                files: [
+                    'collaboration-core.html',
+                    'collaboration-files.html',
+                    'collaboration-activity.html',
+                    'collaboration-complete.html'
+                ],
+                mainFile: 'collaboration-complete.html',
+                status: 'pending',
+                features: ['Messaging', 'File Management', 'Activity Feed', '@Mentions']
+            },
+            {
+                id: 5,
+                name: 'Risk Management',
+                icon: 'fa-exclamation-triangle',
+                files: [
+                    'risk-management-core.html',
+                    'risk-management-ai.html',
+                    'risk-management-mitigation.html',
+                    'risk-management-complete.html'
+                ],
+                mainFile: 'risk-management-complete.html',
+                status: 'pending',
+                features: ['Risk Matrix', 'AI Predictions (87%)', 'Mitigation', 'Impact Assessment']
+            },
+            {
+                id: 6,
+                name: 'Reports & Analytics',
+                icon: 'fa-chart-bar',
+                files: [
+                    'reports-analytics-core.html',
+                    'reports-analytics-builder.html',
+                    'reports-analytics-scheduled.html',
+                    'reports-analytics-complete.html'
+                ],
+                mainFile: 'reports-analytics-complete.html',
+                status: 'pending',
+                features: ['52 Templates', 'Custom Builder', 'Scheduled Reports', 'Export']
+            },
+            {
+                id: 7,
+                name: 'Budget Tracking',
+                icon: 'fa-dollar-sign',
+                files: [
+                    'budget-tracking-core.html',
+                    'budget-tracking-forecasting.html',
+                    'budget-tracking-cost-control.html',
+                    'budget-tracking-complete.html'
+                ],
+                mainFile: 'budget-tracking-complete.html',
+                status: 'pending',
+                features: ['Budget Overview', 'AI Forecasting (90%)', 'Approvals', 'Variance Analysis']
+            },
+            {
+                id: 8,
+                name: 'Dashboards',
+                icon: 'fa-tachometer-alt',
+                files: [
+                    'dashboards-core.html',
+                    'dashboards-widgets.html',
+                    'dashboards-analytics.html',
+                    'dashboards-complete.html'
+                ],
+                mainFile: 'dashboards-complete.html',
+                status: 'pending',
+                features: ['50+ Widgets', 'Drag & Drop', 'AI Insights', 'Real-time Updates']
+            },
+            {
+                id: 9,
+                name: 'Integrations',
+                icon: 'fa-plug',
+                files: [
+                    'integrations-core.html',
+                    'integrations-api.html',
+                    'integrations-marketplace.html',
+                    'integrations-complete.html'
+                ],
+                mainFile: 'integrations-complete.html',
+                status: 'pending',
+                features: ['50+ Integrations', 'API Management', 'Webhooks', 'Marketplace']
+            },
+            {
+                id: 10,
+                name: 'Portfolio Management',
+                icon: 'fa-briefcase',
+                files: [
+                    'portfolio-management-core.html',
+                    'portfolio-management-optimization.html',
+                    'portfolio-management-scenarios.html',
+                    'portfolio-management-complete.html'
+                ],
+                mainFile: 'portfolio-management-complete.html',
+                status: 'pending',
+                features: ['Portfolio Overview', 'AI Optimization', 'Scenarios', 'Strategic Alignment']
+            }
+        ];
+
+        function renderModules() {
+            const grid = document.getElementById('moduleGrid');
+            grid.innerHTML = modules.map(module => {
+                const statusColor = module.status === 'pending' ? 'yellow' : 
+                                   module.status === 'testing' ? 'blue' : 
+                                   module.status === 'passed' ? 'green' : 'red';
+                const statusIcon = module.status === 'pending' ? 'clock' : 
+                                  module.status === 'testing' ? 'spinner' : 
+                                  module.status === 'passed' ? 'check-circle' : 'exclamation-triangle';
+                
+                return `
+                    <div class="module-card bg-white border-2 border-gray-200 rounded-xl p-6" onclick="openModule('${module.mainFile}')">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-purple-100 p-3 rounded-lg">
+                                    <i class="fas ${module.icon} text-purple-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">${module.name}</h3>
+                                    <p class="text-sm text-gray-500">${module.files.length} files</p>
+                                </div>
+                            </div>
+                            <div class="bg-${statusColor}-100 px-3 py-1 rounded-full">
+                                <i class="fas fa-${statusIcon} text-${statusColor}-600 text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="space-y-2 mb-4">
+                            ${module.features.map(f => `
+                                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                                    <i class="fas fa-check text-green-500 text-xs"></i>
+                                    <span>${f}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button class="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                            <i class="fas fa-external-link-alt mr-2"></i>Test Module
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            
+            updateCounts();
+        }
+
+        function openModule(file) {
+            window.open(file, '_blank');
+        }
+
+        function updateCounts() {
+            const pending = modules.filter(m => m.status === 'pending').length;
+            const testing = modules.filter(m => m.status === 'testing').length;
+            const passed = modules.filter(m => m.status === 'passed').length;
+            const failed = modules.filter(m => m.status === 'failed').length;
+            
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('testingCount').textContent = testing;
+            document.getElementById('passedCount').textContent = passed;
+            document.getElementById('issuesCount').textContent = failed;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderModules();
+        });
+    </script>
+</body>
+</html>

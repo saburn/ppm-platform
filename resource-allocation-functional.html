@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Allocation - AI PPM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; }
+        .gradient-text { background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar { background: #1e293b; height: 100vh; position: fixed; width: 250px; left: 0; top: 0; }
+        .main-content { margin-left: 250px; padding: 20px; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; }
+        .btn-primary:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4); }
+        .btn-secondary { background: #f3f4f6; color: #374151; }
+        .btn-secondary:hover { background: #e5e7eb; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .nav-item { padding: 12px 20px; color: #94a3b8; transition: all 0.3s ease; cursor: pointer; border-radius: 8px; margin: 4px 12px; }
+        .nav-item:hover { background: #334155; color: white; }
+        .nav-item.active { background: #3b82f6; color: white; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 16px; padding: 32px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .form-input { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; }
+        .form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .notification { position: fixed; top: 20px; right: 20px; background: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1001; display: none; }
+        .notification.success { border-left: 4px solid #10b981; }
+        .notification.error { border-left: 4px solid #ef4444; }
+        .notification.info { border-left: 4px solid #3b82f6; }
+        .heatmap-cell { width: 60px; height: 60px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+        .heatmap-cell:hover { transform: scale(1.1); z-index: 10; }
+        .heatmap-low { background: #10b981; color: white; }
+        .heatmap-medium { background: #f59e0b; color: white; }
+        .heatmap-high { background: #ef4444; color: white; }
+        .heatmap-critical { background: #991b1b; color: white; }
+        .resource-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.3s ease; }
+        .resource-card:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15); }
+        .request-card { border-left: 4px solid #3b82f6; background: #f8fafc; padding: 16px; margin-bottom: 12px; border-radius: 0 8px 8px 0; }
+        .request-card.pending { border-left-color: #f59e0b; }
+        .request-card.approved { border-left-color: #10b981; }
+        .request-card.rejected { border-left-color: #ef4444; }
+        .tabs { display: flex; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .tab { padding: 12px 24px; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.3s ease; }
+        .tab:hover { color: #3b82f6; }
+        .tab.active { border-bottom-color: #3b82f6; color: #3b82f6; }
+        .chart-container { position: relative; height: 300px; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-white">AI PPM Pro</h1>
+        </div>
+        <nav class="px-4">
+            <div class="nav-item" onclick="navigateTo('dashboard')">
+                <i class="fas fa-dashboard mr-3"></i>Dashboard
+            </div>
+            <div class="nav-item" onclick="navigateTo('projects')">
+                <i class="fas fa-project-diagram mr-3"></i>Projects
+            </div>
+            <div class="nav-item" onclick="navigateTo('gantt')">
+                <i class="fas fa-chart-gantt mr-3"></i>Gantt Charts
+            </div>
+            <div class="nav-item active" onclick="navigateTo('resources')">
+                <i class="fas fa-users-cog mr-3"></i>Resources
+            </div>
+            <div class="nav-item" onclick="navigateTo('risks')">
+                <i class="fas fa-shield-alt mr-3"></i>Risk Management
+            </div>
+            <div class="nav-item" onclick="navigateTo('reports')">
+                <i class="fas fa-file-chart-line mr-3"></i>Reports
+            </div>
+            <div class="nav-item" onclick="navigateTo('ai')">
+                <i class="fas fa-brain mr-3"></i>AI Analysis
+            </div>
+        </nav>
+        <div class="absolute bottom-6 left-6 right-6">
+            <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors">
+                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Resource Allocation</h1>
+                <p class="text-gray-600">Manage team resources with AI-powered optimization and approval workflows.</p>
+            </div>
+            <div class="flex space-x-4">
+                <button onclick="optimizeResources()" class="btn btn-primary">
+                    <i class="fas fa-magic mr-2"></i>AI Optimize
+                </button>
+                <button onclick="showRequestModal()" class="btn btn-primary">
+                    <i class="fas fa-plus mr-2"></i>Request Resource
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Total Resources</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalResources">0</p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i class="fas fa-users text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Available</p>
+                        <p class="text-2xl font-bold text-gray-900" id="availableResources">0</p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-user-check text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Utilization</p>
+                        <p class="text-2xl font-bold text-gray-900" id="utilizationRate">0%</p>
+                    </div>
+                    <div class="bg-yellow-100 p-3 rounded-lg">
+                        <i class="fas fa-chart-pie text-yellow-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Pending Requests</p>
+                        <p class="text-2xl font-bold text-gray-900" id="pendingRequests">0</p>
+                    </div>
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <i class="fas fa-clock text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('overview')">Overview</div>
+            <div class="tab" onclick="switchTab('heatmap')">Capacity Heatmap</div>
+            <div class="tab" onclick="switchTab('requests')">Resource Requests</div>
+            <div class="tab" onclick="switchTab('allocation')">Allocation Plan</div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overviewTab" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Resource Utilization</h3>
+                    <div class="chart-container">
+                        <canvas id="utilizationChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Skills Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="skillsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Team Members</h3>
+                <div id="teamList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Team members will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Heatmap Tab -->
+        <div id="heatmapTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Resource Capacity Heatmap</h3>
+                <p class="text-sm text-gray-600 mb-4">Click on any cell to see detailed resource information and allocation options.</p>
+                <div id="heatmapContainer">
+                    <!-- Heatmap will be generated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Requests Tab -->
+        <div id="requestsTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Resource Requests</h3>
+                <div id="requestsList">
+                    <!-- Requests will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Allocation Tab -->
+        <div id="allocationTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">AI Allocation Recommendations</h3>
+                <div id="allocationRecommendations">
+                    <!-- Recommendations will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Request Modal -->
+    <div id="requestModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Resource Request</h3>
+                <button onclick="closeModal('requestModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form onsubmit="submitRequest(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>
+                    <select id="requestProject" class="form-input" required>
+                        <option value="">Select Project</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Resource Type</label>
+                    <select id="resourceType" class="form-input" required>
+                        <option value="">Select Type</option>
+                        <option value="developer">Developer</option>
+                        <option value="designer">Designer</option>
+                        <option value="pm">Project Manager</option>
+                        <option value="qa">QA Engineer</option>
+                        <option value="devops">DevOps Engineer</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Skills Required</label>
+                    <input type="text" id="requiredSkills" class="form-input" placeholder="e.g., React, Node.js, AWS" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                        <input type="date" id="startDate" class="form-input" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                        <input type="date" id="endDate" class="form-input" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Percentage</label>
+                        <input type="number" id="allocationPercentage" class="form-input" min="1" max="100" value="100" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                        <select id="requestPriority" class="form-input">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Justification</label>
+                    <textarea id="justification" rows="3" class="form-input" placeholder="Explain why this resource is needed..." required></textarea>
+                </div>
+                <button type="submit" class="w-full btn btn-primary">Submit Request</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resource Detail Modal -->
+    <div id="resourceModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Resource Details</h3>
+                <button onclick="closeModal('resourceModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="resourceDetails">
+                <!-- Resource details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div class="flex items-center">
+            <i id="notificationIcon" class="fas fa-check-circle mr-3"></i>
+            <div>
+                <p id="notificationTitle" class="font-semibold"></p>
+                <p id="notificationMessage" class="text-sm text-gray-600"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Management
+        let projects = JSON.parse(localStorage.getItem('projects') || '[]');
+        let teamMembers = JSON.parse(localStorage.getItem('teamMembers') || '[]');
+        let resourceRequests = JSON.parse(localStorage.getItem('resourceRequests') || '[]');
+        let currentResource = null;
+
+        // Initialize data if empty
+        if (teamMembers.length === 0) {
+            teamMembers = [
+                { id: 1, name: "Sarah Johnson", role: "Project Manager", skills: ["Leadership", "Agile", "Scrum"], workload: 85, available: true, capacity: 100, projects: [1, 2] },
+                { id: 2, name: "Mike Chen", role: "Developer", skills: ["React", "Node.js", "TypeScript", "MongoDB"], workload: 75, available: true, capacity: 100, projects: [1] },
+                { id: 3, name: "Emily Davis", role: "Designer", skills: ["UI/UX", "Figma", "Photoshop", "Prototyping"], workload: 60, available: true, capacity: 100, projects: [1, 3] },
+                { id: 4, name: "James Wilson", role: "Developer", skills: ["Python", "Django", "PostgreSQL", "AWS"], workload: 90, available: false, capacity: 100, projects: [2] },
+                { id: 5, name: "Lisa Anderson", role: "QA Engineer", skills: ["Testing", "Automation", "Selenium", "Jest"], workload: 45, available: true, capacity: 100, projects: [1] },
+                { id: 6, name: "Robert Taylor", role: "DevOps Engineer", skills: ["Docker", "Kubernetes", "CI/CD", "AWS"], workload: 70, available: true, capacity: 100, projects: [2, 3] }
+            ];
+            saveTeamMembers();
+        }
+
+        if (resourceRequests.length === 0) {
+            resourceRequests = [
+                {
+                    id: 1,
+                    projectId: 1,
+                    projectName: "AI Platform Development",
+                    resourceType: "developer",
+                    requiredSkills: "React, Node.js",
+                    startDate: "2024-02-01",
+                    endDate: "2024-03-31",
+                    allocationPercentage: 100,
+                    priority: "high",
+                    justification: "Need additional developer for frontend components",
+                    status: "pending",
+                    requestedBy: "Project Manager",
+                    requestedDate: "2024-01-15"
+                },
+                {
+                    id: 2,
+                    projectId: 2,
+                    projectName: "Mobile App Launch",
+                    resourceType: "designer",
+                    requiredSkills: "UI/UX, Mobile Design",
+                    startDate: "2024-02-15",
+                    endDate: "2024-04-15",
+                    allocationPercentage: 50,
+                    priority: "medium",
+                    justification: "Part-time designer needed for mobile app screens",
+                    status: "approved",
+                    approvedBy: "Resource Manager",
+                    approvedDate: "2024-01-16",
+                    allocatedTo: 3
+                }
+            ];
+            saveResourceRequests();
+        }
+
+        function saveTeamMembers() {
+            localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
+        }
+
+        function saveResourceRequests() {
+            localStorage.setItem('resourceRequests', JSON.stringify(resourceRequests));
+        }
+
+        // Update Stats
+        function updateStats() {
+            const total = teamMembers.length;
+            const available = teamMembers.filter(m => m.available).length;
+            const avgWorkload = teamMembers.reduce((sum, m) => sum + m.workload, 0) / teamMembers.length;
+            const pending = resourceRequests.filter(r => r.status === 'pending').length;
+
+            document.getElementById('totalResources').textContent = total;
+            document.getElementById('availableResources').textContent = available;
+            document.getElementById('utilizationRate').textContent = Math.round(avgWorkload) + '%';
+            document.getElementById('pendingRequests').textContent = pending;
+        }
+
+        // Load Team Members
+        function loadTeamMembers() {
+            const teamList = document.getElementById('teamList');
+            teamList.innerHTML = '';
+
+            teamMembers.forEach(member => {
+                const memberCard = document.createElement('div');
+                memberCard.className = 'resource-card';
+                memberCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">${member.name}</h4>
+                            <p class="text-sm text-gray-600">${member.role}</p>
+                        </div>
+                        <span class="px-2 py-1 text-xs rounded-full ${member.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${member.available ? 'Available' : 'Busy'}
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Workload</span>
+                            <span>${member.workload}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" style="width: ${member.workload}%"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        <p class="mb-1"><strong>Skills:</strong> ${member.skills.slice(0, 3).join(', ')}</p>
+                        <p><strong>Projects:</strong> ${member.projects.length} active</p>
+                    </div>
+                    <div class="mt-3 flex space-x-2">
+                        <button onclick="viewResource(${member.id})" class="flex-1 btn btn-secondary text-sm">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        <button onclick="allocateResource(${member.id})" class="flex-1 btn btn-primary text-sm">
+                            <i class="fas fa-user-plus mr-1"></i>Allocate
+                        </button>
+                    </div>
+                `;
+                memberCard.onclick = () => viewResource(member.id);
+                teamList.appendChild(memberCard);
+            });
+        }
+
+        // Generate Heatmap
+        function generateHeatmap() {
+            const container = document.getElementById('heatmapContainer');
+            container.innerHTML = '';
+
+            const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+            const projects = projects.slice(0, 3);
+
+            // Create header
+            const header = document.createElement('div');
+            header.className = 'grid grid-cols-5 gap-2 mb-2';
+            header.innerHTML = '<div></div>' + weeks.map(week => `<div class="text-center font-semibold text-sm">${week}</div>`).join('');
+            container.appendChild(header);
+
+            // Create heatmap rows
+            projects.forEach(project => {
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-5 gap-2 mb-2';
+                
+                const projectLabel = document.createElement('div');
+                projectLabel.className = 'font-semibold text-sm flex items-center';
+                projectLabel.innerHTML = `<span class="truncate">${project.name}</span>`;
+                row.appendChild(projectLabel);
+
+                weeks.forEach((week, weekIndex) => {
+                    const utilization = Math.floor(Math.random() * 100);
+                    const cell = document.createElement('div');
+                    cell.className = `heatmap-cell ${getHeatmapClass(utilization)}`;
+                    cell.textContent = `${utilization}%`;
+                    cell.title = `${project.name} - ${week}: ${utilization}% utilization`;
+                    cell.onclick = () => showHeatmapDetails(project, week, utilization);
+                    row.appendChild(cell);
+                });
+
+                container.appendChild(row);
+            });
+        }
+
+        function getHeatmapClass(utilization) {
+            if (utilization < 50) return 'heatmap-low';
+            if (utilization < 75) return 'heatmap-medium';
+            if (utilization < 90) return 'heatmap-high';
+            return 'heatmap-critical';
+        }
+
+        // Load Resource Requests
+        function loadResourceRequests() {
+            const requestsList = document.getElementById('requestsList');
+            requestsList.innerHTML = '';
+
+            if (resourceRequests.length === 0) {
+                requestsList.innerHTML = '<p class="text-gray-600 text-center py-8">No resource requests found.</p>';
+                return;
+            }
+
+            resourceRequests.forEach(request => {
+                const requestCard = document.createElement('div');
+                requestCard.className = `request-card ${request.status}`;
+                requestCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <h4 class="font-semibold text-gray-900">${request.projectName}</h4>
+                                <span class="ml-3 px-2 py-1 text-xs rounded-full ${
+                                    request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                    'bg-red-100 text-red-800'
+                                }">${request.status}</span>
+                                <span class="ml-2 px-2 py-1 text-xs rounded-full ${
+                                    request.priority === 'critical' ? 'bg-red-100 text-red-800' :
+                                    request.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                                    request.priority === 'medium' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-gray-100 text-gray-800'
+                                }">${request.priority}</span>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                                <div><strong>Type:</strong> ${request.resourceType}</div>
+                                <div><strong>Skills:</strong> ${request.requiredSkills}</div>
+                                <div><strong>Duration:</strong> ${request.startDate} to ${request.endDate}</div>
+                                <div><strong>Allocation:</strong> ${request.allocationPercentage}%</div>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2"><strong>Justification:</strong> ${request.justification}</p>
+                            ${request.status === 'approved' ? `<p class="text-sm text-green-600 mt-1"><strong>Allocated to:</strong> ${teamMembers.find(m => m.id === request.allocatedTo)?.name || 'Unknown'}</p>` : ''}
+                        </div>
+                        <div class="ml-4">
+                            ${request.status === 'pending' ? `
+                                <div class="flex space-x-2">
+                                    <button onclick="approveRequest(${request.id})" class="btn btn-success text-sm">
+                                        <i class="fas fa-check mr-1"></i>Approve
+                                    </button>
+                                    <button onclick="rejectRequest(${request.id})" class="btn btn-danger text-sm">
+                                        <i class="fas fa-times mr-1"></i>Reject
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                requestsList.appendChild(requestCard);
+            });
+        }
+
+        // Load Allocation Recommendations
+        function loadAllocationRecommendations() {
+            const container = document.getElementById('allocationRecommendations');
+            container.innerHTML = '';
+
+            const recommendations = [
+                {
+                    type: 'optimization',
+                    title: 'Resource Optimization Opportunity',
+                    description: 'AI suggests reallocating Emily Davis from 50% to 75% on Mobile App Launch to accelerate UI development.',
+                    impact: '2 weeks faster delivery',
+                    confidence: 92
+                },
+                {
+                    type: 'risk',
+                    title: 'Burnout Risk Detected',
+                    description: 'James Wilson is at 90% capacity. Consider redistributing some tasks to prevent burnout.',
+                    impact: 'Prevent potential delays',
+                    confidence: 87
+                },
+                {
+                    type: 'efficiency',
+                    title: 'Skill Gap Optimization',
+                    description: 'Cross-train Lisa Anderson in React development to address frontend resource shortage.',
+                    impact: '15% efficiency improvement',
+                    confidence: 78
+                }
+            ];
+
+            recommendations.forEach(rec => {
+                const recCard = document.createElement('div');
+                recCard.className = 'border-l-4 p-4 mb-4 rounded-lg';
+                recCard.className += rec.type === 'risk' ? ' border-red-500 bg-red-50' :
+                                     rec.type === 'optimization' ? ' border-green-500 bg-green-50' :
+                                     ' border-blue-500 bg-blue-50';
+                
+                recCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 mb-2">${rec.title}</h4>
+                            <p class="text-sm text-gray-600 mb-2">${rec.description}</p>
+                            <div class="flex items-center text-sm">
+                                <span class="font-semibold text-gray-700">Impact:</span>
+                                <span class="ml-2 text-gray-600">${rec.impact}</span>
+                                <span class="ml-4 font-semibold text-gray-700">AI Confidence:</span>
+                                <span class="ml-2 text-gray-600">${rec.confidence}%</span>
+                            </div>
+                        </div>
+                        <button onclick="implementRecommendation('${rec.title}')" class="ml-4 btn btn-primary text-sm">
+                            Implement
+                        </button>
+                    </div>
+                `;
+                container.appendChild(recCard);
+            });
+        }
+
+        // Load Charts
+        function loadCharts() {
+            // Utilization Chart
+            const utilizationCtx = document.getElementById('utilizationChart').getContext('2d');
+            new Chart(utilizationCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Available', 'Busy', 'Overallocated'],
+                    datasets: [{
+                        data: [
+                            teamMembers.filter(m => m.workload < 70).length,
+                            teamMembers.filter(m => m.workload >= 70 && m.workload < 90).length,
+                            teamMembers.filter(m => m.workload >= 90).length
+                        ],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Skills Chart
+            const skillsCtx = document.getElementById('skillsChart').getContext('2d');
+            const skillCounts = {};
+            teamMembers.forEach(member => {
+                member.skills.forEach(skill => {
+                    skillCounts[skill] = (skillCounts[skill] || 0) + 1;
+                });
+            });
+
+            new Chart(skillsCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(skillCounts).slice(0, 5),
+                    datasets: [{
+                        label: 'Team Members',
+                        data: Object.values(skillCounts).slice(0, 5),
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Tab Switching
+        function switchTab(tab) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tabBtn => {
+                tabBtn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tab + 'Tab').style.display = 'block';
+            event.target.classList.add('active');
+            
+            // Load tab-specific content
+            switch(tab) {
+                case 'overview':
+                    loadTeamMembers();
+                    loadCharts();
+                    break;
+                case 'heatmap':
+                    generateHeatmap();
+                    break;
+                case 'requests':
+                    loadResourceRequests();
+                    break;
+                case 'allocation':
+                    loadAllocationRecommendations();
+                    break;
+            }
+        }
+
+        // Request Management
+        function showRequestModal() {
+            // Load projects
+            const projectSelect = document.getElementById('requestProject');
+            projectSelect.innerHTML = '<option value="">Select Project</option>';
+            projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.name;
+                projectSelect.appendChild(option);
+            });
+            
+            document.getElementById('requestModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function submitRequest(event) {
+            event.preventDefault();
+            
+            const newRequest = {
+                id: Date.now(),
+                projectId: parseInt(document.getElementById('requestProject').value),
+                projectName: projects.find(p => p.id === parseInt(document.getElementById('requestProject').value))?.name,
+                resourceType: document.getElementById('resourceType').value,
+                requiredSkills: document.getElementById('requiredSkills').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                allocationPercentage: parseInt(document.getElementById('allocationPercentage').value),
+                priority: document.getElementById('requestPriority').value,
+                justification: document.getElementById('justification').value,
+                status: 'pending',
+                requestedBy: 'Current User',
+                requestedDate: new Date().toISOString().split('T')[0]
+            };
+
+            resourceRequests.push(newRequest);
+            saveResourceRequests();
+            updateStats();
+            closeModal('requestModal');
+            showNotification('Success', 'Resource request submitted successfully!', 'success');
+            event.target.reset();
+        }
+
+        function approveRequest(requestId) {
+            const request = resourceRequests.find(r => r.id === requestId);
+            if (request) {
+                // Find best matching resource
+                const bestMatch = findBestResource(request);
+                
+                request.status = 'approved';
+                request.approvedBy = 'Resource Manager';
+                request.approvedDate = new Date().toISOString().split('T')[0];
+                request.allocatedTo = bestMatch?.id;
+                
+                // Update resource workload
+                if (bestMatch) {
+                    bestMatch.workload = Math.min(100, bestMatch.workload + request.allocationPercentage * 0.5);
+                    bestMatch.available = bestMatch.workload < 90;
+                    saveTeamMembers();
+                }
+                
+                saveResourceRequests();
+                loadResourceRequests();
+                updateStats();
+                showNotification('Approved', `Request approved and allocated to ${bestMatch?.name || 'resource'}`, 'success');
+            }
+        }
+
+        function rejectRequest(requestId) {
+            const request = resourceRequests.find(r => r.id === requestId);
+            if (request) {
+                request.status = 'rejected';
+                request.rejectedBy = 'Resource Manager';
+                request.rejectedDate = new Date().toISOString().split('T')[0];
+                
+                saveResourceRequests();
+                loadResourceRequests();
+                updateStats();
+                showNotification('Rejected', 'Resource request has been rejected', 'info');
+            }
+        }
+
+        function findBestResource(request) {
+            return teamMembers
+                .filter(member => member.available && member.workload + request.allocationPercentage * 0.5 <= 100)
+                .sort((a, b) => a.workload - b.workload)[0];
+        }
+
+        // Resource Management
+        function viewResource(resourceId) {
+            const resource = teamMembers.find(m => m.id === resourceId);
+            if (resource) {
+                currentResource = resource;
+                const details = document.getElementById('resourceDetails');
+                details.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-900 text-lg">${resource.name}</h4>
+                            <p class="text-gray-600">${resource.role}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Workload</label>
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-1">
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" style="width: ${resource.workload}%"></div>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-semibold">${resource.workload}%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Skills</label>
+                            <div class="flex flex-wrap gap-2">
+                                ${resource.skills.map(skill => `<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">${skill}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Current Projects</label>
+                            <ul class="text-sm text-gray-600">
+                                ${resource.projects.map(projectId => {
+                                    const project = projects.find(p => p.id === projectId);
+                                    return `<li>• ${project?.name || 'Unknown Project'}</li>`;
+                                }).join('')}
+                            </ul>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+                            <span class="px-2 py-1 text-xs rounded-full ${resource.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${resource.available ? 'Available for new projects' : 'Currently at full capacity'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('resourceModal').classList.add('active');
+            }
+        }
+
+        function allocateResource(resourceId) {
+            const resource = teamMembers.find(m => m.id === resourceId);
+            if (resource && resource.available) {
+                showNotification('Allocation', `Opening allocation form for ${resource.name}...`, 'info');
+                showRequestModal();
+                // Pre-fill some fields based on the resource
+                document.getElementById('resourceType').value = resource.role.toLowerCase().replace(' ', '');
+                document.getElementById('requiredSkills').value = resource.skills.join(', ');
+            } else {
+                showNotification('Error', 'Resource is not available for allocation', 'error');
+            }
+        }
+
+        // AI Optimization
+        function optimizeResources() {
+            showNotification('AI Analysis', 'Analyzing resource allocation patterns...', 'info');
+            
+            setTimeout(() => {
+                // Simple optimization logic
+                const overAllocated = teamMembers.filter(m => m.workload > 90);
+                const underAllocated = teamMembers.filter(m => m.workload < 60);
+                
+                if (overAllocated.length > 0 && underAllocated.length > 0) {
+                    showNotification('Optimization Complete', `AI recommends rebalancing workload for ${overAllocated.length} over-allocated team members`, 'success');
+                } else {
+                    showNotification('Optimization Complete', 'Current resource allocation is optimal', 'success');
+                }
+                
+                // Refresh the allocation tab
+                if (document.getElementById('allocationTab').style.display !== 'none') {
+                    loadAllocationRecommendations();
+                }
+            }, 2000);
+        }
+
+        function implementRecommendation(title) {
+            showNotification('Implementation', `Implementing recommendation: ${title}`, 'info');
+            
+            setTimeout(() => {
+                showNotification('Success', 'Recommendation implemented successfully!', 'success');
+                loadAllocationRecommendations();
+                updateStats();
+            }, 1500);
+        }
+
+        function showHeatmapDetails(project, week, utilization) {
+            showNotification('Resource Details', `${project.name} - ${week}: ${utilization}% utilization`, 'info');
+        }
+
+        // Navigation
+        function navigateTo(page) {
+            const urls = {
+                dashboard: 'dashboard-working.html',
+                projects: 'project-management-working.html',
+                gantt: 'gantt-chart-working-new.html',
+                resources: 'resource-allocation-functional.html',
+                risks: 'raid-management-working.html',
+                reports: 'reports-working.html',
+                ai: 'ai-analysis-working.html'
+            };
+            
+            if (urls[page]) {
+                showNotification('Navigation', `Loading ${page}...`, 'info');
+                setTimeout(() => {
+                    window.location.href = urls[page];
+                }, 1000);
+            }
+        }
+
+        // Notification System
+        function showNotification(title, message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const icon = document.getElementById('notificationIcon');
+            
+            notification.className = `notification ${type}`;
+            document.getElementById('notificationTitle').textContent = title;
+            document.getElementById('notificationMessage').textContent = message;
+            
+            if (type === 'success') {
+                icon.className = 'fas fa-check-circle mr-3 text-green-600';
+            } else if (type === 'error') {
+                icon.className = 'fas fa-exclamation-circle mr-3 text-red-600';
+            } else {
+                icon.className = 'fas fa-info-circle mr-3 text-blue-600';
+            }
+            
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Logout
+        function logout() {
+            showNotification('Logging Out', 'Redirecting to login page...', 'info');
+            setTimeout(() => {
+                window.location.href = 'index-working.html';
+            }, 1500);
+        }
+
+        // Initialize
+        function init() {
+            updateStats();
+            loadTeamMembers();
+            loadCharts();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

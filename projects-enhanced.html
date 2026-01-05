@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PPM Pro - Project Intelligence Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            --danger-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            --dark-surface: #0f172a;
+            --card-surface: #1e293b;
+            --border-subtle: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-glow: rgba(102, 126, 234, 0.3);
+            --success-glow: rgba(52, 211, 153, 0.3);
+            --warning-glow: rgba(251, 191, 36, 0.3);
+            --danger-glow: rgba(248, 113, 113, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-surface);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Luxury Typography */
+        .text-display { font-weight: 900; letter-spacing: -0.02em; }
+        .text-headline { font-weight: 800; letter-spacing: -0.01em; }
+        .text-title { font-weight: 700; }
+        .text-body { font-weight: 400; }
+        .text-caption { font-weight: 300; font-size: 0.875rem; }
+
+        /* Glass Morphism Cards */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Luxury Buttons */
+        .luxury-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .luxury-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .luxury-btn:hover::before {
+            left: 100%;
+        }
+
+        .luxury-btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .luxury-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Navigation Sidebar */
+        .nav-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 16px 24px;
+            margin: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-item.active {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        /* Project Cards */
+        .project-card {
+            background: var(--card-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-glow);
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* AI Wizard */
+        .wizard-step {
+            display: none;
+        }
+
+        .wizard-step.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Progress Bar */
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .nav-sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading-shimmer {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Tabs */
+        .tab-button {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-button.active {
+            color: var(--text-primary);
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Navigation Sidebar -->
+    <div class="nav-sidebar">
+        <div class="p-6">
+            <div class="text-display text-2xl bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+                AI PPM Pro
+            </div>
+            <div class="text-caption text-gray-400 mt-1">Project Intelligence Hub</div>
+        </div>
+        
+        <nav class="mt-8">
+            <div class="nav-item" onclick="navigateTo('dashboard', 'dashboard-enhanced.html')">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item active" onclick="navigateTo('projects', 'projects-enhanced.html')">
+                <i class="fas fa-project-diagram"></i>
+                <span>Projects</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('gantt', 'revolutionary-gantt.html')">
+                <i class="fas fa-chart-gantt"></i>
+                <span>Gantt Charts</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('resources', 'luxury-resources.html')">
+                <i class="fas fa-users"></i>
+                <span>Resources</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('risks', 'luxury-raid.html')">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Risks</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('reports', 'luxury-reports.html')">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('ai')">
+                <i class="fas fa-brain"></i>
+                <span>AI Intelligence</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-display text-4xl mb-2">Project Intelligence</h1>
+                    <p class="text-body text-gray-400">AI-powered project portfolio management</p>
+                </div>
+                <div class="flex gap-4">
+                    <button class="luxury-btn luxury-btn-primary" onclick="openAIWizard()">
+                        <i class="fas fa-magic mr-2"></i>AI Project Creator
+                    </button>
+                    <button class="luxury-btn glass-card" onclick="openManualProject()">
+                        <i class="fas fa-plus mr-2"></i>Manual Project
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass-card p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                        <i class="fas fa-folder text-white"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold" id="totalProjectsCount">0</div>
+                        <div class="text-caption text-gray-400">Total Projects</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                        <i class="fas fa-play text-white"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold" id="activeProjectsCount">0</div>
+                        <div class="text-caption text-gray-400">Active</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                        <i class="fas fa-check text-white"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold" id="completedProjectsCount">0</div>
+                        <div class="text-caption text-gray-400">Completed</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold" id="avgProjectProgress">0%</div>
+                        <div class="text-caption text-gray-400">Avg Progress</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="glass-card p-6 mb-8">
+            <div class="flex flex-wrap gap-4 items-center">
+                <div class="flex-1 min-w-[300px]">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Search projects..." 
+                               class="w-full px-4 py-3 pl-12 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500">
+                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <select id="statusFilter" class="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-blue-500">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="planning">Planning</option>
+                    <option value="completed">Completed</option>
+                    <option value="on-hold">On Hold</option>
+                </select>
+                
+                <select id="priorityFilter" class="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-blue-500">
+                    <option value="">All Priority</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                
+                <button class="luxury-btn luxury-btn-primary" onclick="applyFilters()">
+                    <i class="fas fa-filter mr-2"></i>Apply Filters
+                </button>
+                
+                <button class="luxury-btn glass-card" onclick="clearFilters()">
+                    <i class="fas fa-times mr-2"></i>Clear
+                </button>
+            </div>
+        </div>
+
+        <!-- Projects Grid -->
+        <div id="projectsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Projects will be dynamically loaded here -->
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden text-center py-12">
+            <div class="inline-block loading-shimmer h-8 w-64 rounded mb-4"></div>
+            <p class="text-gray-400">Loading projects...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-12">
+            <div class="text-6xl mb-4">📋</div>
+            <h3 class="text-xl font-bold mb-2">No Projects Found</h3>
+            <p class="text-gray-400 mb-6">Create your first project to get started</p>
+            <button class="luxury-btn luxury-btn-primary" onclick="openAIWizard()">
+                <i class="fas fa-magic mr-2"></i>Create AI Project
+            </button>
+        </div>
+    </div>
+
+    <!-- AI Project Creation Wizard -->
+    <div id="aiWizard" class="modal">
+        <div class="modal-content p-8 max-w-4xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">AI Project Creation Wizard</h2>
+                <button onclick="closeAIWizard()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between mb-2">
+                    <span class="text-sm text-gray-400">Step <span id="currentStep">1</span> of 4</span>
+                    <span class="text-sm text-gray-400"><span id="progressPercent">25</span>% Complete</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                    <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500" style="width: 25%"></div>
+                </div>
+            </div>
+
+            <!-- Step 1: Project Description -->
+            <div id="step1" class="wizard-step active">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-brain text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Describe Your Project</h3>
+                    <p class="text-gray-400">Tell our AI what you want to accomplish</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Project Description</label>
+                        <textarea id="projectDescription" rows="4" placeholder="e.g., Build a mobile app for customer engagement with AI-powered recommendations..." 
+                                  class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Business Goals</label>
+                        <input type="text" id="businessGoals" placeholder="e.g., Increase customer retention by 30%" 
+                               class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Target Timeline</label>
+                        <select id="timeline" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-blue-500">
+                            <option value="">Select timeline</option>
+                            <option value="1-3 months">1-3 months</option>
+                            <option value="3-6 months">3-6 months</option>
+                            <option value="6-12 months">6-12 months</option>
+                            <option value="1+ years">1+ years</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end mt-6">
+                    <button class="luxury-btn luxury-btn-primary" onclick="analyzeProject()">
+                        <i class="fas fa-magic mr-2"></i>Analyze with AI
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: AI Analysis -->
+            <div id="step2" class="wizard-step">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">AI Analysis Results</h3>
+                    <p class="text-gray-400">Here's what our AI discovered about your project</p>
+                </div>
+                
+                <div id="aiAnalysisResults" class="space-y-4">
+                    <!-- AI analysis will be populated here -->
+                </div>
+                
+                <div class="flex justify-between mt-6">
+                    <button class="luxury-btn glass-card" onclick="switchWizardStep(1)">
+                        <i class="fas fa-arrow-left mr-2"></i>Back
+                    </button>
+                    <button class="luxury-btn luxury-btn-primary" onclick="switchWizardStep(3)">
+                        Next<i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Configuration -->
+            <div id="step3" class="wizard-step">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-cog text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Project Configuration</h3>
+                    <p class="text-gray-400">Fine-tune your project settings</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Project Name</label>
+                        <input type="text" id="projectName" placeholder="Enter project name" 
+                               class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Priority</label>
+                        <select id="projectPriority" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-blue-500">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Budget Estimate</label>
+                        <input type="number" id="projectBudget" placeholder="Enter amount in USD" 
+                               class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                
+                <div class="flex justify-between mt-6">
+                    <button class="luxury-btn glass-card" onclick="switchWizardStep(2)">
+                        <i class="fas fa-arrow-left mr-2"></i>Back
+                    </button>
+                    <button class="luxury-btn luxury-btn-primary" onclick="switchWizardStep(4)">
+                        Review & Create<i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Review & Create -->
+            <div id="step4" class="wizard-step">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Review & Create</h3>
+                    <p class="text-gray-400">Review your project before creation</p>
+                </div>
+                
+                <div id="projectReview" class="glass-card p-6">
+                    <!-- Project review will be populated here -->
+                </div>
+                
+                <div class="flex justify-between mt-6">
+                    <button class="luxury-btn glass-card" onclick="switchWizardStep(3)">
+                        <i class="fas fa-arrow-left mr-2"></i>Back
+                    </button>
+                    <button class="luxury-btn luxury-btn-primary" onclick="createAIProject()">
+                        <i class="fas fa-rocket mr-2"></i>Create Project
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Details Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content p-8 max-w-6xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modalProjectTitle" class="text-2xl font-bold">Project Details</h2>
+                <button onclick="closeProjectModal()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex border-b border-gray-700 mb-6">
+                <button class="tab-button active" onclick="switchTab('overview')">Overview</button>
+                <button class="tab-button" onclick="switchTab('tasks')">Tasks</button>
+                <button class="tab-button" onclick="switchTab('team')">Team</button>
+                <button class="tab-button" onclick="switchTab('timeline')">Timeline</button>
+                <button class="tab-button" onclick="switchTab('budget')">Budget</button>
+                <button class="tab-button" onclick="switchTab('risks')">Risks</button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div id="overviewTab" class="tab-content active">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Project Overview Content -->
+                </div>
+            </div>
+
+            <div id="tasksTab" class="tab-content">
+                <div class="space-y-4">
+                    <!-- Tasks Content -->
+                </div>
+            </div>
+
+            <div id="teamTab" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Team Content -->
+                </div>
+            </div>
+
+            <div id="timelineTab" class="tab-content">
+                <div class="space-y-4">
+                    <!-- Timeline Content -->
+                </div>
+            </div>
+
+            <div id="budgetTab" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Budget Content -->
+                </div>
+            </div>
+
+            <div id="risksTab" class="tab-content">
+                <div class="space-y-4">
+                    <!-- Risks Content -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="data-core.js"></script>
+    <script>
+        // 🚀 PROJECTS CONTROLLER
+        let currentProjects = [];
+        let filteredProjects = [];
+        let currentWizardStep = 1;
+        let aiAnalysisData = null;
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProjects();
+            setupEventListeners();
+            animateElements();
+        });
+
+        // 📊 LOAD PROJECTS WITH REAL DATA
+        function loadProjects() {
+            currentProjects = window.DataCore.getAllProjects();
+            filteredProjects = [...currentProjects];
+            
+            updateProjectStats();
+            renderProjects();
+        }
+
+        // 📈 UPDATE PROJECT STATISTICS
+        function updateProjectStats() {
+            const stats = {
+                total: currentProjects.length,
+                active: currentProjects.filter(p => p.status === 'active').length,
+                completed: currentProjects.filter(p => p.status === 'completed').length,
+                avgProgress: Math.round(currentProjects.reduce((sum, p) => sum + p.progress, 0) / Math.max(1, currentProjects.length))
+            };
+            
+            // Animate counter updates
+            animateValue('totalProjectsCount', 0, stats.total, 1000);
+            animateValue('activeProjectsCount', 0, stats.active, 1000);
+            animateValue('completedProjectsCount', 0, stats.completed, 1000);
+            animateValue('avgProjectProgress', 0, stats.avgProgress, 1000, '%');
+        }
+
+        // 🎨 RENDER PROJECTS GRID
+        function renderProjects() {
+            const grid = document.getElementById('projectsGrid');
+            const emptyState = document.getElementById('emptyState');
+            const loadingState = document.getElementById('loadingState');
+            
+            if (filteredProjects.length === 0) {
+                grid.style.display = 'none';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            emptyState.classList.add('hidden');
+            
+            grid.innerHTML = filteredProjects.map(project => `
+                <div class="project-card" onclick="openProjectDetails('${project.id}')">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold mb-2">${project.name}</h3>
+                                <p class="text-sm text-gray-400 line-clamp-2">${project.description}</p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}">
+                                ${project.status}
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-400">Progress</span>
+                                <span class="text-sm font-medium">${project.progress}%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
+                                     style="width: ${project.progress}%"></div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-400">Priority:</span>
+                                    <span class="ml-2 font-medium ${getPriorityColor(project.priority)}">${project.priority}</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400">Manager:</span>
+                                    <span class="ml-2 font-medium">${project.manager}</span>
+                                </div>
+                            </div>
+                            
+                            ${project.aiInsights ? `
+                            <div class="pt-3 border-t border-gray-700">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full ${getRiskColor(project.aiInsights.riskLevel)}"></div>
+                                        <span class="text-xs text-gray-400">AI Success Score</span>
+                                    </div>
+                                    <span class="text-sm font-bold">${project.aiInsights.successScore}%</span>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Animate cards
+            gsap.from('.project-card', {
+                scale: 0.9,
+                opacity: 0,
+                duration: 0.5,
+                stagger: 0.1,
+                ease: 'power2.out'
+            });
+        }
+
+        // 🎨 HELPER FUNCTIONS FOR STYLING
+        function getStatusColor(status) {
+            switch(status) {
+                case 'active': return 'bg-green-500/20 text-green-400 border border-green-500/30';
+                case 'planning': return 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
+                case 'completed': return 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
+                case 'on-hold': return 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30';
+                default: return 'bg-gray-500/20 text-gray-400 border border-gray-500/30';
+            }
+        }
+
+        function getPriorityColor(priority) {
+            switch(priority) {
+                case 'critical': return 'text-red-400';
+                case 'high': return 'text-orange-400';
+                case 'medium': return 'text-yellow-400';
+                case 'low': return 'text-green-400';
+                default: return 'text-gray-400';
+            }
+        }
+
+        function getRiskColor(riskLevel) {
+            switch(riskLevel) {
+                case 'high': return 'bg-red-500';
+                case 'medium': return 'bg-yellow-500';
+                case 'low': return 'bg-green-500';
+                default: return 'bg-blue-500';
+            }
+        }
+
+        // 🔍 FILTER AND SEARCH FUNCTIONS
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', debounce(handleSearch, 300));
+            document.getElementById('statusFilter').addEventListener('change', handleFilterChange);
+            document.getElementById('priorityFilter').addEventListener('change', handleFilterChange);
+        }
+
+        function handleSearch(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            filteredProjects = currentProjects.filter(project => 
+                project.name.toLowerCase().includes(searchTerm) ||
+                project.description.toLowerCase().includes(searchTerm) ||
+                project.manager.toLowerCase().includes(searchTerm)
+            );
+            renderProjects();
+        }
+
+        function handleFilterChange() {
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            
+            filteredProjects = currentProjects.filter(project => {
+                if (statusFilter && project.status !== statusFilter) return false;
+                if (priorityFilter && project.priority !== priorityFilter) return false;
+                return true;
+            });
+            
+            renderProjects();
+            showNotification('Filters applied', 'success');
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('priorityFilter').value = '';
+            filteredProjects = [...currentProjects];
+            renderProjects();
+            showNotification('Filters cleared', 'info');
+        }
+
+        // 🧠 AI PROJECT WIZARD FUNCTIONS
+        function openAIWizard() {
+            document.getElementById('aiWizard').classList.add('active');
+            currentWizardStep = 1;
+            switchWizardStep(1);
+        }
+
+        function closeAIWizard() {
+            document.getElementById('aiWizard').classList.remove('active');
+            // Reset wizard
+            document.getElementById('projectDescription').value = '';
+            document.getElementById('businessGoals').value = '';
+            document.getElementById('timeline').value = '';
+        }
+
+        function switchWizardStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+            
+            // Show current step
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            // Update progress
+            currentWizardStep = step;
+            const progress = (step / 4) * 100;
+            document.getElementById('currentStep').textContent = step;
+            document.getElementById('progressPercent').textContent = Math.round(progress);
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        function analyzeProject() {
+            const description = document.getElementById('projectDescription').value;
+            const goals = document.getElementById('businessGoals').value;
+            const timeline = document.getElementById('timeline').value;
+            
+            if (!description) {
+                showNotification('Please provide a project description', 'error');
+                return;
+            }
+            
+            showNotification('AI analyzing project requirements...', 'info');
+            
+            // Simulate AI analysis
+            setTimeout(() => {
+                aiAnalysisData = generateAIAnalysis(description, goals, timeline);
+                displayAIAnalysis();
+                showNotification('Analysis complete! Proceeding to configuration...', 'success');
+                switchWizardStep(2);
+            }, 2000);
+        }
+
+        function generateAIAnalysis(description, goals, timeline) {
+            // Simulated AI analysis based on description
+            const keywords = description.toLowerCase();
+            
+            let projectType = 'General';
+            let complexity = 'Medium';
+            let estimatedDuration = '6 months';
+            let teamSize = 5;
+            let risks = [];
+            let recommendations = [];
+            
+            // Analyze project type
+            if (keywords.includes('app') || keywords.includes('mobile')) {
+                projectType = 'Mobile Application';
+                complexity = 'High';
+                teamSize = 8;
+                risks.push('Platform compatibility issues', 'App store approval delays');
+                recommendations.push('Start with MVP approach', 'Plan for multiple platforms');
+            } else if (keywords.includes('website') || keywords.includes('web')) {
+                projectType = 'Web Application';
+                complexity = 'Medium';
+                teamSize = 6;
+                risks.push('Browser compatibility', 'Security vulnerabilities');
+                recommendations.push('Use responsive design', 'Implement comprehensive testing');
+            } else if (keywords.includes('ai') || keywords.includes('machine learning')) {
+                projectType = 'AI/ML Project';
+                complexity = 'Very High';
+                teamSize = 10;
+                risks.push('Data quality issues', 'Model accuracy problems');
+                recommendations.push('Invest in data preprocessing', 'Plan iterative model training');
+            }
+            
+            return {
+                projectType,
+                complexity,
+                estimatedDuration,
+                teamSize,
+                risks,
+                recommendations,
+                successProbability: 75 + Math.random() * 20,
+                confidence: 85 + Math.random() * 10
+            };
+        }
+
+        function displayAIAnalysis() {
+            const resultsContainer = document.getElementById('aiAnalysisResults');
+            
+            resultsContainer.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="glass-card p-4">
+                        <h4 class="font-bold mb-2">Project Type</h4>
+                        <p class="text-2xl font-bold text-blue-400">${aiAnalysisData.projectType}</p>
+                    </div>
+                    
+                    <div class="glass-card p-4">
+                        <h4 class="font-bold mb-2">Complexity</h4>
+                        <p class="text-2xl font-bold text-yellow-400">${aiAnalysisData.complexity}</p>
+                    </div>
+                    
+                    <div class="glass-card p-4">
+                        <h4 class="font-bold mb-2">Estimated Duration</h4>
+                        <p class="text-2xl font-bold text-green-400">${aiAnalysisData.estimatedDuration}</p>
+                    </div>
+                    
+                    <div class="glass-card p-4">
+                        <h4 class="font-bold mb-2">Team Size</h4>
+                        <p class="text-2xl font-bold text-purple-400">${aiAnalysisData.teamSize} members</p>
+                    </div>
+                </div>
+                
+                <div class="glass-card p-4">
+                    <h4 class="font-bold mb-2">Success Probability</h4>
+                    <div class="flex items-center gap-4">
+                        <div class="flex-1">
+                            <div class="w-full bg-gray-700 rounded-full h-3">
+                                <div class="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full" 
+                                     style="width: ${aiAnalysisData.successProbability}%"></div>
+                            </div>
+                        </div>
+                        <span class="text-xl font-bold text-green-400">${Math.round(aiAnalysisData.successProbability)}%</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="glass-card p-4">
+                        <h4 class="font-bold mb-2 text-red-400">Potential Risks</h4>
+                        <ul class="space-y-1">
+                            ${aiAnalysisData.risks.map(risk => `<li class="text-sm text-gray-300">• ${risk}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="glass-card p-4">
+                        <h4 class="font-bold mb-2 text-green-400">Recommendations</h4>
+                        <ul class="space-y-1">
+                            ${aiAnalysisData.recommendations.map(rec => `<li class="text-sm text-gray-300">• ${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="text-center text-sm text-gray-400">
+                    AI Analysis Confidence: ${Math.round(aiAnalysisData.confidence)}%
+                </div>
+            `;
+        }
+
+        function createAIProject() {
+            const projectName = document.getElementById('projectName').value;
+            const priority = document.getElementById('projectPriority').value;
+            const budget = parseFloat(document.getElementById('projectBudget').value) || 0;
+            
+            if (!projectName) {
+                showNotification('Please enter a project name', 'error');
+                return;
+            }
+            
+            showNotification('Creating AI-powered project...', 'info');
+            
+            // Create project with AI analysis
+            const projectData = {
+                name: projectName,
+                description: document.getElementById('projectDescription').value,
+                status: 'planning',
+                priority: priority,
+                progress: 0,
+                budget: budget,
+                actualCost: 0,
+                startDate: new Date().toISOString().split('T')[0],
+                endDate: calculateEndDate(aiAnalysisData.estimatedDuration),
+                manager: 'To be assigned',
+                team: [],
+                program: 'AI Generated',
+                portfolio: 'Innovation',
+                aiInsights: {
+                    successScore: Math.round(aiAnalysisData.successProbability),
+                    riskLevel: aiAnalysisData.complexity === 'Very High' ? 'high' : aiAnalysisData.complexity === 'High' ? 'medium' : 'low',
+                    completionPrediction: calculateEndDate(aiAnalysisData.estimatedDuration),
+                    recommendations: aiAnalysisData.recommendations,
+                    confidence: Math.round(aiAnalysisData.confidence)
+                }
+            };
+            
+            // Save project to data core
+            const newProject = window.DataCore.createProject(projectData);
+            
+            setTimeout(() => {
+                showNotification('Project created successfully!', 'success');
+                closeAIWizard();
+                loadProjects(); // Refresh the projects list
+            }, 1500);
+        }
+
+        function calculateEndDate(duration) {
+            const now = new Date();
+            let months = 6; // default
+            
+            if (duration.includes('1-3')) months = 2;
+            else if (duration.includes('3-6')) months = 4;
+            else if (duration.includes('6-12')) months = 9;
+            else if (duration.includes('1+')) months = 15;
+            
+            now.setMonth(now.getMonth() + months);
+            return now.toISOString().split('T')[0];
+        }
+
+        // 📋 PROJECT DETAILS FUNCTIONS
+        function openProjectDetails(projectId) {
+            const project = window.DataCore.getProject(projectId);
+            if (!project) return;
+            
+            document.getElementById('modalProjectTitle').textContent = project.name;
+            document.getElementById('projectModal').classList.add('active');
+            
+            // Load project details into tabs
+            loadProjectOverview(project);
+            loadProjectTasks(project);
+            loadProjectTeam(project);
+            loadProjectTimeline(project);
+            loadProjectBudget(project);
+            loadProjectRisks(project);
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModal').classList.remove('active');
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function loadProjectOverview(project) {
+            const container = document.getElementById('overviewTab');
+            container.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold mb-4">Project Information</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Status</span>
+                                <span class="px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}">
+                                    ${project.status}
+                                </span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Priority</span>
+                                <span class="${getPriorityColor(project.priority)}">${project.priority}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Progress</span>
+                                <span class="font-medium">${project.progress}%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Start Date</span>
+                                <span>${project.startDate}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">End Date</span>
+                                <span>${project.endDate}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold mb-4">AI Insights</h3>
+                        ${project.aiInsights ? `
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Success Score</span>
+                                <span class="font-bold text-green-400">${project.aiInsights.successScore}%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Risk Level</span>
+                                <span class="${getRiskColor(project.aiInsights.riskLevel).replace('bg-', 'text-')}">${project.aiInsights.riskLevel}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Confidence</span>
+                                <span>${Math.round(project.aiInsights.confidence)}%</span>
+                            </div>
+                            <div class="mt-4">
+                                <h4 class="font-medium mb-2">Recommendations</h4>
+                                <ul class="space-y-1 text-sm text-gray-300">
+                                    ${project.aiInsights.recommendations.map(rec => `<li>• ${rec}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                        ` : '<p class="text-gray-400">No AI insights available</p>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadProjectTasks(project) {
+            const tasks = window.DataCore.getProjectTasks(project.id);
+            const container = document.getElementById('tasksTab');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-8">No tasks created yet</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">Project Tasks</h3>
+                        <button class="luxury-btn luxury-btn-primary" onclick="addTask('${project.id}')">
+                            <i class="fas fa-plus mr-2"></i>Add Task
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        ${tasks.map(task => `
+                        <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" ${task.status === 'completed' ? 'checked' : ''} 
+                                       onchange="toggleTaskStatus('${task.id}')"
+                                       class="w-5 h-5 rounded border-gray-600 bg-gray-700 text-blue-500">
+                                <div>
+                                    <h4 class="font-medium">${task.title}</h4>
+                                    <p class="text-sm text-gray-400">${task.assignee}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-400">${task.progress}%</div>
+                                <div class="w-20 bg-gray-700 rounded-full h-1 mt-1">
+                                    <div class="bg-blue-500 h-1 rounded-full" style="width: ${task.progress}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadProjectTeam(project) {
+            const container = document.getElementById('teamTab');
+            container.innerHTML = `
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold mb-4">Project Team</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-medium mb-2">Project Manager</h4>
+                            <div class="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">${project.manager}</div>
+                                    <div class="text-sm text-gray-400">Project Manager</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-medium mb-2">Team Members</h4>
+                            <div class="space-y-2">
+                                ${project.team.map(member => `
+                                <div class="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                                        <i class="fas fa-user text-white text-xs"></i>
+                                    </div>
+                                    <span>${member}</span>
+                                </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadProjectTimeline(project) {
+            const container = document.getElementById('timelineTab');
+            container.innerHTML = `
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold mb-4">Project Timeline</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Start Date</span>
+                            <span class="font-medium">${project.startDate}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">End Date</span>
+                            <span class="font-medium">${project.endDate}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Duration</span>
+                            <span class="font-medium">${calculateDuration(project.startDate, project.endDate)}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Time Elapsed</span>
+                            <span class="font-medium">${calculateTimeElapsed(project.startDate)}%</span>
+                        </div>
+                        ${project.aiInsights?.completionPrediction ? `
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">AI Predicted Completion</span>
+                            <span class="font-medium text-blue-400">${project.aiInsights.completionPrediction}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadProjectBudget(project) {
+            const container = document.getElementById('budgetTab');
+            const budgetVariance = project.budget ? ((project.actualCost || 0) / project.budget * 100) : 0;
+            
+            container.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold mb-4">Budget Overview</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Total Budget</span>
+                                <span class="font-medium">$${(project.budget || 0).toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Actual Cost</span>
+                                <span class="font-medium">$${(project.actualCost || 0).toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Remaining</span>
+                                <span class="font-medium text-green-400">$${((project.budget || 0) - (project.actualCost || 0)).toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Budget Used</span>
+                                <span class="font-medium">${Math.round(budgetVariance)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold mb-4">Budget Variance</h3>
+                        <div class="flex items-center justify-center">
+                            <div class="relative w-32 h-32">
+                                <svg class="w-32 h-32 progress-ring">
+                                    <circle cx="64" cy="64" r="56" stroke="#374151" stroke-width="8" fill="none"/>
+                                    <circle cx="64" cy="64" r="56" stroke="${budgetVariance > 100 ? '#ef4444' : '#10b981'}" 
+                                            stroke-width="8" fill="none"
+                                            stroke-dasharray="${Math.min(budgetVariance, 100) * 3.52} 352"
+                                            class="progress-ring-circle"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-2xl font-bold">${Math.round(budgetVariance)}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadProjectRisks(project) {
+            const container = document.getElementById('risksTab');
+            container.innerHTML = `
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold mb-4">Risk Assessment</h3>
+                    ${project.aiInsights ? `
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                            <div>
+                                <h4 class="font-medium">Overall Risk Level</h4>
+                                <p class="text-sm text-gray-400">Based on project complexity and progress</p>
+                            </div>
+                            <span class="px-4 py-2 rounded-lg font-medium ${getRiskColor(project.aiInsights.riskLevel).replace('bg-', 'bg-')} text-white">
+                                ${project.aiInsights.riskLevel.toUpperCase()}
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-white/5 rounded-lg">
+                                <h4 class="font-medium mb-2">Success Score</h4>
+                                <div class="text-3xl font-bold text-green-400 mb-2">${project.aiInsights.successScore}%</div>
+                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: ${project.aiInsights.successScore}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 bg-white/5 rounded-lg">
+                                <h4 class="font-medium mb-2">AI Confidence</h4>
+                                <div class="text-3xl font-bold text-blue-400 mb-2">${Math.round(project.aiInsights.confidence)}%</div>
+                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: ${project.aiInsights.confidence}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-white/5 rounded-lg">
+                            <h4 class="font-medium mb-2">AI Recommendations</h4>
+                            <ul class="space-y-2">
+                                ${project.aiInsights.recommendations.map(rec => `
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-lightbulb text-yellow-400 mt-1"></i>
+                                    <span class="text-sm text-gray-300">${rec}</span>
+                                </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    ` : '<p class="text-gray-400 text-center py-8">No risk assessment available</p>'}
+                </div>
+            `;
+        }
+
+        // 🛠️ UTILITY FUNCTIONS
+        function calculateDuration(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+            return `${months} months`;
+        }
+
+        function calculateTimeElapsed(startDate) {
+            const start = new Date(startDate);
+            const now = new Date();
+            const elapsed = (now - start) / (1000 * 60 * 60 * 24 * 30); // months
+            return Math.round(Math.max(0, Math.min(100, elapsed * 10)));
+        }
+
+        function addTask(projectId) {
+            // Placeholder for task creation
+            showNotification('Task creation coming soon!', 'info');
+        }
+
+        function toggleTaskStatus(taskId) {
+            const task = window.DataCore.updateTask(taskId, { 
+                status: 'completed',
+                progress: 100 
+            });
+            if (task) {
+                showNotification('Task completed!', 'success');
+                // Refresh current project view
+                const project = window.DataCore.getProject(task.projectId);
+                if (project) {
+                    loadProjectTasks(project);
+                }
+            }
+        }
+
+        // 🎬 ANIMATIONS
+        function animateElements() {
+            gsap.from('.glass-card', {
+                y: 30,
+                opacity: 0,
+                duration: 0.6,
+                stagger: 0.1,
+                ease: 'power2.out'
+            });
+        }
+
+        function animateValue(id, start, end, duration, suffix = '') {
+            const element = document.getElementById(id);
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.round(current) + suffix;
+            }, 16);
+        }
+
+        // 🔄 NAVIGATION
+        function navigateTo(section, url) {
+            if (url) {
+                window.location.href = url;
+            }
+        }
+
+        // 🔔 NOTIFICATIONS
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'warning' ? 'bg-yellow-500' :
+                type === 'error' ? 'bg-red-500' :
+                'bg-blue-500'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            gsap.from(notification, {
+                x: 100,
+                opacity: 0,
+                duration: 0.3,
+                ease: 'power2.out'
+            });
+            
+            setTimeout(() => {
+                gsap.to(notification, {
+                    x: 100,
+                    opacity: 0,
+                    duration: 0.3,
+                    ease: 'power2.in',
+                    onComplete: () => notification.remove()
+                });
+            }, 3000);
+        }
+
+        // ⌨️ DEBOUNCE FUNCTION
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 📱 MOBILE MENU
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.nav-sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // 🔄 REAL-TIME UPDATES
+        window.DataCore.subscribe('dataChanged', (data) => {
+            console.log('🔄 Projects data updated');
+            loadProjects();
+        });
+    </script>
+</body>
+</html>

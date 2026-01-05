@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Management - Core</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Resource Card */
+        .resource-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .resource-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            border-color: #3b82f6;
+        }
+
+        /* Utilization Bar */
+        .utilization-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            position: relative;
+            overflow: hidden;
+        }
+        .utilization-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        .utilization-optimal { background: #10b981; }
+        .utilization-high { background: #f59e0b; }
+        .utilization-overallocated { background: #ef4444; }
+        .utilization-low { background: #6b7280; }
+
+        /* Skills Badge */
+        .skill-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #4b5563;
+            transition: all 0.2s;
+        }
+        .skill-badge:hover {
+            background: #3b82f6;
+            color: white;
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .avatar-sm {
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+        }
+        .avatar-lg {
+            width: 80px;
+            height: 80px;
+            font-size: 32px;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+        }
+        .status-available { background: #10b981; }
+        .status-busy { background: #f59e0b; }
+        .status-offline { background: #6b7280; }
+
+        /* Calendar */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .calendar-day:hover {
+            background: #f3f4f6;
+        }
+        .calendar-day.available {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .calendar-day.allocated {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .calendar-day.unavailable {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .calendar-day.today {
+            border: 2px solid #3b82f6;
+            font-weight: bold;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 10000;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.info { border-left: 4px solid #3b82f6; }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        /* Filter Chip */
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #f3f4f6;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-chip:hover {
+            background: #e5e7eb;
+        }
+        .filter-chip.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        /* Stats Card */
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Resource Detail Modal -->
+    <div id="resource-modal" class="modal">
+        <div class="modal-content">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-900" id="modal-title">Resource Details</h3>
+                    <button onclick="closeResourceModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6" id="modal-content">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="min-h-screen p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+                    <i class="fas fa-users text-blue-600"></i>
+                    Resource Management
+                    <span class="text-sm font-normal px-3 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full">
+                        AI-Powered
+                    </span>
+                </h1>
+                <p class="text-gray-600">Intelligent resource allocation with 92% AI matching accuracy</p>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="stats-card border-blue-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Team Size</p>
+                            <p class="text-3xl font-bold text-gray-900">24</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">Across 5 departments</p>
+                </div>
+
+                <div class="stats-card border-green-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Avg Utilization</p>
+                            <p class="text-3xl font-bold text-gray-900">73%</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-green-600">↑ 13% from last month</p>
+                </div>
+
+                <div class="stats-card border-yellow-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Available</p>
+                            <p class="text-3xl font-bold text-gray-900">8</p>
+                        </div>
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-user-check text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">Ready for assignment</p>
+                </div>
+
+                <div class="stats-card border-purple-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">AI Match Rate</p>
+                            <p class="text-3xl font-bold text-gray-900">92%</p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-brain text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-purple-600">Industry leading</p>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Filters</h2>
+                    <button onclick="clearFilters()" class="text-sm text-blue-600 hover:text-blue-700">
+                        Clear All
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="filter-chip active" data-filter="department" data-value="all">
+                                <i class="fas fa-building text-xs"></i>
+                                All Departments
+                            </span>
+                            <span class="filter-chip" data-filter="department" data-value="engineering">
+                                <i class="fas fa-code text-xs"></i>
+                                Engineering
+                            </span>
+                            <span class="filter-chip" data-filter="department" data-value="design">
+                                <i class="fas fa-palette text-xs"></i>
+                                Design
+                            </span>
+                            <span class="filter-chip" data-filter="department" data-value="qa">
+                                <i class="fas fa-bug text-xs"></i>
+                                QA
+                            </span>
+                            <span class="filter-chip" data-filter="department" data-value="pm">
+                                <i class="fas fa-tasks text-xs"></i>
+                                Project Management
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="filter-chip active" data-filter="availability" data-value="all">
+                                All
+                            </span>
+                            <span class="filter-chip" data-filter="availability" data-value="available">
+                                <i class="fas fa-circle text-xs text-green-500"></i>
+                                Available (>50%)
+                            </span>
+                            <span class="filter-chip" data-filter="availability" data-value="partial">
+                                <i class="fas fa-circle text-xs text-yellow-500"></i>
+                                Partially Available
+                            </span>
+                            <span class="filter-chip" data-filter="availability" data-value="busy">
+                                <i class="fas fa-circle text-xs text-red-500"></i>
+                                Fully Allocated
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Skills</label>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="filter-chip" data-filter="skill" data-value="react">React</span>
+                            <span class="filter-chip" data-filter="skill" data-value="nodejs">Node.js</span>
+                            <span class="filter-chip" data-filter="skill" data-value="python">Python</span>
+                            <span class="filter-chip" data-filter="skill" data-value="figma">Figma</span>
+                            <span class="filter-chip" data-filter="skill" data-value="aws">AWS</span>
+                            <span class="filter-chip" data-filter="skill" data-value="agile">Agile</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Grid -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-900">Team Members</h2>
+                    <div class="flex gap-3">
+                        <input type="text" id="search-input" placeholder="Search resources..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <button onclick="addResource()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            Add Resource
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="resource-grid">
+                    <!-- Resources will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Utilization Chart -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Team Utilization Overview</h2>
+                <div style="height: 300px;">
+                    <canvas id="utilization-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample Resource Data
+        const resources = [
+            {
+                id: 1,
+                name: 'Alex Chen',
+                role: 'Senior Developer',
+                department: 'engineering',
+                avatar: 'AC',
+                utilization: 85,
+                availability: 15,
+                skills: ['React', 'Node.js', 'Python', 'AWS'],
+                projects: 3,
+                status: 'available',
+                hourlyRate: 120,
+                email: 'alex.chen@company.com',
+                phone: '+1 (555) 123-4567'
+            },
+            {
+                id: 2,
+                name: 'Maria Garcia',
+                role: 'UI/UX Designer',
+                department: 'design',
+                avatar: 'MG',
+                utilization: 92,
+                availability: 8,
+                skills: ['Figma', 'Adobe XD', 'CSS', 'Prototyping'],
+                projects: 4,
+                status: 'busy',
+                hourlyRate: 100,
+                email: 'maria.garcia@company.com',
+                phone: '+1 (555) 234-5678'
+            },
+            {
+                id: 3,
+                name: 'James Wilson',
+                role: 'QA Engineer',
+                department: 'qa',
+                avatar: 'JW',
+                utilization: 78,
+                availability: 22,
+                skills: ['Selenium', 'Jest', 'Cypress', 'API Testing'],
+                projects: 2,
+                status: 'available',
+                hourlyRate: 90,
+                email: 'james.wilson@company.com',
+                phone: '+1 (555) 345-6789'
+            },
+            {
+                id: 4,
+                name: 'Sophie Turner',
+                role: 'Project Manager',
+                department: 'pm',
+                avatar: 'ST',
+                utilization: 95,
+                availability: 5,
+                skills: ['Agile', 'Scrum', 'JIRA', 'Stakeholder Management'],
+                projects: 5,
+                status: 'busy',
+                hourlyRate: 110,
+                email: 'sophie.turner@company.com',
+                phone: '+1 (555) 456-7890'
+            },
+            {
+                id: 5,
+                name: 'Robert Lee',
+                role: 'DevOps Engineer',
+                department: 'engineering',
+                avatar: 'RL',
+                utilization: 70,
+                availability: 30,
+                skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
+                projects: 2,
+                status: 'available',
+                hourlyRate: 115,
+                email: 'robert.lee@company.com',
+                phone: '+1 (555) 567-8901'
+            },
+            {
+                id: 6,
+                name: 'Emily Davis',
+                role: 'Frontend Developer',
+                department: 'engineering',
+                avatar: 'ED',
+                utilization: 88,
+                availability: 12,
+                skills: ['React', 'Vue.js', 'TypeScript', 'CSS'],
+                projects: 3,
+                status: 'available',
+                hourlyRate: 105,
+                email: 'emily.davis@company.com',
+                phone: '+1 (555) 678-9012'
+            },
+            {
+                id: 7,
+                name: 'Michael Brown',
+                role: 'Backend Developer',
+                department: 'engineering',
+                avatar: 'MB',
+                utilization: 82,
+                availability: 18,
+                skills: ['Node.js', 'Python', 'PostgreSQL', 'MongoDB'],
+                projects: 3,
+                status: 'available',
+                hourlyRate: 110,
+                email: 'michael.brown@company.com',
+                phone: '+1 (555) 789-0123'
+            },
+            {
+                id: 8,
+                name: 'Sarah Johnson',
+                role: 'Product Designer',
+                department: 'design',
+                avatar: 'SJ',
+                utilization: 65,
+                availability: 35,
+                skills: ['Figma', 'User Research', 'Wireframing', 'Prototyping'],
+                projects: 2,
+                status: 'available',
+                hourlyRate: 95,
+                email: 'sarah.johnson@company.com',
+                phone: '+1 (555) 890-1234'
+            },
+            {
+                id: 9,
+                name: 'David Martinez',
+                role: 'QA Lead',
+                department: 'qa',
+                avatar: 'DM',
+                utilization: 90,
+                availability: 10,
+                skills: ['Test Strategy', 'Automation', 'Selenium', 'Performance Testing'],
+                projects: 4,
+                status: 'busy',
+                hourlyRate: 105,
+                email: 'david.martinez@company.com',
+                phone: '+1 (555) 901-2345'
+            },
+            {
+                id: 10,
+                name: 'Lisa Anderson',
+                role: 'Scrum Master',
+                department: 'pm',
+                avatar: 'LA',
+                utilization: 75,
+                availability: 25,
+                skills: ['Scrum', 'Agile Coaching', 'Facilitation', 'JIRA'],
+                projects: 3,
+                status: 'available',
+                hourlyRate: 100,
+                email: 'lisa.anderson@company.com',
+                phone: '+1 (555) 012-3456'
+            },
+            {
+                id: 11,
+                name: 'Tom Harris',
+                role: 'Full Stack Developer',
+                department: 'engineering',
+                avatar: 'TH',
+                utilization: 55,
+                availability: 45,
+                skills: ['React', 'Node.js', 'MongoDB', 'AWS'],
+                projects: 1,
+                status: 'available',
+                hourlyRate: 115,
+                email: 'tom.harris@company.com',
+                phone: '+1 (555) 123-4568'
+            },
+            {
+                id: 12,
+                name: 'Jennifer White',
+                role: 'UX Researcher',
+                department: 'design',
+                avatar: 'JW',
+                utilization: 68,
+                availability: 32,
+                skills: ['User Research', 'Usability Testing', 'Analytics', 'Surveys'],
+                projects: 2,
+                status: 'available',
+                hourlyRate: 90,
+                email: 'jennifer.white@company.com',
+                phone: '+1 (555) 234-5679'
+            }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadResources();
+            initializeUtilizationChart();
+            setupEventListeners();
+            showToast('Resource Management loaded successfully!', 'success');
+        });
+
+        // Load Resources
+        function loadResources() {
+            const grid = document.getElementById('resource-grid');
+            grid.innerHTML = resources.map(resource => createResourceCard(resource)).join('');
+        }
+
+        // Create Resource Card
+        function createResourceCard(resource) {
+            const utilizationClass = 
+                resource.utilization >= 90 ? 'utilization-overallocated' :
+                resource.utilization >= 80 ? 'utilization-optimal' :
+                resource.utilization >= 60 ? 'utilization-high' :
+                'utilization-low';
+
+            const statusClass = 
+                resource.status === 'available' ? 'status-available' :
+                resource.status === 'busy' ? 'status-busy' :
+                'status-offline';
+
+            return `
+                <div class="resource-card" onclick="openResourceModal(${resource.id})">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="relative">
+                            <div class="avatar" style="background: linear-gradient(135deg, ${getGradientColors(resource.id)});">
+                                ${resource.avatar}
+                            </div>
+                            <div class="status-indicator ${statusClass}"></div>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-900 mb-1">${resource.name}</h3>
+                            <p class="text-sm text-gray-600 mb-2">${resource.role}</p>
+                            <div class="flex items-center gap-2 text-xs text-gray-500">
+                                <i class="fas fa-project-diagram"></i>
+                                <span>${resource.projects} active projects</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between text-sm mb-2">
+                            <span class="text-gray-600">Utilization</span>
+                            <span class="font-semibold text-gray-900">${resource.utilization}%</span>
+                        </div>
+                        <div class="utilization-bar">
+                            <div class="utilization-fill ${utilizationClass}" style="width: ${resource.utilization}%"></div>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-gray-500 mt-1">
+                            <span>Available: ${resource.availability}%</span>
+                            <span>${resource.hourlyRate}/hr</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        ${resource.skills.slice(0, 3).map(skill => `
+                            <span class="skill-badge">${skill}</span>
+                        `).join('')}
+                        ${resource.skills.length > 3 ? `
+                            <span class="skill-badge">+${resource.skills.length - 3} more</span>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Get Gradient Colors
+        function getGradientColors(id) {
+            const gradients = [
+                '#667eea 0%, #764ba2 100%',
+                '#f093fb 0%, #f5576c 100%',
+                '#4facfe 0%, #00f2fe 100%',
+                '#43e97b 0%, #38f9d7 100%',
+                '#fa709a 0%, #fee140 100%',
+                '#30cfd0 0%, #330867 100%',
+                '#a8edea 0%, #fed6e3 100%',
+                '#ff9a9e 0%, #fecfef 100%',
+                '#ffecd2 0%, #fcb69f 100%',
+                '#ff6e7f 0%, #bfe9ff 100%',
+                '#e0c3fc 0%, #8ec5fc 100%',
+                '#f8b500 0%, #fceabb 100%'
+            ];
+            return gradients[id % gradients.length];
+        }
+
+        // Open Resource Modal
+        function openResourceModal(id) {
+            const resource = resources.find(r => r.id === id);
+            if (!resource) return;
+
+            document.getElementById('modal-title').textContent = resource.name;
+            document.getElementById('modal-content').innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex items-start gap-6">
+                        <div class="avatar-lg" style="background: linear-gradient(135deg, ${getGradientColors(resource.id)});">
+                            ${resource.avatar}
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">${resource.name}</h3>
+                            <p class="text-lg text-gray-600 mb-4">${resource.role}</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-600">Email</p>
+                                    <p class="font-medium text-gray-900">${resource.email}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Phone</p>
+                                    <p class="font-medium text-gray-900">${resource.phone}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Department</p>
+                                    <p class="font-medium text-gray-900">${resource.department.charAt(0).toUpperCase() + resource.department.slice(1)}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Hourly Rate</p>
+                                    <p class="font-medium text-gray-900">$${resource.hourlyRate}/hr</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-6">
+                        <h4 class="font-semibold text-gray-900 mb-4">Utilization</h4>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="bg-blue-50 rounded-lg p-4">
+                                <p class="text-sm text-blue-700 mb-1">Current</p>
+                                <p class="text-2xl font-bold text-blue-900">${resource.utilization}%</p>
+                            </div>
+                            <div class="bg-green-50 rounded-lg p-4">
+                                <p class="text-sm text-green-700 mb-1">Available</p>
+                                <p class="text-2xl font-bold text-green-900">${resource.availability}%</p>
+                            </div>
+                            <div class="bg-purple-50 rounded-lg p-4">
+                                <p class="text-sm text-purple-700 mb-1">Projects</p>
+                                <p class="text-2xl font-bold text-purple-900">${resource.projects}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-6">
+                        <h4 class="font-semibold text-gray-900 mb-4">Skills</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${resource.skills.map(skill => `
+                                <span class="px-3 py-2 bg-blue-100 text-blue-800 rounded-lg font-medium">${skill}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-6">
+                        <h4 class="font-semibold text-gray-900 mb-4">Quick Actions</h4>
+                        <div class="flex gap-3">
+                            <button onclick="assignToProject(${resource.id})" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-plus"></i> Assign to Project
+                            </button>
+                            <button onclick="requestResource(${resource.id})" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                <i class="fas fa-paper-plane"></i> Request Resource
+                            </button>
+                            <button onclick="viewSchedule(${resource.id})" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                <i class="fas fa-calendar"></i> View Schedule
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('resource-modal').classList.add('show');
+        }
+
+        function closeResourceModal() {
+            document.getElementById('resource-modal').classList.remove('show');
+        }
+
+        // Initialize Utilization Chart
+        function initializeUtilizationChart() {
+            const ctx = document.getElementById('utilization-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: resources.map(r => r.name.split(' ')[0]),
+                    datasets: [{
+                        label: 'Utilization %',
+                        data: resources.map(r => r.utilization),
+                        backgroundColor: resources.map(r => 
+                            r.utilization >= 90 ? '#ef4444' :
+                            r.utilization >= 80 ? '#10b981' :
+                            r.utilization >= 60 ? '#f59e0b' :
+                            '#6b7280'
+                        ),
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Filter chips
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.filter-chip')) {
+                    const chip = e.target.closest('.filter-chip');
+                    const filter = chip.dataset.filter;
+                    
+                    // Remove active from siblings
+                    document.querySelectorAll(`[data-filter="${filter}"]`).forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    
+                    showToast('Filter applied', 'info');
+                }
+            });
+
+            // Search
+            document.getElementById('search-input').addEventListener('input', function(e) {
+                const search = e.target.value.toLowerCase();
+                // Filter resources based on search
+            });
+        }
+
+        // Actions
+        function addResource() {
+            showToast('Add resource form coming soon!', 'info');
+        }
+
+        function assignToProject(id) {
+            showToast('Assigning resource to project...', 'info');
+            closeResourceModal();
+        }
+
+        function requestResource(id) {
+            showToast('Resource request sent!', 'success');
+            closeResourceModal();
+        }
+
+        function viewSchedule(id) {
+            showToast('Loading schedule...', 'info');
+            closeResourceModal();
+        }
+
+        function clearFilters() {
+            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+            document.querySelectorAll('[data-value="all"]').forEach(chip => chip.classList.add('active'));
+            showToast('Filters cleared', 'info');
+        }
+
+        // Toast
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                info: 'fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <i class="fas ${icons[type]} text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-semibold text-gray-900">${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                    <p class="text-sm text-gray-600">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

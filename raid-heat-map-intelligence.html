@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAID Heat Map Intelligence - World Class PPM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        .risk-cell {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .risk-cell:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        .risk-3d-container {
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+        .risk-cube {
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        .risk-cube:hover {
+            transform: rotateX(-10deg) rotateY(10deg);
+        }
+        .heat-map-cell {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .heat-map-cell::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+        .heat-map-cell:hover::before {
+            opacity: 1;
+        }
+        .risk-level-extreme { 
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: white;
+        }
+        .risk-level-high { 
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+        }
+        .risk-level-medium { 
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #78350f;
+        }
+        .risk-level-low { 
+            background: linear-gradient(135deg, #84cc16, #65a30d);
+            color: white;
+        }
+        .risk-level-minimal { 
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        .floating-card {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .risk-tooltip {
+            position: absolute;
+            background: rgba(31, 41, 55, 0.95);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 300px;
+        }
+        .risk-tooltip.show {
+            opacity: 1;
+        }
+        .correlation-line {
+            stroke: #6b7280;
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.6;
+        }
+        .correlation-line.strong {
+            stroke: #ef4444;
+            stroke-width: 3;
+            opacity: 0.8;
+        }
+        .score-circle {
+            transition: all 0.3s ease;
+        }
+        .score-circle:hover {
+            transform: scale(1.1);
+            filter: brightness(1.2);
+        }
+        .trend-line {
+            stroke: #6366f1;
+            stroke-width: 3;
+            fill: none;
+        }
+        .predictive-area {
+            fill: #6366f1;
+            opacity: 0.1;
+        }
+        .risk-radar-grid {
+            stroke: #e5e7eb;
+            stroke-width: 1;
+        }
+        .risk-radar-axis {
+            stroke: #9ca3af;
+            stroke-width: 2;
+        }
+        .executive-card {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .risk-score-ring {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        .risk-score-ring-bg {
+            stroke: #374151;
+            fill: none;
+        }
+        .risk-score-ring-progress {
+            transition: stroke-dashoffset 1s ease;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold flex items-center">
+                        <i class="fas fa-shield-alt mr-3"></i>
+                        RAID Heat Map Intelligence
+                    </h1>
+                    <p class="text-red-100 text-sm mt-1">3D Risk Analysis • AI Prediction • Programme Intelligence</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Project Selector -->
+                    <select id="projectSelector" class="bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg">
+                        <option value="programme">Digital Transformation Programme</option>
+                        <option value="website-redesign">Website Redesign</option>
+                        <option value="mobile-app">Mobile App Development</option>
+                        <option value="cloud-migration">Cloud Migration</option>
+                    </select>
+                    <!-- AI Confidence -->
+                    <div class="bg-white/20 px-4 py-2 rounded-lg">
+                        <span class="text-sm">AI Confidence:</span>
+                        <span class="font-bold ml-1">87%</span>
+                    </div>
+                    <!-- View Options -->
+                    <div class="flex space-x-2">
+                        <button onclick="toggleView('3d')" class="view-btn bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg text-sm">
+                            <i class="fas fa-cube mr-1"></i> 3D View
+                        </button>
+                        <button onclick="toggleView('heatmap')" class="view-btn bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg text-sm">
+                            <i class="fas fa-th mr-1"></i> Heat Map
+                        </button>
+                        <button onclick="toggleView('predictive')" class="view-btn bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg text-sm">
+                            <i class="fas fa-brain mr-1"></i> Predictive
+                        </button>
+                    </div>
+                    <!-- Intelligence Actions -->
+                    <button onclick="runRiskAssessment()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm">
+                        <i class="fas fa-magic mr-1"></i> AI Assessment
+                    </button>
+                    <button onclick="exportReport()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">
+                        <i class="fas fa-download mr-1"></i> Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Intelligence Summary Bar -->
+    <div class="bg-white border-b shadow-sm">
+        <div class="container mx-auto px-6 py-4">
+            <div class="grid grid-cols-6 gap-6">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-red-100 p-3 rounded-lg">
+                        <i class="fas fa-exclamation-triangle text-red-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Total Risks</p>
+                        <p class="text-xl font-bold text-red-600" id="totalRisks">24</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-orange-100 p-3 rounded-lg">
+                        <i class="fas fa-fire text-orange-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Critical Risks</p>
+                        <p class="text-xl font-bold text-orange-600" id="criticalRisks">3</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-yellow-100 p-3 rounded-lg">
+                        <i class="fas fa-trending-up text-yellow-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Risk Trend</p>
+                        <p class="text-xl font-bold text-yellow-600" id="riskTrend">+12%</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i class="fas fa-shield-alt text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Mitigation Effectiveness</p>
+                        <p class="text-xl font-bold text-blue-600" id="mitigationEffectiveness">78%</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <i class="fas fa-brain text-purple-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Predictive Accuracy</p>
+                        <p class="text-xl font-bold text-purple-600" id="predictiveAccuracy">87%</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-chart-line text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Risk Score</p>
+                        <p class="text-xl font-bold text-green-600" id="riskScore">6.8/10</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-6">
+        <!-- 3D Risk Matrix -->
+        <div id="riskMatrix3D" class="mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-cube mr-2 text-red-600"></i>
+                        3D Risk Matrix Analysis
+                    </h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Probability vs. Impact vs. Time Urgency
+                        </div>
+                        <button onclick="rotateMatrix()" class="text-gray-600 hover:text-gray-800">
+                            <i class="fas fa-sync-alt"></i> Rotate
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-5 gap-4">
+                    <!-- Risk Matrix Grid -->
+                    <div class="col-span-3">
+                        <div class="risk-3d-container" style="height: 400px;">
+                            <div class="grid grid-cols-5 gap-1 h-full" id="riskMatrix">
+                                <!-- Matrix cells will be generated here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Matrix Labels -->
+                        <div class="grid grid-cols-5 gap-1 mt-4">
+                            <div class="text-center text-xs font-medium text-gray-600">Very Low</div>
+                            <div class="text-center text-xs font-medium text-gray-600">Low</div>
+                            <div class="text-center text-xs font-medium text-gray-600">Medium</div>
+                            <div class="text-center text-xs font-medium text-gray-600">High</div>
+                            <div class="text-center text-xs font-medium text-gray-600">Very High</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Risk Score Panel -->
+                    <div class="col-span-2">
+                        <div class="executive-card rounded-lg p-6 text-white">
+                            <h3 class="text-lg font-semibold mb-4">Executive Risk Summary</h3>
+                            
+                            <!-- Risk Score Ring -->
+                            <div class="flex justify-center mb-6">
+                                <div class="relative">
+                                    <svg width="120" height="120">
+                                        <circle cx="60" cy="60" r="50" class="risk-score-ring-bg" stroke-width="8"></circle>
+                                        <circle cx="60" cy="60" r="50" class="risk-score-ring risk-score-ring-progress" 
+                                                stroke="#ef4444" stroke-width="8"
+                                                stroke-dasharray="314" stroke-dashoffset="100"></circle>
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="text-center">
+                                            <div class="text-2xl font-bold">6.8</div>
+                                            <div class="text-xs text-gray-400">Risk Score</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Risk Breakdown -->
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">Strategic Risks</span>
+                                    <span class="font-bold">3</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">Operational Risks</span>
+                                    <span class="font-bold">8</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">Financial Risks</span>
+                                    <span class="font-bold">5</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">Technical Risks</span>
+                                    <span class="font-bold">6</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">External Risks</span>
+                                    <span class="font-bold">2</span>
+                                </div>
+                            </div>
+                            
+                            <!-- AI Recommendations -->
+                            <div class="mt-6 p-4 bg-white/10 rounded-lg">
+                                <h4 class="font-semibold text-sm mb-2">AI Recommendations</h4>
+                                <ul class="text-xs space-y-1">
+                                    <li>• Immediate action required on 3 critical risks</li>
+                                    <li>• Resource reallocation recommended for technical risks</li>
+                                    <li>• Schedule buffer of 12 days advised</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Programme Risk Heat Map -->
+        <div id="riskHeatMap" class="mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-th mr-2 text-orange-600"></i>
+                        Programme Risk Heat Map
+                    </h2>
+                    <div class="flex items-center space-x-4">
+                        <select id="heatMapType" class="border border-gray-300 px-3 py-1 rounded text-sm">
+                            <option value="probability">Risk Probability</option>
+                            <option value="impact">Risk Impact</option>
+                            <option value="exposure">Risk Exposure</option>
+                            <option value="trend">Risk Trend</option>
+                        </select>
+                        <button onclick="toggleCorrelation()" class="text-gray-600 hover:text-gray-800 text-sm">
+                            <i class="fas fa-project-diagram mr-1"></i> Correlations
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-4 gap-4" id="heatMapContainer">
+                    <!-- Heat map cells will be generated here -->
+                </div>
+                
+                <!-- Heat Map Legend -->
+                <div class="flex items-center justify-center mt-6 space-x-6">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 risk-level-minimal rounded"></div>
+                        <span class="text-xs text-gray-600">Minimal (0-2)</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 risk-level-low rounded"></div>
+                        <span class="text-xs text-gray-600">Low (2-4)</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 risk-level-medium rounded"></div>
+                        <span class="text-xs text-gray-600">Medium (4-6)</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 risk-level-high rounded"></div>
+                        <span class="text-xs text-gray-600">High (6-8)</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 risk-level-extreme rounded"></div>
+                        <span class="text-xs text-gray-600">Extreme (8-10)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Predictive Risk Analytics -->
+        <div id="predictiveAnalytics" class="mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-brain mr-2 text-purple-600"></i>
+                        Predictive Risk Analytics
+                    </h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-robot mr-1"></i>
+                            AI Model v2.3 • Confidence: 87%
+                        </div>
+                        <button onclick="runPrediction()" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-sm text-white">
+                            <i class="fas fa-play mr-1"></i> Run Prediction
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Risk Trend Chart -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Risk Trend Analysis</h3>
+                        <div class="h-64" id="riskTrendChart">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Risk Prediction Chart -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Monte Carlo Simulation</h3>
+                        <div class="h-64" id="riskPredictionChart">
+                            <canvas id="predictionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Predictive Insights -->
+                <div class="mt-6 grid grid-cols-3 gap-4">
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold text-purple-800">High-Risk Projects</h4>
+                            <i class="fas fa-exclamation-triangle text-purple-600"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-purple-900">2</div>
+                        <div class="text-sm text-purple-700 mt-1">Cloud Migration, API Gateway</div>
+                        <div class="text-xs text-purple-600 mt-2">Probability of failure: 23%</div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-4 border border-orange-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold text-orange-800">Risk Emergence</h4>
+                            <i class="fas fa-calendar-alt text-orange-600"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-orange-900">3-4 weeks</div>
+                        <div class="text-sm text-orange-700 mt-1">Next risk peak expected</div>
+                        <div class="text-xs text-orange-600 mt-2">Technical debt, Resource burnout</div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold text-green-800">Mitigation Impact</h4>
+                            <i class="fas fa-shield-alt text-green-600"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-green-900">-42%</div>
+                        <div class="text-sm text-green-700 mt-1">Risk reduction potential</div>
+                        <div class="text-xs text-green-600 mt-2">With recommended actions</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Correlation Analysis -->
+        <div class="mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-project-diagram mr-2 text-blue-600"></i>
+                        Risk Correlation Analysis
+                    </h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-link mr-1"></i>
+                            Cross-project risk dependencies
+                        </div>
+                        <button onclick="analyzeCorrelations()" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm text-white">
+                            <i class="fas fa-sync mr-1"></i> Analyze
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Correlation Matrix -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Project Risk Correlation</h3>
+                        <div class="h-64" id="correlationMatrix"></div>
+                    </div>
+                    
+                    <!-- Risk Network Graph -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Risk Network Visualization</h3>
+                        <div class="h-64" id="riskNetwork"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Executive Risk Dashboard -->
+        <div class="bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold flex items-center">
+                    <i class="fas fa-tachometer-alt mr-2"></i>
+                    Executive Risk Dashboard
+                </h2>
+                <div class="flex space-x-2">
+                    <button class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-sm">
+                        <i class="fas fa-download mr-1"></i> Export
+                    </button>
+                    <button class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-sm">
+                        <i class="fas fa-share mr-1"></i> Share
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-4 gap-6">
+                <!-- Risk Appetite -->
+                <div class="text-center">
+                    <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                        <h4 class="text-sm font-medium mb-2">Risk Appetite</h4>
+                        <div class="text-2xl font-bold">Medium</div>
+                        <div class="text-xs text-gray-400 mt-1">Within tolerance</div>
+                    </div>
+                </div>
+                
+                <!-- Risk Capacity -->
+                <div class="text-center">
+                    <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                        <h4 class="text-sm font-medium mb-2">Risk Capacity</h4>
+                        <div class="text-2xl font-bold">68%</div>
+                        <div class="text-xs text-gray-400 mt-1">Available capacity</div>
+                    </div>
+                </div>
+                
+                <!-- Risk Velocity -->
+                <div class="text-center">
+                    <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                        <h4 class="text-sm font-medium mb-2">Risk Velocity</h4>
+                        <div class="text-2xl font-bold">12 days</div>
+                        <div class="text-xs text-gray-400 mt-1">Avg. risk emergence</div>
+                    </div>
+                </div>
+                
+                <!-- Risk ROI -->
+                <div class="text-center">
+                    <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                        <h4 class="text-sm font-medium mb-2">Risk Mitigation ROI</h4>
+                        <div class="text-2xl font-bold">3.2x</div>
+                        <div class="text-xs text-gray-400 mt-1">Investment return</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Risk Detail Modal -->
+    <div id="riskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+            <div class="bg-gradient-to-r from-red-600 to-orange-600 text-white p-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold">Risk Intelligence Details</h3>
+                    <button onclick="closeRiskModal()" class="text-white hover:text-gray-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <div id="riskModalContent">
+                    <!-- Dynamic risk content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Tooltip -->
+    <div id="riskTooltip" class="risk-tooltip"></div>
+
+    <script>
+        // Global state
+        let currentView = '3d';
+        let currentProject = 'programme';
+        let riskData = [];
+        let correlationData = [];
+        let predictiveData = {};
+        let showCorrelations = false;
+
+        // Sample risk data for demonstration
+        const sampleRiskData = {
+            'programme': {
+                risks: [
+                    { id: 1, title: 'Technical Debt Accumulation', project: 'Website Redesign', probability: 7, impact: 8, urgency: 8, category: 'technical', status: 'active', trend: 'increasing' },
+                    { id: 2, title: 'Resource Burnout', project: 'Mobile App Development', probability: 6, impact: 7, urgency: 7, category: 'operational', status: 'active', trend: 'stable' },
+                    { id: 3, title: 'Budget Overrun', project: 'Cloud Migration', probability: 5, impact: 9, urgency: 6, category: 'financial', status: 'monitoring', trend: 'increasing' },
+                    { id: 4, title: 'Third-Party API Failure', project: 'Website Redesign', probability: 4, impact: 8, urgency: 5, category: 'external', status: 'active', trend: 'stable' },
+                    { id: 5, title: 'Security Vulnerabilities', project: 'API Gateway', probability: 8, impact: 9, urgency: 9, category: 'technical', status: 'critical', trend: 'increasing' },
+                    { id: 6, title: 'Market Competition', project: 'Mobile App Development', probability: 6, impact: 6, urgency: 4, category: 'strategic', status: 'monitoring', trend: 'stable' },
+                    { id: 7, title: 'Regulatory Compliance', project: 'Cloud Migration', probability: 3, impact: 8, urgency: 6, category: 'external', status: 'monitoring', trend: 'decreasing' },
+                    { id: 8, title: 'Team Turnover', project: 'Data Platform', probability: 5, impact: 7, urgency: 5, category: 'operational', status: 'active', trend: 'increasing' }
+                ],
+                correlations: [
+                    { from: 1, to: 2, strength: 0.7, type: 'resource' },
+                    { from: 3, to: 5, strength: 0.8, type: 'technical' },
+                    { from: 1, to: 5, strength: 0.6, type: 'technical' },
+                    { from: 2, to: 8, strength: 0.9, type: 'resource' }
+                ]
+            }
+        };
+
+        // Initialize the RAID Intelligence System
+        function initRAIDIntelligence() {
+            loadData();
+            render3DRiskMatrix();
+            renderRiskHeatMap();
+            renderPredictiveAnalytics();
+            renderCorrelationAnalysis();
+            updateIntelligenceBar();
+            setupEventListeners();
+        }
+
+        // Load risk data
+        function loadData() {
+            const data = sampleRiskData[currentProject];
+            riskData = data.risks;
+            correlationData = data.correlations;
+            
+            // Generate predictive data
+            generatePredictiveData();
+        }
+
+        // Generate predictive data
+        function generatePredictiveData() {
+            predictiveData = {
+                trends: generateTrendData(),
+                monteCarlo: generateMonteCarloData(),
+                forecasts: generateForecastData()
+            };
+        }
+
+        // Render 3D Risk Matrix
+        function render3DRiskMatrix() {
+            const matrix = document.getElementById('riskMatrix');
+            const probabilityLevels = [5, 4, 3, 2, 1];
+            const impactLevels = [1, 2, 3, 4, 5];
+            
+            let html = '';
+            
+            probabilityLevels.forEach(prob => {
+                impactLevels.forEach(impact => {
+                    const risksInCell = riskData.filter(r => 
+                        Math.ceil(r.probability / 2) === prob && 
+                        Math.ceil(r.impact / 2) === impact
+                    );
+                    
+                    const riskScore = prob * impact;
+                    const colorClass = getRiskColorClass(riskScore);
+                    const urgencyBonus = Math.max(...risksInCell.map(r => r.urgency), 0);
+                    const cellScore = riskScore + (urgencyBonus * 0.2);
+                    
+                    html += `<div class="risk-cell ${colorClass} rounded-lg p-4 text-center cursor-pointer relative overflow-hidden"
+                                   onclick="showRiskDetails(${prob}, ${impact})"
+                                   onmouseover="showRiskTooltip(event, ${prob}, ${impact})"
+                                   onmouseout="hideRiskTooltip()">
+                        <div class="text-sm font-bold">${risksInCell.length}</div>
+                        <div class="text-xs opacity-80">Risks</div>
+                        <div class="text-xs mt-1">Score: ${cellScore.toFixed(1)}</div>
+                        ${urgencyBonus > 0 ? `<div class="text-xs pulse-animation">⚡ ${urgencyBonus}</div>` : ''}
+                        ${risksInCell.length > 0 ? `
+                            <div class="absolute top-1 right-1">
+                                <div class="w-2 h-2 bg-white rounded-full ${risksInCell.some(r => r.trend === 'increasing') ? 'pulse-animation' : ''}"></div>
+                            </div>
+                        ` : ''}
+                    </div>`;
+                });
+            });
+            
+            matrix.innerHTML = html;
+        }
+
+        // Render Risk Heat Map
+        function renderRiskHeatMap() {
+            const container = document.getElementById('heatMapContainer');
+            const projects = ['Website Redesign', 'Mobile App Development', 'Cloud Migration', 'API Gateway'];
+            const riskCategories = ['Strategic', 'Operational', 'Financial', 'Technical', 'External'];
+            
+            let html = '';
+            
+            projects.forEach(project => {
+                html += `<div class="space-y-2">
+                    <h4 class="font-semibold text-sm text-gray-700">${project}</h4>`;
+                
+                riskCategories.forEach(category => {
+                    const projectRisks = riskData.filter(r => r.project === project);
+                    const categoryRisks = projectRisks.filter(r => getRiskCategory(r.category) === category);
+                    const avgScore = categoryRisks.length > 0 
+                        ? categoryRisks.reduce((sum, r) => sum + (r.probability * r.impact), 0) / categoryRisks.length 
+                        : 0;
+                    
+                    const colorClass = getRiskColorClass(avgScore);
+                    
+                    html += `<div class="heat-map-cell ${colorClass} rounded-lg p-3 text-center cursor-pointer"
+                                       onclick="showProjectRiskDetails('${project}', '${category}')"
+                                       onmouseover="showHeatMapTooltip(event, '${project}', '${category}')"
+                                       onmouseout="hideRiskTooltip()">
+                        <div class="text-xs font-bold">${categoryRisks.length}</div>
+                        <div class="text-xs opacity-80">${avgScore.toFixed(1)}</div>
+                    </div>`;
+                });
+                
+                html += `</div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Render Predictive Analytics
+        function renderPredictiveAnalytics() {
+            renderTrendChart();
+            renderPredictionChart();
+        }
+
+        // Render Trend Chart
+        function renderTrendChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                    datasets: [{
+                        label: 'Historical Risk Score',
+                        data: [5.2, 5.8, 6.1, 6.4, 6.8, 7.1, 7.3, 7.5],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Predicted Risk Score',
+                        data: [null, null, null, null, null, null, 7.8, 8.2],
+                        borderColor: '#ef4444',
+                        borderDash: [5, 5],
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Risk Score Evolution (AI Prediction: 87% Confidence)'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Prediction Chart
+        function renderPredictionChart() {
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            const monteCarloData = generateMonteCarloData();
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['2.0', '3.0', '4.0', '5.0', '6.0', '7.0', '8.0', '9.0'],
+                    datasets: [{
+                        label: 'Monte Carlo Probability Distribution',
+                        data: monteCarloData,
+                        backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                        borderColor: '#22c55e',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Risk Score Probability Distribution (10,000 Simulations)'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Risk Score'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Probability (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Correlation Analysis
+        function renderCorrelationAnalysis() {
+            renderCorrelationMatrix();
+            renderRiskNetwork();
+        }
+
+        // Render Correlation Matrix
+        function renderCorrelationMatrix() {
+            const container = document.getElementById('correlationMatrix');
+            const projects = ['Website Redesign', 'Mobile App Development', 'Cloud Migration', 'API Gateway'];
+            
+            // Create correlation matrix data
+            const correlationMatrix = projects.map(() => 
+                projects.map(() => Math.random() * 0.9)
+            );
+            
+            // Set diagonal to 1
+            for (let i = 0; i < correlationMatrix.length; i++) {
+                correlationMatrix[i][i] = 1;
+            }
+            
+            const data = [{
+                z: correlationMatrix,
+                x: projects,
+                y: projects,
+                type: 'heatmap',
+                colorscale: [
+                    [0, '#22c55e'],
+                    [0.5, '#fbbf24'],
+                    [1, '#ef4444']
+                ]
+            }];
+            
+            const layout = {
+                title: 'Project Risk Correlation Matrix',
+                margin: { t: 30, r: 20, b: 40, l: 60 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)'
+            };
+            
+            Plotly.newPlot('correlationMatrix', data, layout, {responsive: true});
+        }
+
+        // Render Risk Network
+        function renderRiskNetwork() {
+            const container = document.getElementById('riskNetwork');
+            
+            const networkData = {
+                nodes: riskData.map((risk, i) => ({
+                    id: i,
+                    label: risk.title,
+                    group: risk.category,
+                    value: risk.probability * risk.impact
+                })),
+                links: correlationData.map(corr => ({
+                    source: riskData.findIndex(r => r.id === corr.from),
+                    target: riskData.findIndex(r => r.id === corr.to),
+                    value: corr.strength
+                }))
+            };
+            
+            const data = [{
+                type: 'scatter',
+                mode: 'markers+text',
+                x: networkData.nodes.map(() => Math.random() * 100),
+                y: networkData.nodes.map(() => Math.random() * 100),
+                text: networkData.nodes.map(n => n.label.substring(0, 15) + '...'),
+                textfont: { size: 8 },
+                marker: {
+                    size: networkData.nodes.map(n => n.value * 3),
+                    color: networkData.nodes.map(n => getRiskColorHex(n.value))
+                }
+            }];
+            
+            const layout = {
+                title: 'Risk Dependency Network',
+                showlegend: false,
+                hovermode: 'closest',
+                margin: { t: 30, r: 20, b: 40, l: 60 },
+                xaxis: { visible: false },
+                yaxis: { visible: false },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)'
+            };
+            
+            Plotly.newPlot('riskNetwork', data, layout, {responsive: true});
+        }
+
+        // Update Intelligence Bar
+        function updateIntelligenceBar() {
+            const totalRisks = riskData.length;
+            const criticalRisks = riskData.filter(r => r.probability * r.impact > 30).length;
+            const riskTrend = calculateRiskTrend();
+            const mitigationEffectiveness = Math.round(75 + Math.random() * 10);
+            const predictiveAccuracy = 87;
+            const riskScore = (riskData.reduce((sum, r) => sum + (r.probability * r.impact), 0) / totalRisks).toFixed(1);
+            
+            document.getElementById('totalRisks').textContent = totalRisks;
+            document.getElementById('criticalRisks').textContent = criticalRisks;
+            document.getElementById('riskTrend').textContent = riskTrend > 0 ? `+${riskTrend}%` : `${riskTrend}%`;
+            document.getElementById('mitigationEffectiveness').textContent = `${mitigationEffectiveness}%`;
+            document.getElementById('predictiveAccuracy').textContent = `${predictiveAccuracy}%`;
+            document.getElementById('riskScore').textContent = `${riskScore}/10`;
+        }
+
+        // Helper functions
+        function getRiskColorClass(score) {
+            if (score <= 2) return 'risk-level-minimal';
+            if (score <= 4) return 'risk-level-low';
+            if (score <= 6) return 'risk-level-medium';
+            if (score <= 8) return 'risk-level-high';
+            return 'risk-level-extreme';
+        }
+
+        function getRiskColorHex(score) {
+            if (score <= 2) return '#22c55e';
+            if (score <= 4) return '#84cc16';
+            if (score <= 6) return '#fbbf24';
+            if (score <= 8) return '#f97316';
+            return '#ef4444';
+        }
+
+        function getRiskCategory(category) {
+            const categoryMap = {
+                'technical': 'Technical',
+                'operational': 'Operational',
+                'financial': 'Financial',
+                'strategic': 'Strategic',
+                'external': 'External'
+            };
+            return categoryMap[category] || 'Other';
+        }
+
+        function generateTrendData() {
+            return Array.from({length: 12}, (_, i) => ({
+                month: i + 1,
+                historical: i < 8 ? 5 + Math.random() * 2 : null,
+                predicted: i >= 6 ? 6 + Math.random() * 3 : null
+            }));
+        }
+
+        function generateMonteCarloData() {
+            // Generate a normal distribution centered around 6.5
+            const data = Array.from({length: 8}, () => 0);
+            for (let i = 0; i < 10000; i++) {
+                const value = 6.5 + (Math.random() - 0.5) * 4;
+                const index = Math.min(Math.floor((value / 10) * 8), 7);
+                data[index]++;
+            }
+            return data.map(d => (d / 10000) * 100);
+        }
+
+        function generateForecastData() {
+            return {
+                nextMonth: 7.2,
+                nextQuarter: 7.8,
+                nextYear: 8.1,
+                confidence: 0.87
+            };
+        }
+
+        function calculateRiskTrend() {
+            const increasingRisks = riskData.filter(r => r.trend === 'increasing').length;
+            const decreasingRisks = riskData.filter(r => r.trend === 'decreasing').length;
+            return Math.round(((increasingRisks - decreasingRisks) / riskData.length) * 100);
+        }
+
+        // Event handlers
+        function toggleView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('bg-white/40');
+            });
+            event.target.classList.add('bg-white/40');
+            
+            // Show/hide different views
+            document.getElementById('riskMatrix3D').style.display = view === '3d' ? 'block' : 'none';
+            document.getElementById('riskHeatMap').style.display = view === 'heatmap' ? 'block' : 'none';
+            document.getElementById('predictiveAnalytics').style.display = view === 'predictive' ? 'block' : 'none';
+        }
+
+        function rotateMatrix() {
+            const matrix = document.getElementById('riskMatrix');
+            matrix.style.transform = matrix.style.transform === 'rotateX(10deg)' ? 'rotateX(0deg)' : 'rotateX(10deg)';
+        }
+
+        function toggleCorrelation() {
+            showCorrelations = !showCorrelations;
+            // Implementation for showing/hiding correlations
+        }
+
+        function runRiskAssessment() {
+            // Simulate AI risk assessment
+            showNotification('Running AI risk assessment...', 'info');
+            setTimeout(() => {
+                showNotification('Risk assessment complete! 3 new risks identified.', 'success');
+                updateIntelligenceBar();
+            }, 2000);
+        }
+
+        function runPrediction() {
+            showNotification('Running predictive risk analysis...', 'info');
+            setTimeout(() => {
+                showNotification('Prediction complete! Risk score expected to increase by 12% in 6 weeks.', 'success');
+            }, 1500);
+        }
+
+        function analyzeCorrelations() {
+            showNotification('Analyzing risk correlations...', 'info');
+            setTimeout(() => {
+                showNotification('Found 4 strong correlations between project risks.', 'success');
+            }, 1000);
+        }
+
+        function showRiskDetails(probability, impact) {
+            const risksInCell = riskData.filter(r => 
+                Math.ceil(r.probability / 2) === probability && 
+                Math.ceil(r.impact / 2) === impact
+            );
+            
+            const modal = document.getElementById('riskModal');
+            const content = document.getElementById('riskModalContent');
+            
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-red-800 mb-2">Risk Matrix Cell Details</h4>
+                        <p class="text-sm text-red-700">Probability: ${probability}/5 • Impact: ${impact}/5</p>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        ${risksInCell.map(risk => `
+                            <div class="border rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h5 class="font-semibold">${risk.title}</h5>
+                                    <span class="text-xs px-2 py-1 rounded ${getRiskColorClass(risk.probability * risk.impact)}">
+                                        Score: ${(risk.probability * risk.impact).toFixed(1)}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-2">Project: ${risk.project} • Category: ${getRiskCategory(risk.category)}</p>
+                                <div class="grid grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-500">Probability:</span>
+                                        <span class="font-medium ml-1">${risk.probability}/10</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">Impact:</span>
+                                        <span class="font-medium ml-1">${risk.impact}/10</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">Urgency:</span>
+                                        <span class="font-medium ml-1">${risk.urgency}/10</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between mt-3">
+                                    <span class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800">${risk.status}</span>
+                                    <span class="text-xs px-2 py-1 rounded ${risk.trend === 'increasing' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}">
+                                        ${risk.trend}
+                                    </span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function showProjectRiskDetails(project, category) {
+            const projectRisks = riskData.filter(r => r.project === project && getRiskCategory(r.category) === category);
+            
+            const modal = document.getElementById('riskModal');
+            const content = document.getElementById('riskModalContent');
+            
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-blue-800 mb-2">${project} - ${category} Risks</h4>
+                        <p class="text-sm text-blue-700">${projectRisks.length} risks identified</p>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        ${projectRisks.map(risk => `
+                            <div class="border rounded-lg p-4">
+                                <h5 class="font-semibold mb-2">${risk.title}</h5>
+                                <div class="grid grid-cols-4 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-500">Probability:</span>
+                                        <span class="font-medium ml-1">${risk.probability}/10</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">Impact:</span>
+                                        <span class="font-medium ml-1">${risk.impact}/10</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">Score:</span>
+                                        <span class="font-medium ml-1">${(risk.probability * risk.impact).toFixed(1)}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">Status:</span>
+                                        <span class="font-medium ml-1">${risk.status}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeRiskModal() {
+            document.getElementById('riskModal').classList.add('hidden');
+        }
+
+        function showRiskTooltip(event, probability, impact) {
+            const tooltip = document.getElementById('riskTooltip');
+            const risksInCell = riskData.filter(r => 
+                Math.ceil(r.probability / 2) === probability && 
+                Math.ceil(r.impact / 2) === impact
+            );
+            
+            tooltip.innerHTML = `
+                <div class="font-semibold mb-1">Risk Cell Details</div>
+                <div class="text-xs space-y-1">
+                    <div>Probability Level: ${probability}/5</div>
+                    <div>Impact Level: ${impact}/5</div>
+                    <div>Risks Count: ${risksInCell.length}</div>
+                    ${risksInCell.length > 0 ? `
+                        <div class="mt-2 pt-2 border-t border-gray-600">
+                            <div class="font-medium mb-1">Top Risks:</div>
+                            ${risksInCell.slice(0, 3).map(r => `<div>• ${r.title.substring(0, 20)}...</div>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY - 30 + 'px';
+            tooltip.classList.add('show');
+        }
+
+        function showHeatMapTooltip(event, project, category) {
+            const tooltip = document.getElementById('riskTooltip');
+            const projectRisks = riskData.filter(r => r.project === project && getRiskCategory(r.category) === category);
+            
+            tooltip.innerHTML = `
+                <div class="font-semibold mb-1">${project} - ${category}</div>
+                <div class="text-xs space-y-1">
+                    <div>Risk Count: ${projectRisks.length}</div>
+                    ${projectRisks.length > 0 ? `
+                        <div>Avg Score: ${(projectRisks.reduce((sum, r) => sum + (r.probability * r.impact), 0) / projectRisks.length).toFixed(1)}</div>
+                        <div>Status: ${projectRisks.some(r => r.status === 'critical') ? 'Critical Risks Present' : 'Monitoring'}</div>
+                    ` : ''}
+                </div>
+            `;
+            
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY - 30 + 'px';
+            tooltip.classList.add('show');
+        }
+
+        function hideRiskTooltip() {
+            document.getElementById('riskTooltip').classList.remove('show');
+        }
+
+        function exportReport() {
+            showNotification('Generating comprehensive risk intelligence report...', 'info');
+            setTimeout(() => {
+                showNotification('Report exported successfully! PDF sent to stakeholders.', 'success');
+            }, 2000);
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full`;
+            
+            // Set color based on type
+            const colors = {
+                'success': 'bg-green-500 text-white',
+                'error': 'bg-red-500 text-white',
+                'warning': 'bg-yellow-500 text-white',
+                'info': 'bg-blue-500 text-white'
+            };
+            
+            notification.className += ` ${colors[type]}`;
+            notification.textContent = message;
+            
+            // Add to page
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Project selector
+            document.getElementById('projectSelector').addEventListener('change', function(e) {
+                currentProject = e.target.value;
+                initRAIDIntelligence();
+            });
+            
+            // Heat map type selector
+            document.getElementById('heatMapType').addEventListener('change', function(e) {
+                renderRiskHeatMap();
+            });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initRAIDIntelligence();
+        });
+    </script>
+</body>
+</html>

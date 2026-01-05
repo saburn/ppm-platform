@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Management - AI Predictions & Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+        .prediction-card {
+            transition: all 0.3s;
+        }
+        .prediction-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .ai-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div id="toastContainer"></div>
+
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold flex items-center">
+                        <i class="fas fa-brain mr-3"></i>
+                        Risk Management - AI Predictions & Analytics
+                    </h1>
+                    <p class="text-purple-100 mt-2">Machine learning predictions with 87% accuracy & 60-day advance warning</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh Predictions
+                    </button>
+                    <button class="bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-cog mr-2"></i>AI Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-robot text-2xl"></i>
+                    </div>
+                    <span class="ai-badge"><i class="fas fa-brain"></i>AI</span>
+                </div>
+                <p class="text-purple-100 text-sm font-medium">Prediction Accuracy</p>
+                <p class="text-3xl font-bold mt-2">87%</p>
+            </div>
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-calendar-alt text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">Early</span>
+                </div>
+                <p class="text-blue-100 text-sm font-medium">Advance Warning</p>
+                <p class="text-3xl font-bold mt-2">60 days</p>
+            </div>
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-exclamation-triangle text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">New</span>
+                </div>
+                <p class="text-orange-100 text-sm font-medium">Predicted Risks</p>
+                <p class="text-3xl font-bold mt-2">12</p>
+            </div>
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-shield-alt text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">+15%</span>
+                </div>
+                <p class="text-green-100 text-sm font-medium">Risks Prevented</p>
+                <p class="text-3xl font-bold mt-2">24</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Risk Probability Forecast</h3>
+                <div class="chart-container">
+                    <canvas id="probabilityChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Impact Analysis</h3>
+                <div class="chart-container">
+                    <canvas id="impactChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">AI-Predicted Risks (Next 60 Days)</h3>
+                    <p class="text-sm text-gray-500 mt-1">Machine learning analysis of historical patterns and current trends</p>
+                </div>
+                <span class="ai-badge text-lg"><i class="fas fa-robot"></i>AI Powered</span>
+            </div>
+
+            <div class="space-y-4">
+                <div class="prediction-card border-l-4 border-red-500 bg-red-50 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h4 class="font-bold text-gray-800 text-lg">Server Capacity Overload</h4>
+                                <span class="bg-red-500 text-white text-xs px-3 py-1 rounded-full font-semibold">HIGH RISK</span>
+                                <span class="ai-badge"><i class="fas fa-brain"></i>87% Confidence</span>
+                            </div>
+                            <p class="text-gray-600 mb-3">AI predicts server capacity will reach 95% within 45 days based on current growth trajectory.</p>
+                            <div class="grid grid-cols-4 gap-4 text-sm mb-3">
+                                <div>
+                                    <span class="text-gray-500">Predicted Date:</span>
+                                    <span class="font-semibold text-gray-800 ml-2">Feb 5, 2025</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Confidence:</span>
+                                    <span class="font-semibold text-purple-600 ml-2">87%</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Impact:</span>
+                                    <span class="font-semibold text-red-600 ml-2">Critical</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Days Until:</span>
+                                    <span class="font-semibold text-orange-600 ml-2">45 days</span>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-red-200">
+                                <div class="text-sm font-semibold text-gray-800 mb-2">AI Recommendation:</div>
+                                <p class="text-sm text-gray-600">Initiate server capacity expansion immediately. Consider cloud auto-scaling or additional hardware procurement.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prediction-card border-l-4 border-orange-500 bg-orange-50 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h4 class="font-bold text-gray-800 text-lg">Team Burnout Risk</h4>
+                                <span class="bg-orange-500 text-white text-xs px-3 py-1 rounded-full font-semibold">MEDIUM RISK</span>
+                                <span class="ai-badge"><i class="fas fa-brain"></i>82% Confidence</span>
+                            </div>
+                            <p class="text-gray-600 mb-3">Pattern analysis shows increasing overtime hours and decreasing velocity. Burnout risk elevated.</p>
+                            <div class="grid grid-cols-4 gap-4 text-sm mb-3">
+                                <div>
+                                    <span class="text-gray-500">Predicted Date:</span>
+                                    <span class="font-semibold text-gray-800 ml-2">Jan 28, 2025</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Confidence:</span>
+                                    <span class="font-semibold text-purple-600 ml-2">82%</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Impact:</span>
+                                    <span class="font-semibold text-orange-600 ml-2">High</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Days Until:</span>
+                                    <span class="font-semibold text-orange-600 ml-2">28 days</span>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-orange-200">
+                                <div class="text-sm font-semibold text-gray-800 mb-2">AI Recommendation:</div>
+                                <p class="text-sm text-gray-600">Redistribute workload, schedule team building activities, and consider hiring additional resources.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prediction-card border-l-4 border-yellow-500 bg-yellow-50 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h4 class="font-bold text-gray-800 text-lg">Vendor Dependency Risk</h4>
+                                <span class="bg-yellow-500 text-white text-xs px-3 py-1 rounded-full font-semibold">MEDIUM RISK</span>
+                                <span class="ai-badge"><i class="fas fa-brain"></i>78% Confidence</span>
+                            </div>
+                            <p class="text-gray-600 mb-3">Single vendor dependency detected. Historical data shows 15% chance of service disruption.</p>
+                            <div class="grid grid-cols-4 gap-4 text-sm mb-3">
+                                <div>
+                                    <span class="text-gray-500">Predicted Date:</span>
+                                    <span class="font-semibold text-gray-800 ml-2">Feb 15, 2025</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Confidence:</span>
+                                    <span class="font-semibold text-purple-600 ml-2">78%</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Impact:</span>
+                                    <span class="font-semibold text-yellow-600 ml-2">Medium</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Days Until:</span>
+                                    <span class="font-semibold text-orange-600 ml-2">55 days</span>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-yellow-200">
+                                <div class="text-sm font-semibold text-gray-800 mb-2">AI Recommendation:</div>
+                                <p class="text-sm text-gray-600">Identify backup vendors and establish redundancy protocols. Consider multi-vendor strategy.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg p-6">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-blue-500 text-white rounded-full p-4">
+                        <i class="fas fa-chart-line text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">Trend Analysis</h4>
+                        <span class="ai-badge"><i class="fas fa-robot"></i>AI</span>
+                    </div>
+                </div>
+                <ul class="space-y-2">
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-arrow-up text-red-500 mt-1"></i>
+                        <span>Technical risks increasing 12%</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-arrow-down text-green-500 mt-1"></i>
+                        <span>Financial risks decreasing 8%</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-minus text-gray-500 mt-1"></i>
+                        <span>Operational risks stable</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-lg p-6">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-green-500 text-white rounded-full p-4">
+                        <i class="fas fa-shield-alt text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">Prevention Success</h4>
+                        <p class="text-sm text-gray-600">This month</p>
+                    </div>
+                </div>
+                <ul class="space-y-2">
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                        <span>24 risks prevented early</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                        <span>$450K in losses avoided</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                        <span>Zero critical incidents</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg p-6">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-purple-500 text-white rounded-full p-4">
+                        <i class="fas fa-brain text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">AI Insights</h4>
+                        <p class="text-sm text-gray-600">Key findings</p>
+                    </div>
+                </div>
+                <ul class="space-y-2">
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-lightbulb text-purple-500 mt-1"></i>
+                        <span>Peak risk period: Q1 2025</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-lightbulb text-purple-500 mt-1"></i>
+                        <span>Resource allocation optimal</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-lightbulb text-purple-500 mt-1"></i>
+                        <span>Mitigation effectiveness: 92%</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-check-circle text-2xl"></i>
+                    <span class="font-semibold">${message}</span>
+                </div>
+            `;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        const probCtx = document.getElementById('probabilityChart').getContext('2d');
+        new Chart(probCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'],
+                datasets: [{
+                    label: 'Risk Probability',
+                    data: [45, 52, 48, 65, 72, 78, 82, 87],
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 100 } }
+            }
+        });
+
+        const impactCtx = document.getElementById('impactChart').getContext('2d');
+        new Chart(impactCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Technical', 'Financial', 'Operational', 'Strategic', 'Compliance'],
+                datasets: [{
+                    label: 'Predicted Impact ($K)',
+                    data: [450, 320, 280, 180, 120],
+                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            showToast('AI predictions loaded successfully');
+        });
+    </script>
+</body>
+</html>

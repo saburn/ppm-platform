@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Automation - Core | PPM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        .workflow-node {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            background: white;
+            cursor: move;
+            transition: all 0.3s ease;
+        }
+        .workflow-node:hover {
+            border-color: #8b5cf6;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+        .workflow-connector {
+            stroke: #8b5cf6;
+            stroke-width: 2;
+            fill: none;
+        }
+        .status-active { background: #10b981; color: white; }
+        .status-paused { background: #f59e0b; color: white; }
+        .status-draft { background: #6b7280; color: white; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-project-diagram text-3xl"></i>
+                    <div>
+                        <h1 class="text-3xl font-bold">Workflow Automation</h1>
+                        <p class="text-purple-200">Automate Repetitive Tasks & Processes</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showCreateWorkflow()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-plus mr-2"></i>Create Workflow
+                    </button>
+                    <button onclick="exportWorkflows()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i class="fas fa-robot text-blue-600 text-2xl"></i>
+                    </div>
+                    <span class="text-green-600 text-sm font-semibold">
+                        <i class="fas fa-arrow-up mr-1"></i>12
+                    </span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Active Workflows</h3>
+                <p class="text-3xl font-bold text-gray-900">24</p>
+                <p class="text-sm text-gray-500 mt-2">Running automation</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                    </div>
+                    <span class="text-green-600 text-sm font-semibold">99.8%</span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Success Rate</h3>
+                <p class="text-3xl font-bold text-gray-900">2,847</p>
+                <p class="text-sm text-gray-500 mt-2">Executions this month</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <i class="fas fa-clock text-purple-600 text-2xl"></i>
+                    </div>
+                    <span class="text-green-600 text-sm font-semibold">
+                        <i class="fas fa-arrow-down mr-1"></i>60%
+                    </span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Time Saved</h3>
+                <p class="text-3xl font-bold text-gray-900">847h</p>
+                <p class="text-sm text-gray-500 mt-2">Manual effort reduced</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-orange-100 p-3 rounded-lg">
+                        <i class="fas fa-dollar-sign text-orange-600 text-2xl"></i>
+                    </div>
+                    <span class="text-green-600 text-sm font-semibold">$500K</span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Cost Savings</h3>
+                <p class="text-3xl font-bold text-gray-900">Annual</p>
+                <p class="text-sm text-gray-500 mt-2">From automation</p>
+            </div>
+        </div>
+
+        <!-- Workflow List & Execution Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Active Workflows -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Active Workflows</h2>
+                    <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        <option>All Workflows</option>
+                        <option>Active</option>
+                        <option>Paused</option>
+                        <option>Draft</option>
+                    </select>
+                </div>
+                <div class="space-y-4" id="workflow-list">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Execution Statistics -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Execution Statistics</h2>
+                <canvas id="executionChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+
+        <!-- Workflow Templates -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900">Workflow Templates</h2>
+                <button class="text-purple-600 hover:text-purple-700 text-sm font-semibold">
+                    View All <i class="fas fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="border-2 border-gray-200 rounded-xl p-6 hover:border-purple-500 transition cursor-pointer" onclick="useTemplate('onboarding')">
+                    <div class="bg-blue-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                        <i class="fas fa-user-plus text-blue-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 mb-2">Project Onboarding</h3>
+                    <p class="text-sm text-gray-600 mb-4">Automate new project setup with team assignments and initial tasks</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500">8 steps</span>
+                        <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">Popular</span>
+                    </div>
+                </div>
+
+                <div class="border-2 border-gray-200 rounded-xl p-6 hover:border-purple-500 transition cursor-pointer" onclick="useTemplate('approval')">
+                    <div class="bg-green-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                        <i class="fas fa-check-double text-green-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 mb-2">Approval Routing</h3>
+                    <p class="text-sm text-gray-600 mb-4">Route approvals based on amount, department, and priority</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500">6 steps</span>
+                        <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">Recommended</span>
+                    </div>
+                </div>
+
+                <div class="border-2 border-gray-200 rounded-xl p-6 hover:border-purple-500 transition cursor-pointer" onclick="useTemplate('notification')">
+                    <div class="bg-purple-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                        <i class="fas fa-bell text-purple-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 mb-2">Status Notifications</h3>
+                    <p class="text-sm text-gray-600 mb-4">Send notifications when project status changes</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500">4 steps</span>
+                        <span class="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded">Quick Setup</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Executions -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900">Recent Executions</h2>
+                <button onclick="refreshExecutions()" class="text-purple-600 hover:text-purple-700">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Workflow</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Trigger</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Started</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Duration</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="executions-table">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Workflow Panel -->
+    <div id="create-workflow-panel" class="hidden fixed inset-y-0 right-0 w-96 bg-white shadow-2xl z-50 overflow-y-auto">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-gray-900">Create Workflow</h3>
+                <button onclick="closeCreateWorkflow()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form onsubmit="createWorkflow(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Workflow Name</label>
+                    <input type="text" required class="w-full border border-gray-300 rounded-lg px-4 py-2" placeholder="e.g., Project Onboarding">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2" placeholder="What does this workflow do?"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Trigger</label>
+                    <select class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                        <option>When project is created</option>
+                        <option>When task is completed</option>
+                        <option>When budget exceeds threshold</option>
+                        <option>On schedule (daily/weekly)</option>
+                        <option>Manual trigger</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <select class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                        <option>Project Management</option>
+                        <option>Approvals</option>
+                        <option>Notifications</option>
+                        <option>Data Processing</option>
+                        <option>Reporting</option>
+                    </select>
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" class="flex-1 bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                        Create & Edit
+                    </button>
+                    <button type="button" onclick="closeCreateWorkflow()" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 transition">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample workflows
+        const workflows = [
+            { id: 1, name: 'Project Onboarding', trigger: 'Project Created', executions: 156, status: 'active', successRate: 99.4 },
+            { id: 2, name: 'Budget Approval', trigger: 'Budget > $50K', executions: 89, status: 'active', successRate: 100 },
+            { id: 3, name: 'Task Assignment', trigger: 'Task Created', executions: 542, status: 'active', successRate: 98.9 },
+            { id: 4, name: 'Status Notifications', trigger: 'Status Changed', executions: 1247, status: 'active', successRate: 99.8 },
+            { id: 5, name: 'Weekly Reports', trigger: 'Schedule: Weekly', executions: 24, status: 'active', successRate: 100 }
+        ];
+
+        const executions = [
+            { workflow: 'Project Onboarding', trigger: 'Project Created', started: '2 min ago', duration: '1.2s', status: 'success' },
+            { workflow: 'Task Assignment', trigger: 'Task Created', started: '5 min ago', duration: '0.8s', status: 'success' },
+            { workflow: 'Status Notifications', trigger: 'Status Changed', started: '12 min ago', duration: '0.5s', status: 'success' },
+            { workflow: 'Budget Approval', trigger: 'Budget > $50K', started: '1 hour ago', duration: '2.1s', status: 'success' },
+            { workflow: 'Weekly Reports', trigger: 'Schedule', started: '3 hours ago', duration: '5.4s', status: 'success' }
+        ];
+
+        // Render workflow list
+        function renderWorkflows() {
+            const list = document.getElementById('workflow-list');
+            list.innerHTML = workflows.map(wf => `
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-1">
+                            <h4 class="font-semibold text-gray-900">${wf.name}</h4>
+                            <span class="status-${wf.status} px-2 py-1 rounded text-xs">${wf.status.toUpperCase()}</span>
+                        </div>
+                        <p class="text-sm text-gray-600">Trigger: ${wf.trigger}</p>
+                        <div class="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                            <span><i class="fas fa-play-circle mr-1"></i>${wf.executions} runs</span>
+                            <span><i class="fas fa-check-circle mr-1"></i>${wf.successRate}% success</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="editWorkflow(${wf.id})" class="p-2 text-purple-600 hover:bg-purple-50 rounded-lg">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="toggleWorkflow(${wf.id})" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render executions table
+        function renderExecutions() {
+            const tbody = document.getElementById('executions-table');
+            tbody.innerHTML = executions.map(exec => `
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-4 px-4 font-semibold text-gray-900">${exec.workflow}</td>
+                    <td class="py-4 px-4 text-gray-600">${exec.trigger}</td>
+                    <td class="py-4 px-4 text-gray-600">${exec.started}</td>
+                    <td class="py-4 px-4 text-gray-600">${exec.duration}</td>
+                    <td class="py-4 px-4">
+                        <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-semibold">
+                            <i class="fas fa-check mr-1"></i>Success
+                        </span>
+                    </td>
+                    <td class="py-4 px-4">
+                        <button onclick="viewExecution()" class="text-purple-600 hover:text-purple-700">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Initialize execution chart
+        function initChart() {
+            const ctx = document.getElementById('executionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Successful',
+                        data: [342, 389, 412, 398, 445, 287, 156],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Failed',
+                        data: [2, 1, 3, 2, 1, 0, 1],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // Functions
+        function showCreateWorkflow() {
+            document.getElementById('create-workflow-panel').classList.remove('hidden');
+        }
+
+        function closeCreateWorkflow() {
+            document.getElementById('create-workflow-panel').classList.add('hidden');
+        }
+
+        function createWorkflow(event) {
+            event.preventDefault();
+            showToast('Workflow created! Opening editor...', 'success');
+            closeCreateWorkflow();
+        }
+
+        function useTemplate(template) {
+            showToast(`Loading ${template} template...`, 'info');
+        }
+
+        function editWorkflow(id) {
+            showToast('Opening workflow editor...', 'info');
+        }
+
+        function toggleWorkflow(id) {
+            showToast('Workflow paused', 'success');
+        }
+
+        function viewExecution() {
+            showToast('Opening execution details...', 'info');
+        }
+
+        function refreshExecutions() {
+            showToast('Executions refreshed', 'success');
+        }
+
+        function exportWorkflows() {
+            showToast('Exporting workflows...', 'success');
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            toast.className = `fixed top-20 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50`;
+            toast.innerHTML = `<div class="flex items-center space-x-3"><i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} text-xl"></i><span class="font-semibold">${message}</span></div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderWorkflows();
+            renderExecutions();
+            initChart();
+        });
+    </script>
+</body>
+</html>

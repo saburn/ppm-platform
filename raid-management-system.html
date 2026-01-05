@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAID Management - PPM Champion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .risk-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .risk-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .risk-high { border-left: 4px solid #EF4444; }
+        .risk-medium { border-left: 4px solid #F59E0B; }
+        .risk-low { border-left: 4px solid #10B981; }
+        .matrix-cell {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .matrix-cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .severity-critical { background: linear-gradient(135deg, #EF4444, #DC2626); }
+        .severity-high { background: linear-gradient(135deg, #F59E0B, #D97706); }
+        .severity-medium { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+        .severity-low { background: linear-gradient(135deg, #10B981, #059669); }
+        .mitigation-step {
+            transition: all 0.2s ease;
+        }
+        .mitigation-step:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 8px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #3B82F6;
+        }
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 13px;
+            top: 20px;
+            width: 2px;
+            height: calc(100% + 10px);
+            background-color: #E5E7EB;
+        }
+        .timeline-item:last-child::after {
+            display: none;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="text-gray-600 hover:text-gray-800 mr-4">
+                        <i class="fas fa-arrow-left text-xl"></i>
+                    </button>
+                    <i class="fas fa-shield-alt text-blue-600 text-2xl mr-3"></i>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">RAID Management</h1>
+                        <p class="text-sm text-gray-600">Cloud Migration Project</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="runRiskAssessment()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                        <i class="fas fa-brain mr-2"></i>AI Risk Assessment
+                    </button>
+                    <button onclick="addRisk()" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Add Risk
+                    </button>
+                    <button onclick="addIssue()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                        <i class="fas fa-bug mr-2"></i>Add Issue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- RAID Navigation Tabs -->
+    <div class="bg-white border-b sticky top-16 z-40">
+        <div class="container mx-auto px-6">
+            <div class="flex space-x-1 overflow-x-auto">
+                <button onclick="switchRaidTab('dashboard')" class="raid-tab-button px-6 py-3 text-sm font-medium rounded-t-lg bg-blue-600 text-white">
+                    <i class="fas fa-th-large mr-2"></i>Dashboard
+                </button>
+                <button onclick="switchRaidTab('risks')" class="raid-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Risks
+                </button>
+                <button onclick="switchRaidTab('issues')" class="raid-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-bug mr-2"></i>Issues
+                </button>
+                <button onclick="switchRaidTab('assumptions')" class="raid-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-lightbulb mr-2"></i>Assumptions
+                </button>
+                <button onclick="switchRaidTab('dependencies')" class="raid-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-link mr-2"></i>Dependencies
+                </button>
+                <button onclick="switchRaidTab('matrix')" class="raid-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-chart-scatter mr-2"></i>Matrix
+                </button>
+                <button onclick="switchRaidTab('mitigation')" class="raid-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-tools mr-2"></i>Mitigation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Dashboard Tab -->
+        <div id="raid-dashboard" class="raid-tab-content">
+            <!-- Key Metrics -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600 text-sm">Active Risks</span>
+                        <span class="text-red-600 text-xs bg-red-100 px-2 py-1 rounded">High Priority</span>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800">24</div>
+                    <div class="text-sm text-gray-600">8 Critical • 12 High • 4 Medium</div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600 text-sm">Open Issues</span>
+                        <span class="text-orange-600 text-xs bg-orange-100 px-2 py-1 rounded">Action Needed</span>
+                    </div>
+                    <div class="text-3xl font-bold text-orange-600">12</div>
+                    <div class="text-sm text-gray-600">3 Critical • 5 High • 4 Medium</div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600 text-sm">Risk Score</span>
+                        <span class="text-yellow-600 text-xs bg-yellow-100 px-2 py-1 rounded">Moderate</span>
+                    </div>
+                    <div class="text-3xl font-bold text-yellow-600">68</div>
+                    <div class="text-sm text-gray-600">Scale: 0-100 (Higher = Riskier)</div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600 text-sm">Mitigation Progress</span>
+                        <span class="text-green-600 text-xs bg-green-100 px-2 py-1 rounded">On Track</span>
+                    </div>
+                    <div class="text-3xl font-bold text-green-600">74%</div>
+                    <div class="text-sm text-gray-600">18 of 24 mitigations active</div>
+                </div>
+            </div>
+
+            <!-- Risk Distribution Chart -->
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Risk Distribution by Category</h3>
+                    <canvas id="riskCategoryChart" width="400" height="250"></canvas>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Risk Trend Analysis</h3>
+                    <canvas id="riskTrendChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Critical Risks & Issues -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Critical Risks</h3>
+                    <div class="space-y-3">
+                        <div class="risk-card risk-high bg-red-50 border rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-gray-800">Data Migration Failure</h4>
+                                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">Critical</span>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-2">Potential data corruption during migration process</p>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-600">Impact: High • Probability: Medium</span>
+                                <span class="text-blue-600 font-medium">Mitigation Active</span>
+                            </div>
+                        </div>
+                        
+                        <div class="risk-card risk-high bg-red-50 border rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-gray-800">Budget Overrun</h4>
+                                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">Critical</span>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-2">Cloud costs exceeding projected budget by 40%</p>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-600">Impact: High • Probability: High</span>
+                                <span class="text-yellow-600 font-medium">Monitor Closely</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">High Priority Issues</h3>
+                    <div class="space-y-3">
+                        <div class="risk-card bg-orange-50 border rounded-lg p-4 border-l-4 border-orange-500">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-gray-800">API Integration Failure</h4>
+                                <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">High</span>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-2">Third-party API not responding as expected</p>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-600">Assigned to: Mike Johnson</span>
+                                <span class="text-orange-600 font-medium">In Progress</span>
+                            </div>
+                        </div>
+                        
+                        <div class="risk-card bg-orange-50 border rounded-lg p-4 border-l-4 border-orange-500">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-gray-800">Performance Degradation</h4>
+                                <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">High</span>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-2">Application response times increased by 200%</p>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-600">Assigned to: Emily Davis</span>
+                                <span class="text-blue-600 font-medium">Investigating</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risks Tab -->
+        <div id="raid-risks" class="raid-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm">
+                <div class="p-6 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-800">Risk Register</h3>
+                    <div class="flex space-x-2">
+                        <select class="px-3 py-2 border border-gray-300 rounded-lg">
+                            <option>All Risks</option>
+                            <option>Critical</option>
+                            <option>High</option>
+                            <option>Medium</option>
+                            <option>Low</option>
+                        </select>
+                        <button onclick="addRisk()" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
+                            <i class="fas fa-plus mr-2"></i>Add Risk
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b bg-gray-50">
+                                <th class="text-left py-3 px-4">Risk ID</th>
+                                <th class="text-left py-3 px-4">Risk Description</th>
+                                <th class="text-left py-3 px-4">Category</th>
+                                <th class="text-left py-3 px-4">Impact</th>
+                                <th class="text-left py-3 px-4">Probability</th>
+                                <th class="text-left py-3 px-4">Risk Score</th>
+                                <th class="text-left py-3 px-4">Owner</th>
+                                <th class="text-left py-3 px-4">Status</th>
+                                <th class="text-left py-3 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-3 px-4 font-medium">R001</td>
+                                <td class="py-3 px-4">Data migration corruption or loss</td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">Technical</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">High</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Medium</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div class="bg-orange-500 h-2 rounded-full" style="width: 75%"></div>
+                                        </div>
+                                        <span class="font-medium">75</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">Sarah Chen</td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Mitigating</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <button onclick="editRisk('R001')" class="text-blue-600 hover:text-blue-800 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="viewRiskDetails('R001')" class="text-gray-600 hover:text-gray-800">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-3 px-4 font-medium">R002</td>
+                                <td class="py-3 px-4">Cloud cost exceedance beyond budget</td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Financial</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">High</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">High</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div class="bg-red-500 h-2 rounded-full" style="width: 90%"></div>
+                                        </div>
+                                        <span class="font-medium">90</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">Mike Johnson</td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Monitoring</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <button onclick="editRisk('R002')" class="text-blue-600 hover:text-blue-800 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="viewRiskDetails('R002')" class="text-gray-600 hover:text-gray-800">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Matrix Tab -->
+        <div id="raid-matrix" class="raid-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Risk Impact vs. Probability Matrix</h3>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Risk Matrix -->
+                    <div>
+                        <canvas id="riskMatrix" width="400" height="400"></canvas>
+                    </div>
+                    
+                    <!-- Matrix Legend -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-4">Risk Severity Zones</h4>
+                        <div class="space-y-3">
+                            <div class="severity-critical text-white p-3 rounded-lg">
+                                <h5 class="font-semibold">Critical Zone (Red)</h5>
+                                <p class="text-sm">High Impact + High Probability. Immediate action required.</p>
+                                <div class="mt-2 text-xs">
+                                    <span>5 risks in this zone</span>
+                                </div>
+                            </div>
+                            
+                            <div class="severity-high text-white p-3 rounded-lg">
+                                <h5 class="font-semibold">High Zone (Orange)</h5>
+                                <p class="text-sm">High Impact + Medium Probability or Medium Impact + High Probability.</p>
+                                <div class="mt-2 text-xs">
+                                    <span>8 risks in this zone</span>
+                                </div>
+                            </div>
+                            
+                            <div class="severity-medium text-white p-3 rounded-lg">
+                                <h5 class="font-semibold">Medium Zone (Blue)</h5>
+                                <p class="text-sm">Medium Impact + Medium Probability. Monitor closely.</p>
+                                <div class="mt-2 text-xs">
+                                    <span>7 risks in this zone</span>
+                                </div>
+                            </div>
+                            
+                            <div class="severity-low text-white p-3 rounded-lg">
+                                <h5 class="font-semibold">Low Zone (Green)</h5>
+                                <p class="text-sm">Low Impact and/or Low Probability. Accept or monitor.</p>
+                                <div class="mt-2 text-xs">
+                                    <span>4 risks in this zone</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Details by Zone -->
+                <div class="mt-8">
+                    <h4 class="font-medium text-gray-700 mb-4">Risks by Zone</h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="border rounded-lg p-4">
+                            <h5 class="font-semibold text-red-600 mb-3">Critical Risks</h5>
+                            <div class="space-y-2">
+                                <div class="p-2 bg-red-50 rounded text-sm">
+                                    <div class="font-medium">Budget Overrun</div>
+                                    <div class="text-gray-600">Impact: 5, Probability: 4, Score: 90</div>
+                                </div>
+                                <div class="p-2 bg-red-50 rounded text-sm">
+                                    <div class="font-medium">Data Migration Failure</div>
+                                    <div class="text-gray-600">Impact: 5, Probability: 3, Score: 75</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border rounded-lg p-4">
+                            <h5 class="font-semibold text-orange-600 mb-3">High Risks</h5>
+                            <div class="space-y-2">
+                                <div class="p-2 bg-orange-50 rounded text-sm">
+                                    <div class="font-medium">Vendor Lock-in</div>
+                                    <div class="text-gray-600">Impact: 4, Probability: 3, Score: 60</div>
+                                </div>
+                                <div class="p-2 bg-orange-50 rounded text-sm">
+                                    <div class="font-medium">Team Shortage</div>
+                                    <div class="text-gray-600">Impact: 3, Probability: 4, Score: 60</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mitigation Tab -->
+        <div id="raid-mitigation" class="raid-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Risk Mitigation Plans</h3>
+                
+                <div class="space-y-6">
+                    <!-- Mitigation Plan 1 -->
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Budget Overrun Mitigation</h4>
+                                <p class="text-sm text-gray-600">Risk ID: R002 • Critical Risk</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-600">Progress</div>
+                                <div class="text-lg font-semibold text-yellow-600">65%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="mitigation-step flex items-center p-3 bg-gray-50 rounded">
+                                <input type="checkbox" checked class="mr-3">
+                                <div class="flex-1">
+                                    <div class="font-medium">Implement cost monitoring alerts</div>
+                                    <div class="text-sm text-gray-600">Setup real-time cloud cost monitoring with daily alerts</div>
+                                </div>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Completed</span>
+                            </div>
+                            
+                            <div class="mitigation-step flex items-center p-3 bg-gray-50 rounded">
+                                <input type="checkbox" checked class="mr-3">
+                                <div class="flex-1">
+                                    <div class="font-medium">Optimize resource allocation</div>
+                                    <div class="text-sm text-gray-600">Review and optimize cloud resource usage patterns</div>
+                                </div>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Completed</span>
+                            </div>
+                            
+                            <div class="mitigation-step flex items-center p-3 bg-blue-50 rounded">
+                                <input type="checkbox" class="mr-3">
+                                <div class="flex-1">
+                                    <div class="font-medium">Negotiate volume discounts</div>
+                                    <div class="text-sm text-gray-600">Contact cloud providers for enterprise pricing</div>
+                                </div>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">In Progress</span>
+                            </div>
+                            
+                            <div class="mitigation-step flex items-center p-3 bg-gray-50 rounded">
+                                <input type="checkbox" class="mr-3">
+                                <div class="flex-1">
+                                    <div class="font-medium">Implement auto-scaling policies</div>
+                                    <div class="text-sm text-gray-600">Setup dynamic scaling to reduce costs during low usage</div>
+                                </div>
+                                <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Pending</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t">
+                            <div class="flex justify-between items-center">
+                                <div class="text-sm text-gray-600">
+                                    <span>Owner: Mike Johnson</span>
+                                    <span class="mx-2">•</span>
+                                    <span>Due: Jan 31, 2024</span>
+                                </div>
+                                <button onclick="updateMitigation('R002')" class="text-blue-600 hover:text-blue-800 text-sm">
+                                    Update Progress →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mitigation Plan 2 -->
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Data Migration Risk Mitigation</h4>
+                                <p class="text-sm text-gray-600">Risk ID: R001 • Critical Risk</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-600">Progress</div>
+                                <div class="text-lg font-semibold text-green-600">85%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="mitigation-step flex items-center p-3 bg-gray-50 rounded">
+                                <input type="checkbox" checked class="mr-3">
+                                <div class="flex-1">
+                                    <div class="font-medium">Comprehensive data backup</div>
+                                    <div class="text-sm text-gray-600">Create full backups before migration</div>
+                                </div>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Completed</span>
+                            </div>
+                            
+                            <div class="mitigation-step flex items-center p-3 bg-gray-50 rounded">
+                                <input type="checkbox" checked class="mr-3">
+                                <div class="flex-1">
+                                    <div class="font-medium">Pilot migration testing</div>
+                                    <div class="text-sm text-gray-600">Test migration process with sample data</div>
+                                </div>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Completed</span>
+                            </div>
+                            
+                            <div class="mitigation-step flex items-center p-3 bg-gray-50 rounded">
+                                <input type="checkbox" checked class="mr-3">
+                                <div class="flex-1">
+                                    <div class="font-medium">Rollback procedure documentation</div>
+                                    <div class="text-sm text-gray-600">Document and test rollback procedures</div>
+                                </div>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Completed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Other tabs (simplified for brevity) -->
+        <div id="raid-issues" class="raid-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Issue Register</h3>
+                <!-- Issue tracking content -->
+            </div>
+        </div>
+
+        <div id="raid-assumptions" class="raid-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Assumptions Register</h3>
+                <!-- Assumptions tracking content -->
+            </div>
+        </div>
+
+        <div id="raid-dependencies" class="raid-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Dependencies Register</h3>
+                <!-- Dependencies tracking content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Modal -->
+    <div id="riskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-hidden">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">Risk Management</h3>
+                <button onclick="closeRiskModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <form class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Risk ID</label>
+                            <input type="text" value="R-NEW-001" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>Technical</option>
+                                <option>Financial</option>
+                                <option>Operational</option>
+                                <option>Strategic</option>
+                                <option>External</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Risk Description</label>
+                        <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Describe the risk..."></textarea>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Impact Level</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="5">5 - Critical</option>
+                                <option value="4">4 - High</option>
+                                <option value="3">3 - Medium</option>
+                                <option value="2">2 - Low</option>
+                                <option value="1">1 - Very Low</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Probability Level</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="5">5 - Almost Certain</option>
+                                <option value="4">4 - Likely</option>
+                                <option value="3">3 - Possible</option>
+                                <option value="2">2 - Unlikely</option>
+                                <option value="1">1 - Rare</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Risk Owner</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>Sarah Chen</option>
+                                <option>Mike Johnson</option>
+                                <option>Emily Davis</option>
+                                <option>David Brown</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Risk Response Strategy</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>Mitigate</option>
+                                <option>Avoid</option>
+                                <option>Transfer</option>
+                                <option>Accept</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mitigation Actions</label>
+                        <textarea rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Describe mitigation actions..."></textarea>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Target Date</label>
+                            <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>Identified</option>
+                                <option>Assessing</option>
+                                <option>Mitigating</option>
+                                <option>Monitoring</option>
+                                <option>Closed</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" onclick="closeRiskModal()" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Save Risk
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample risk data
+        const riskData = [
+            { id: 'R001', description: 'Data migration corruption', category: 'Technical', impact: 5, probability: 3, score: 75, owner: 'Sarah Chen', status: 'Mitigating' },
+            { id: 'R002', description: 'Cloud cost exceedance', category: 'Financial', impact: 5, probability: 4, score: 90, owner: 'Mike Johnson', status: 'Monitoring' },
+            { id: 'R003', description: 'Vendor lock-in', category: 'Strategic', impact: 4, probability: 3, score: 60, owner: 'Emily Davis', status: 'Assessing' },
+            { id: 'R004', description: 'Team shortage', category: 'Operational', impact: 3, probability: 4, score: 60, owner: 'David Brown', status: 'Mitigating' }
+        ];
+
+        // RAID tab switching
+        function switchRaidTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.raid-tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Reset all buttons
+            document.querySelectorAll('.raid-tab-button').forEach(button => {
+                button.className = 'raid-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100';
+            });
+            
+            // Show selected tab
+            document.getElementById('raid-' + tabName).classList.remove('hidden');
+            
+            // Highlight selected button
+            event.target.className = 'raid-tab-button px-6 py-3 text-sm font-medium rounded-t-lg bg-blue-600 text-white';
+
+            // Initialize specific tab content
+            if (tabName === 'matrix') {
+                initializeRiskMatrix();
+            } else if (tabName === 'dashboard') {
+                initializeDashboardCharts();
+            }
+        }
+
+        // Initialize dashboard charts
+        function initializeDashboardCharts() {
+            // Risk Category Chart
+            const categoryCtx = document.getElementById('riskCategoryChart');
+            if (categoryCtx && !window.categoryChartInstance) {
+                window.categoryChartInstance = new Chart(categoryCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Technical', 'Financial', 'Operational', 'Strategic', 'External'],
+                        datasets: [{
+                            data: [8, 6, 5, 3, 2],
+                            backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Risk Trend Chart
+            const trendCtx = document.getElementById('riskTrendChart');
+            if (trendCtx && !window.trendChartInstance) {
+                window.trendChartInstance = new Chart(trendCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
+                        datasets: [{
+                            label: 'Total Risks',
+                            data: [18, 20, 22, 24, 24, 24],
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true
+                        }, {
+                            label: 'Mitigated Risks',
+                            data: [2, 4, 8, 12, 16, 18],
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize Risk Matrix
+        function initializeRiskMatrix() {
+            const ctx = document.getElementById('riskMatrix');
+            if (!ctx || window.matrixChartInstance) return;
+
+            const matrixData = riskData.map(risk => ({
+                x: risk.probability,
+                y: risk.impact,
+                label: risk.description,
+                riskId: risk.id,
+                score: risk.score
+            }));
+
+            window.matrixChartInstance = new Chart(ctx.getContext('2d'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Risks',
+                        data: matrixData,
+                        backgroundColor: function(context) {
+                            const value = context.raw;
+                            if (value.score >= 75) return '#EF4444';
+                            if (value.score >= 50) return '#F59E0B';
+                            if (value.score >= 25) return '#3B82F6';
+                            return '#10B981';
+                        },
+                        borderColor: '#1F2937',
+                        borderWidth: 1,
+                        pointRadius: 8,
+                        pointHoverRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            min: 0.5,
+                            max: 5.5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    const labels = ['', 'Very Low', 'Low', 'Medium', 'High', 'Very High', ''];
+                                    return labels[value];
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Probability'
+                            }
+                        },
+                        y: {
+                            min: 0.5,
+                            max: 5.5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    const labels = ['', 'Very Low', 'Low', 'Medium', 'High', 'Very High', ''];
+                                    return labels[value];
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Impact'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const risk = context.raw;
+                                    return [
+                                        `Risk: ${risk.label}`,
+                                        `ID: ${risk.riskId}`,
+                                        `Impact: ${risk.y}, Probability: ${risk.x}`,
+                                        `Risk Score: ${risk.score}`
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Risk modal functions
+        function addRisk() {
+            document.getElementById('riskModal').classList.remove('hidden');
+        }
+
+        function addIssue() {
+            alert('Issue management functionality coming next...');
+        }
+
+        function closeRiskModal() {
+            document.getElementById('riskModal').classList.add('hidden');
+        }
+
+        function editRisk(riskId) {
+            // Load risk data and open modal
+            document.getElementById('riskModal').classList.remove('hidden');
+        }
+
+        function viewRiskDetails(riskId) {
+            alert('Risk details functionality coming next...');
+        }
+
+        function updateMitigation(riskId) {
+            alert('Update mitigation functionality coming next...');
+        }
+
+        function runRiskAssessment() {
+            alert('AI Risk Assessment functionality coming next...');
+        }
+
+        // Navigation
+        function goBack() {
+            window.location.href = 'project-detail-full.html';
+        }
+
+        // Initialize dashboard on load
+        window.addEventListener('load', function() {
+            initializeDashboardCharts();
+        });
+    </script>
+</body>
+</html>

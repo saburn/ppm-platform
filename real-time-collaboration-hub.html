@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Collaboration Hub - Team Intelligence Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .collaboration-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+        .collaboration-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
+        }
+        .live-indicator {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        .active-user {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2));
+            border: 1px solid rgba(34, 197, 94, 0.4);
+        }
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #3b82f6;
+            animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        .video-call-active {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+        .collaboration-glow {
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.4),
+                        0 0 60px rgba(59, 130, 246, 0.2),
+                        0 0 90px rgba(59, 130, 246, 0.1);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white min-h-screen">
+    
+    <!-- Header -->
+    <header class="glass-morphism border-b border-white/10 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="collaboration-glow rounded-lg p-2 bg-blue-600/20">
+                        <i class="fas fa-users text-2xl text-blue-400"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                            Real-Time Collaboration Hub
+                        </h1>
+                        <p class="text-sm text-blue-300">Team Intelligence & Live Collaboration</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 bg-green-500/20 px-3 py-1 rounded-full">
+                        <div class="w-2 h-2 bg-green-500 rounded-full live-indicator"></div>
+                        <span class="text-sm text-green-400">42 Active Now</span>
+                    </div>
+                    <button onclick="startVideoCall()" class="bg-gradient-to-r from-red-600 to-pink-600 px-6 py-2 rounded-lg hover:from-red-700 hover:to-pink-700 transition-all transform hover:scale-105">
+                        <i class="fas fa-video mr-2"></i>Start Meeting
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- Collaboration Overview -->
+        <section class="mb-8">
+            <div class="glass-morphism rounded-2xl p-8 collaboration-glow">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-400">42</div>
+                        <div class="text-sm text-gray-400">Active Users</div>
+                        <div class="text-xs text-green-400 mt-1">↑ 8 from yesterday</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-purple-400">8</div>
+                        <div class="text-sm text-gray-400">Live Sessions</div>
+                        <div class="text-xs text-purple-400 mt-1">3 meetings active</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-400">1,247</div>
+                        <div class="text-sm text-gray-400">Messages Today</div>
+                        <div class="text-xs text-green-400 mt-1">↑ 23% engagement</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-orange-400">89%</div>
+                        <div class="text-sm text-gray-400">Response Rate</div>
+                        <div class="text-xs text-orange-400 mt-1">Under 2 min avg</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-pink-400">67%</div>
+                        <div class="text-sm text-gray-400">Productivity Gain</div>
+                        <div class="text-xs text-pink-400 mt-1">AI-enhanced</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Active Team Members -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <i class="fas fa-users mr-3"></i>Active Team Members
+            </h2>
+            <div class="glass-morphism rounded-xl p-6">
+                <div class="grid grid-cols-2 lg:grid-cols-6 gap-4" id="activeUsersGrid">
+                    <!-- Active users will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Real-Time Communication -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <i class="fas fa-comments mr-3"></i>Real-Time Communication
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Live Chat -->
+                <div class="lg:col-span-2 collaboration-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-blue-300">Team Chat</h3>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-gray-400">Project Alpha</span>
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        </div>
+                    </div>
+                    <div class="h-96 bg-white/5 rounded-lg p-4 mb-4 overflow-y-auto" id="chatContainer">
+                        <!-- Chat messages will be populated here -->
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <input type="text" id="messageInput" placeholder="Type a message..." 
+                               class="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-400"
+                               onkeypress="handleMessageInput(event)">
+                        <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-all">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Conversations -->
+                <div class="collaboration-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-purple-300 mb-4">Active Conversations</h3>
+                    <div class="space-y-3" id="conversationsList">
+                        <!-- Conversations will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Document Collaboration -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <i class="fas fa-file-alt mr-3"></i>Live Document Collaboration
+            </h2>
+            <div class="collaboration-card rounded-xl p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    
+                    <!-- Document Editor -->
+                    <div class="lg:col-span-3">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-blue-300">Project Requirements Document</h3>
+                            <div class="flex items-center space-x-3">
+                                <div class="flex -space-x-2" id="documentEditors">
+                                    <!-- Editor avatars will be populated here -->
+                                </div>
+                                <button onclick="shareDocument()" class="bg-green-600/20 hover:bg-green-600/30 px-3 py-1 rounded-lg text-sm transition-all">
+                                    <i class="fas fa-share mr-1"></i>Share
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-6 h-64">
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="font-semibold text-blue-300 mb-2">1. Project Overview</h4>
+                                    <p class="text-sm text-gray-300 leading-relaxed">
+                                        This document outlines the comprehensive requirements for the next-generation PPM system 
+                                        with advanced AI capabilities and real-time collaboration features. The system aims to 
+                                        establish market leadership through technological superiority...
+                                    </p>
+                                    <div class="mt-2 flex items-center space-x-2">
+                                        <img src="https://picsum.photos/seed/user1/32/32.jpg" class="w-6 h-6 rounded-full" alt="User">
+                                        <span class="text-xs text-gray-400">Sarah is editing...</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-blue-300 mb-2">2. Technical Architecture</h4>
+                                    <p class="text-sm text-gray-300 leading-relaxed">
+                                        The system leverages cutting-edge technologies including Chart.js, Plotly.js, and 
+                                        advanced neural networks for predictive analytics. The architecture supports real-time 
+                                        collaboration with sub-second latency...
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Activity -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-purple-300 mb-4">Recent Activity</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-2">
+                                <img src="https://picsum.photos/seed/user2/32/32.jpg" class="w-8 h-8 rounded-full" alt="User">
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-purple-300">Mike Chen</div>
+                                    <div class="text-xs text-gray-400">Added technical specs</div>
+                                    <div class="text-xs text-gray-500">2 min ago</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-2">
+                                <img src="https://picsum.photos/seed/user3/32/32.jpg" class="w-8 h-8 rounded-full" alt="User">
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-purple-300">Lisa Wong</div>
+                                    <div class="text-xs text-gray-400">Edited section 3</div>
+                                    <div class="text-xs text-gray-500">5 min ago</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-2">
+                                <img src="https://picsum.photos/seed/user4/32/32.jpg" class="w-8 h-8 rounded-full" alt="User">
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-purple-300">John Davis</div>
+                                    <div class="text-xs text-gray-400">Added comments</div>
+                                    <div class="text-xs text-gray-500">12 min ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Video Conference Integration -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <i class="fas fa-video mr-3"></i>Video Conference Integration
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Active Meetings -->
+                <div class="video-call-active rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-red-300 mb-4">Active Meetings</h3>
+                    <div class="space-y-3">
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-red-300">Design Review</span>
+                                <span class="text-xs bg-red-600/20 text-red-400 px-2 py-1 rounded-full">LIVE</span>
+                            </div>
+                            <div class="flex items-center space-x-2 text-xs text-gray-400">
+                                <i class="fas fa-users"></i>
+                                <span>8 participants</span>
+                                <i class="fas fa-clock ml-2"></i>
+                                <span>45 min</span>
+                            </div>
+                            <button onclick="joinMeeting('design-review')" class="w-full mt-2 bg-red-600 hover:bg-red-700 py-1 rounded text-sm transition-all">
+                                Join Meeting
+                            </button>
+                        </div>
+                        
+                        <div class="bg-white/5 p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-orange-300">Sprint Planning</span>
+                                <span class="text-xs bg-orange-600/20 text-orange-400 px-2 py-1 rounded-full">STARTING</span>
+                            </div>
+                            <div class="flex items-center space-x-2 text-xs text-gray-400">
+                                <i class="fas fa-users"></i>
+                                <span>12 participants</span>
+                                <i class="fas fa-clock ml-2"></i>
+                                <span>In 15 min</span>
+                            </div>
+                            <button onclick="joinMeeting('sprint-planning')" class="w-full mt-2 bg-orange-600 hover:bg-orange-700 py-1 rounded text-sm transition-all">
+                                Schedule Join
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meeting Schedule -->
+                <div class="collaboration-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-blue-300 mb-4">Today's Schedule</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3 p-2 bg-white/5 rounded">
+                            <div class="text-xs text-gray-400">9:00 AM</div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-blue-300">Daily Standup</div>
+                                <div class="text-xs text-gray-400">Development Team</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3 p-2 bg-white/5 rounded">
+                            <div class="text-xs text-gray-400">11:00 AM</div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-blue-300">Client Review</div>
+                                <div class="text-xs text-gray-400">Stakeholder Meeting</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3 p-2 bg-white/5 rounded">
+                            <div class="text-xs text-gray-400">2:00 PM</div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-purple-300">Architecture Review</div>
+                                <div class="text-xs text-gray-400">Technical Team</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3 p-2 bg-white/5 rounded">
+                            <div class="text-xs text-gray-400">4:00 PM</div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-green-300">Retro Meeting</div>
+                                <div class="text-xs text-gray-400">All Hands</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="collaboration-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-purple-300 mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <button onclick="startInstantMeeting()" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg transition-all">
+                            <i class="fas fa-video mr-2"></i>Start Instant Meeting
+                        </button>
+                        <button onclick="scheduleMeeting()" class="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg transition-all">
+                            <i class="fas fa-calendar-plus mr-2"></i>Schedule Meeting
+                        </button>
+                        <button onclick="joinMeetingRoom()" class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg transition-all">
+                            <i class="fas fa-door-open mr-2"></i>Join Meeting Room
+                        </button>
+                        <button onclick="screenShare()" class="w-full bg-orange-600 hover:bg-orange-700 py-3 rounded-lg transition-all">
+                            <i class="fas fa-desktop mr-2"></i>Start Screen Share
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Collaboration Analytics -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <i class="fas fa-chart-bar mr-3"></i>Collaboration Analytics
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Activity Trends -->
+                <div class="glass-morphism rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-blue-300 mb-4">Team Activity Trends</h3>
+                    <div class="h-64" id="activityTrendsChart"></div>
+                </div>
+
+                <!-- Collaboration Metrics -->
+                <div class="glass-morphism rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-purple-300 mb-4">Collaboration Metrics</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-300">Messages per Day</span>
+                            <span class="text-lg font-bold text-blue-400">1,247</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 82%"></div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-300">Documents Shared</span>
+                            <span class="text-lg font-bold text-purple-400">342</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full" style="width: 68%"></div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-300">Video Meeting Hours</span>
+                            <span class="text-lg font-bold text-green-400">156</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: 74%"></div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-300">Response Time</span>
+                            <span class="text-lg font-bold text-orange-400">1.8 min</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-orange-500 h-2 rounded-full" style="width: 89%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-morphism border-t border-white/10 mt-12">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-users text-blue-400"></i>
+                        <span class="text-sm text-blue-300">Real-Time Collaboration Hub v2.0</span>
+                    </div>
+                    <div class="text-sm text-gray-400">42 users active • 8 live sessions • 67% productivity gain</div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="exportCollaborationReport()" class="text-sm bg-blue-600/20 hover:bg-blue-600/30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-download mr-2"></i>Export Report
+                    </button>
+                    <button onclick="configureSettings()" class="text-sm bg-purple-600/20 hover:bg-purple-600/30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize the Real-Time Collaboration Hub
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeActiveUsers();
+            initializeChat();
+            initializeConversations();
+            initializeCharts();
+            startRealTimeUpdates();
+        });
+
+        // Active Users Data
+        const activeUsers = [
+            { name: 'Sarah Johnson', role: 'Project Manager', status: 'active', avatar: 'user1' },
+            { name: 'Mike Chen', role: 'Developer', status: 'active', avatar: 'user2' },
+            { name: 'Lisa Wong', role: 'Designer', status: 'active', avatar: 'user3' },
+            { name: 'John Davis', role: 'QA Engineer', status: 'away', avatar: 'user4' },
+            { name: 'Emma Wilson', role: 'Product Owner', status: 'active', avatar: 'user5' },
+            { name: 'Alex Kumar', role: 'DevOps', status: 'active', avatar: 'user6' },
+            { name: 'Maria Garcia', role: 'Business Analyst', status: 'active', avatar: 'user7' },
+            { name: 'Tom Brown', role: 'Tech Lead', status: 'active', avatar: 'user8' },
+            { name: 'Nina Patel', role: 'UX Designer', status: 'active', avatar: 'user9' },
+            { name: 'David Lee', role: 'Data Scientist', status: 'away', avatar: 'user10' },
+            { name: 'Sophie Martin', role: 'Marketing', status: 'active', avatar: 'user11' },
+            { name: 'Ryan Taylor', role: 'Security Engineer', status: 'active', avatar: 'user12' }
+        ];
+
+        // Initialize Active Users
+        function initializeActiveUsers() {
+            const grid = document.getElementById('activeUsersGrid');
+            activeUsers.forEach(user => {
+                const userCard = document.createElement('div');
+                userCard.className = `active-user p-3 rounded-lg cursor-pointer hover:scale-105 transition-all ${user.status === 'away' ? 'opacity-60' : ''}`;
+                userCard.innerHTML = `
+                    <div class="text-center">
+                        <img src="https://picsum.photos/seed/${user.avatar}/64/64.jpg" class="w-12 h-12 rounded-full mx-auto mb-2" alt="${user.name}">
+                        <div class="text-xs font-medium text-blue-300">${user.name.split(' ')[0]}</div>
+                        <div class="text-xs text-gray-400">${user.role}</div>
+                        <div class="flex justify-center mt-1">
+                            <div class="w-2 h-2 ${user.status === 'active' ? 'bg-green-500' : 'bg-yellow-500'} rounded-full"></div>
+                        </div>
+                    </div>
+                `;
+                userCard.onclick = () => startChat(user);
+                grid.appendChild(userCard);
+            });
+        }
+
+        // Initialize Chat
+        function initializeChat() {
+            const chatContainer = document.getElementById('chatContainer');
+            const initialMessages = [
+                { user: 'Sarah Johnson', message: 'Team, great progress on the AI features!', time: '9:15 AM', avatar: 'user1' },
+                { user: 'Mike Chen', message: 'The predictive analytics engine is performing at 94.7% accuracy', time: '9:18 AM', avatar: 'user2' },
+                { user: 'Lisa Wong', message: 'I\'ve updated the UI designs for the collaboration hub', time: '9:22 AM', avatar: 'user3' },
+                { user: 'John Davis', message: 'Testing looks good. All scenarios passing', time: '9:25 AM', avatar: 'user4' },
+                { user: 'Emma Wilson', message: 'Excellent work team! We\'re ahead of schedule 🎉', time: '9:28 AM', avatar: 'user5' }
+            ];
+
+            initialMessages.forEach(msg => {
+                addMessageToChat(msg);
+            });
+        }
+
+        function addMessageToChat(message) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-start space-x-3 mb-4';
+            messageDiv.innerHTML = `
+                <img src="https://picsum.photos/seed/${message.avatar}/40/40.jpg" class="w-8 h-8 rounded-full" alt="${message.user}">
+                <div class="flex-1">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <span class="text-sm font-medium text-blue-300">${message.user}</span>
+                        <span class="text-xs text-gray-400">${message.time}</span>
+                    </div>
+                    <div class="text-sm text-gray-300">${message.message}</div>
+                </div>
+            `;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (message) {
+                addMessageToChat({
+                    user: 'You',
+                    message: message,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    avatar: 'currentuser'
+                });
+                input.value = '';
+                
+                // Simulate typing indicator and response
+                showTypingIndicator();
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    simulateResponse();
+                }, 2000);
+            }
+        }
+
+        function handleMessageInput(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function showTypingIndicator() {
+            const chatContainer = document.getElementById('chatContainer');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'flex items-center space-x-2 mb-4';
+            typingDiv.innerHTML = `
+                <img src="https://picsum.photos/seed/user1/40/40.jpg" class="w-8 h-8 rounded-full" alt="Sarah">
+                <div class="bg-white/10 px-3 py-2 rounded-lg">
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        function simulateResponse() {
+            const responses = [
+                { user: 'Sarah Johnson', message: 'Great point! Let\'s discuss this in our next meeting.', avatar: 'user1' },
+                { user: 'Mike Chen', message: 'I agree. The AI integration looks promising.', avatar: 'user2' },
+                { user: 'Lisa Wong', message: 'Love the collaboration features! Team productivity is up 67%.', avatar: 'user3' }
+            ];
+            
+            const response = responses[Math.floor(Math.random() * responses.length)];
+            response.time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            addMessageToChat(response);
+        }
+
+        // Initialize Conversations
+        function initializeConversations() {
+            const conversationsList = document.getElementById('conversationsList');
+            const conversations = [
+                { name: 'Project Alpha', members: 8, active: true, lastMessage: 'Great progress on AI features' },
+                { name: 'Design Team', members: 5, active: true, lastMessage: 'Updated mockups are ready' },
+                { name: 'Development', members: 12, active: false, lastMessage: 'Code review completed' },
+                { name: 'QA Testing', members: 6, active: false, lastMessage: 'All tests passing' }
+            ];
+
+            conversations.forEach(conv => {
+                const convDiv = document.createElement('div');
+                convDiv.className = 'bg-white/5 p-3 rounded-lg cursor-pointer hover:bg-white/10 transition-all';
+                convDiv.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm font-medium text-purple-300">${conv.name}</span>
+                        <div class="flex items-center space-x-1">
+                            <span class="text-xs text-gray-400">${conv.members}</span>
+                            ${conv.active ? '<div class="w-2 h-2 bg-green-500 rounded-full"></div>' : ''}
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-400 truncate">${conv.lastMessage}</div>
+                `;
+                convDiv.onclick = () => switchConversation(conv.name);
+                conversationsList.appendChild(convDiv);
+            });
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            const ctx = document.getElementById('activityTrendsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [
+                        {
+                            label: 'Messages',
+                            data: [890, 1120, 1247, 1089, 1342, 567, 234],
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Meetings',
+                            data: [12, 15, 18, 16, 22, 8, 4],
+                            borderColor: 'rgb(139, 92, 246)',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'rgba(255, 255, 255, 0.7)' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Real-Time Updates
+        function startRealTimeUpdates() {
+            // Simulate real-time updates
+            setInterval(() => {
+                updateActiveUserCount();
+                updateMessageCount();
+            }, 5000);
+        }
+
+        function updateActiveUserCount() {
+            const variation = Math.floor(Math.random() * 5) - 2;
+            const currentCount = parseInt(document.querySelector('.text-green-400').textContent);
+            const newCount = Math.max(35, Math.min(50, currentCount + variation));
+            document.querySelector('.text-green-400').textContent = newCount;
+        }
+
+        function updateMessageCount() {
+            const currentCount = parseInt(document.querySelector('.text-green-400').textContent);
+            const increment = Math.floor(Math.random() * 3) + 1;
+            document.querySelectorAll('.text-green-400')[1].textContent = 
+                (1247 + increment).toLocaleString();
+        }
+
+        // Interactive Functions
+        function startVideoCall() {
+            showNotification('🎥 Launching video conference with AI-enhanced features...', 'info');
+        }
+
+        function startChat(user) {
+            showNotification(`💬 Starting chat with ${user.name}...`, 'info');
+        }
+
+        function switchConversation(conversationName) {
+            showNotification(`📝 Switched to ${conversationName} conversation`, 'info');
+        }
+
+        function shareDocument() {
+            showNotification('📄 Document shared with team members successfully', 'success');
+        }
+
+        function joinMeeting(meetingId) {
+            showNotification(`🎥 Joining meeting: ${meetingId}...`, 'info');
+        }
+
+        function startInstantMeeting() {
+            showNotification('🚀 Starting instant meeting room with team...', 'info');
+        }
+
+        function scheduleMeeting() {
+            showNotification('📅 Opening meeting scheduler with AI suggestions...', 'info');
+        }
+
+        function joinMeetingRoom() {
+            showNotification('🚪 Connecting to meeting room...', 'info');
+        }
+
+        function screenShare() {
+            showNotification('🖥️ Starting screen share session...', 'info');
+        }
+
+        function exportCollaborationReport() {
+            showNotification('📊 Exporting collaboration analytics report...', 'info');
+        }
+
+        function configureSettings() {
+            showNotification('⚙️ Opening collaboration settings...', 'info');
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-500 ${
+                type === 'success' ? 'bg-green-600' :
+                type === 'warning' ? 'bg-yellow-600' :
+                type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' :
+                        type === 'warning' ? 'fa-exclamation-triangle' :
+                        type === 'error' ? 'fa-times-circle' : 'fa-info-circle'
+                    }"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Planning - Advanced Features</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Scenario Card */
+        .scenario-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .scenario-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            border-color: #3b82f6;
+        }
+        .scenario-card.active {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        /* Timeline Slider */
+        .timeline-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            position: relative;
+            cursor: pointer;
+        }
+        .timeline-slider-thumb {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            top: -6px;
+            cursor: grab;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .timeline-slider-thumb:active {
+            cursor: grabbing;
+        }
+
+        /* Version Card */
+        .version-card {
+            background: white;
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .version-card:hover {
+            background: #f9fafb;
+            transform: translateX(4px);
+        }
+        .version-card.current {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        /* Activity Feed */
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .activity-item:hover {
+            background: #f9fafb;
+        }
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Filter Chip */
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #f3f4f6;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-chip:hover {
+            background: #e5e7eb;
+        }
+        .filter-chip.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        /* Monte Carlo Chart */
+        .probability-bar {
+            height: 24px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%);
+            position: relative;
+            margin: 20px 0;
+        }
+        .probability-marker {
+            position: absolute;
+            width: 3px;
+            height: 32px;
+            background: #1f2937;
+            top: -4px;
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .comparison-table th {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .comparison-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .comparison-table tr:hover {
+            background: #f9fafb;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 1200px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 10000;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.info { border-left: 4px solid #3b82f6; }
+
+        /* Mini Map */
+        .mini-map {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 120px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 10px;
+            z-index: 1000;
+        }
+        .mini-map-viewport {
+            border: 2px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            position: absolute;
+            cursor: move;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- What-If Scenario Modal -->
+    <div id="scenario-modal" class="modal">
+        <div class="modal-content">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-900">Create What-If Scenario</h3>
+                    <button onclick="closeScenarioModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <form id="scenario-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Scenario Name</label>
+                        <input type="text" id="scenario-name" placeholder="e.g., Accelerated Timeline" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Budget Adjustment</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option>No change</option>
+                                <option>+10%</option>
+                                <option>+20%</option>
+                                <option>-10%</option>
+                                <option>-20%</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Timeline Adjustment</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option>No change</option>
+                                <option>-2 weeks</option>
+                                <option>-4 weeks</option>
+                                <option>+2 weeks</option>
+                                <option>+4 weeks</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Resource Changes</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" class="rounded">
+                                <span class="text-sm">Add 2 developers</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" class="rounded">
+                                <span class="text-sm">Add 1 QA engineer</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" class="rounded">
+                                <span class="text-sm">Reduce team by 1</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Risk Tolerance</label>
+                        <input type="range" min="0" max="100" value="50" class="w-full">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Conservative</span>
+                            <span>Aggressive</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
+                <button onclick="closeScenarioModal()" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                    Cancel
+                </button>
+                <button onclick="createScenario()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Create Scenario
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monte Carlo Modal -->
+    <div id="montecarlo-modal" class="modal">
+        <div class="modal-content">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-900">Monte Carlo Simulation Results</h3>
+                    <button onclick="closeMonteCarloModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-4">Completion Date Probability</h4>
+                    <div class="probability-bar">
+                        <div class="probability-marker" style="left: 25%;" title="Pessimistic: April 15"></div>
+                        <div class="probability-marker" style="left: 50%;" title="Most Likely: March 28"></div>
+                        <div class="probability-marker" style="left: 75%;" title="Optimistic: March 15"></div>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600 mt-2">
+                        <span>Pessimistic<br><strong>April 15</strong></span>
+                        <span class="text-center">Most Likely<br><strong>March 28</strong></span>
+                        <span class="text-right">Optimistic<br><strong>March 15</strong></span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+                        <p class="text-sm text-red-700 mb-1">10% Confidence</p>
+                        <p class="text-2xl font-bold text-red-900">April 20</p>
+                    </div>
+                    <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                        <p class="text-sm text-yellow-700 mb-1">50% Confidence</p>
+                        <p class="text-2xl font-bold text-yellow-900">March 28</p>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                        <p class="text-sm text-green-700 mb-1">90% Confidence</p>
+                        <p class="text-2xl font-bold text-green-900">March 10</p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-4">Budget Probability Distribution</h4>
+                    <canvas id="montecarlo-chart" height="200"></canvas>
+                </div>
+
+                <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <h4 class="font-semibold text-blue-900 mb-2">Recommendations</h4>
+                    <ul class="text-sm text-blue-800 space-y-1">
+                        <li>• Add 2-day buffer to critical path tasks</li>
+                        <li>• Increase contingency reserve by $50,000</li>
+                        <li>• Monitor resource utilization closely in Sprint 4</li>
+                        <li>• Consider parallel execution for Tasks 5 and 6</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
+                <button onclick="closeMonteCarloModal()" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                    Close
+                </button>
+                <button onclick="applyRecommendations()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Apply Recommendations
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="min-h-screen p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+                    <i class="fas fa-magic text-purple-600"></i>
+                    Advanced Features Suite
+                    <span class="text-sm font-normal px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full">
+                        World Class Edition
+                    </span>
+                </h1>
+                <p class="text-gray-600">What-If Scenarios, Monte Carlo, Version Control, and Advanced Analytics</p>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <button onclick="openScenarioModal()" class="p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all text-left">
+                    <i class="fas fa-lightbulb text-2xl mb-2"></i>
+                    <h3 class="font-semibold mb-1">What-If Scenario</h3>
+                    <p class="text-sm opacity-90">Test different approaches</p>
+                </button>
+                <button onclick="runMonteCarlo()" class="p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all text-left">
+                    <i class="fas fa-chart-line text-2xl mb-2"></i>
+                    <h3 class="font-semibold mb-1">Monte Carlo</h3>
+                    <p class="text-sm opacity-90">Probability analysis</p>
+                </button>
+                <button onclick="compareBaseline()" class="p-4 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-left">
+                    <i class="fas fa-balance-scale text-2xl mb-2"></i>
+                    <h3 class="font-semibold mb-1">Compare Baseline</h3>
+                    <p class="text-sm opacity-90">Plan vs Actual</p>
+                </button>
+                <button onclick="undoLastAction()" class="p-4 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all text-left">
+                    <i class="fas fa-undo text-2xl mb-2"></i>
+                    <h3 class="font-semibold mb-1">Undo/Redo</h3>
+                    <p class="text-sm opacity-90">Version control</p>
+                </button>
+            </div>
+
+            <!-- What-If Scenarios -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-900">What-If Scenarios</h2>
+                    <button onclick="openScenarioModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                        <i class="fas fa-plus"></i>
+                        New Scenario
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="scenario-card active">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-semibold text-gray-900">Current Plan</h3>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">ACTIVE</span>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Completion:</span>
+                                <span class="font-semibold">March 16, 2024</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Budget:</span>
+                                <span class="font-semibold">$1,500,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Team Size:</span>
+                                <span class="font-semibold">12 people</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Risk Level:</span>
+                                <span class="font-semibold text-green-600">Low</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scenario-card">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-semibold text-gray-900">Accelerated Timeline</h3>
+                            <button class="text-blue-600 hover:text-blue-700">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Completion:</span>
+                                <span class="font-semibold text-green-600">March 1, 2024 (-15d)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Budget:</span>
+                                <span class="font-semibold text-red-600">$1,800,000 (+20%)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Team Size:</span>
+                                <span class="font-semibold">15 people (+3)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Risk Level:</span>
+                                <span class="font-semibold text-yellow-600">Medium</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scenario-card">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-semibold text-gray-900">Budget Optimized</h3>
+                            <button class="text-blue-600 hover:text-blue-700">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Completion:</span>
+                                <span class="font-semibold text-red-600">April 15, 2024 (+30d)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Budget:</span>
+                                <span class="font-semibold text-green-600">$1,200,000 (-20%)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Team Size:</span>
+                                <span class="font-semibold">10 people (-2)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Risk Level:</span>
+                                <span class="font-semibold text-green-600">Low</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scenario Comparison -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Scenario Comparison</h3>
+                <div class="overflow-x-auto">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Current Plan</th>
+                                <th>Accelerated</th>
+                                <th>Budget Optimized</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-medium">Completion Date</td>
+                                <td>March 16, 2024</td>
+                                <td class="text-green-600">March 1, 2024 ↑</td>
+                                <td class="text-red-600">April 15, 2024 ↓</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium">Total Budget</td>
+                                <td>$1,500,000</td>
+                                <td class="text-red-600">$1,800,000 ↑</td>
+                                <td class="text-green-600">$1,200,000 ↓</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium">Team Size</td>
+                                <td>12 people</td>
+                                <td>15 people</td>
+                                <td>10 people</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium">Risk Score</td>
+                                <td>Low (2.5)</td>
+                                <td class="text-yellow-600">Medium (5.0)</td>
+                                <td class="text-green-600">Low (2.0)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium">ROI</td>
+                                <td>250%</td>
+                                <td class="text-yellow-600">200%</td>
+                                <td class="text-green-600">300%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Version History -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold text-gray-900">Version History</h2>
+                        <div class="flex gap-2">
+                            <button onclick="undoLastAction()" class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                                <i class="fas fa-undo"></i> Undo
+                            </button>
+                            <button onclick="redoLastAction()" class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                                <i class="fas fa-redo"></i> Redo
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="version-card current">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-check text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">Current Version</p>
+                                        <p class="text-xs text-gray-500">Today at 2:45 PM</p>
+                                    </div>
+                                </div>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">CURRENT</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Updated task durations and resource allocations</p>
+                        </div>
+
+                        <div class="version-card">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-save text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">Version 2.3</p>
+                                        <p class="text-xs text-gray-500">Today at 11:20 AM</p>
+                                    </div>
+                                </div>
+                                <button class="text-blue-600 hover:text-blue-700 text-sm">
+                                    <i class="fas fa-history"></i> Restore
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-600">Added new tasks for testing phase</p>
+                        </div>
+
+                        <div class="version-card">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-save text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">Version 2.2</p>
+                                        <p class="text-xs text-gray-500">Yesterday at 4:15 PM</p>
+                                    </div>
+                                </div>
+                                <button class="text-blue-600 hover:text-blue-700 text-sm">
+                                    <i class="fas fa-history"></i> Restore
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-600">Baseline snapshot before sprint 3</p>
+                        </div>
+
+                        <div class="version-card">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-save text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">Version 2.1</p>
+                                        <p class="text-xs text-gray-500">2 days ago</p>
+                                    </div>
+                                </div>
+                                <button class="text-blue-600 hover:text-blue-700 text-sm">
+                                    <i class="fas fa-history"></i> Restore
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-600">Adjusted timeline after stakeholder review</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Feed -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Activity Feed</h2>
+                    <div class="space-y-4">
+                        <div class="activity-item">
+                            <div class="activity-icon bg-blue-100">
+                                <i class="fas fa-edit text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">Task Updated</p>
+                                <p class="text-xs text-gray-600">Development Sprint 1 duration changed</p>
+                                <p class="text-xs text-gray-400 mt-1">2 minutes ago</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-icon bg-green-100">
+                                <i class="fas fa-user-plus text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">Resource Assigned</p>
+                                <p class="text-xs text-gray-600">Alex Chen assigned to Testing Phase</p>
+                                <p class="text-xs text-gray-400 mt-1">15 minutes ago</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-icon bg-purple-100">
+                                <i class="fas fa-chart-line text-purple-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">Scenario Created</p>
+                                <p class="text-xs text-gray-600">New what-if scenario: Accelerated Timeline</p>
+                                <p class="text-xs text-gray-400 mt-1">1 hour ago</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-icon bg-yellow-100">
+                                <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">Risk Identified</p>
+                                <p class="text-xs text-gray-600">New risk added to risk register</p>
+                                <p class="text-xs text-gray-400 mt-1">3 hours ago</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-icon bg-red-100">
+                                <i class="fas fa-check-circle text-red-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">Milestone Completed</p>
+                                <p class="text-xs text-gray-600">Design Phase milestone reached</p>
+                                <p class="text-xs text-gray-400 mt-1">5 hours ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Filters -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Advanced Filters</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="filter-chip active">
+                                <i class="fas fa-circle text-xs"></i>
+                                All Tasks
+                            </span>
+                            <span class="filter-chip">
+                                <i class="fas fa-circle text-xs text-blue-500"></i>
+                                In Progress
+                            </span>
+                            <span class="filter-chip">
+                                <i class="fas fa-circle text-xs text-green-500"></i>
+                                Completed
+                            </span>
+                            <span class="filter-chip">
+                                <i class="fas fa-circle text-xs text-gray-400"></i>
+                                Not Started
+                            </span>
+                            <span class="filter-chip">
+                                <i class="fas fa-circle text-xs text-yellow-500"></i>
+                                On Hold
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Filter by Priority</label>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="filter-chip">
+                                <i class="fas fa-flag text-xs text-red-500"></i>
+                                Critical
+                            </span>
+                            <span class="filter-chip">
+                                <i class="fas fa-flag text-xs text-orange-500"></i>
+                                High
+                            </span>
+                            <span class="filter-chip">
+                                <i class="fas fa-flag text-xs text-yellow-500"></i>
+                                Medium
+                            </span>
+                            <span class="filter-chip">
+                                <i class="fas fa-flag text-xs text-gray-400"></i>
+                                Low
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Filter by Assignee</label>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="filter-chip">
+                                <i class="fas fa-user text-xs"></i>
+                                John Doe
+                            </span>
+                            <span class="filter-chip">
+                                <i class="fas fa-user text-xs"></i>
+                                Jane Smith
+                            </span>
+                            <span class="filter-chip">
+                                <i class="fas fa-user text-xs"></i>
+                                Mike Johnson
+                            </span>
+                            <span class="filter-chip">
+                                <i class="fas fa-users text-xs"></i>
+                                Unassigned
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Filter by Date Range</label>
+                        <div class="flex gap-4">
+                            <input type="date" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <span class="flex items-center text-gray-500">to</span>
+                            <input type="date" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Apply Filters
+                        </button>
+                        <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                            Clear All
+                        </button>
+                        <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                            <i class="fas fa-save"></i> Save Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gantt View Modes -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Gantt View Modes</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <button onclick="switchGanttView('compact')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
+                        <i class="fas fa-compress text-blue-600 text-xl mb-2"></i>
+                        <h3 class="font-semibold text-gray-900">Compact View</h3>
+                        <p class="text-sm text-gray-600 mt-1">Weekly timeline</p>
+                    </button>
+                    <button onclick="switchGanttView('standard')" class="p-4 border-2 border-blue-500 bg-blue-50 rounded-lg text-left">
+                        <i class="fas fa-calendar text-blue-600 text-xl mb-2"></i>
+                        <h3 class="font-semibold text-gray-900">Standard View</h3>
+                        <p class="text-sm text-gray-600 mt-1">Daily timeline</p>
+                    </button>
+                    <button onclick="switchGanttView('detailed')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
+                        <i class="fas fa-expand text-blue-600 text-xl mb-2"></i>
+                        <h3 class="font-semibold text-gray-900">Detailed View</h3>
+                        <p class="text-sm text-gray-600 mt-1">Hourly timeline</p>
+                    </button>
+                    <button onclick="switchGanttView('swimlane')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
+                        <i class="fas fa-layer-group text-blue-600 text-xl mb-2"></i>
+                        <h3 class="font-semibold text-gray-900">Swimlane View</h3>
+                        <p class="text-sm text-gray-600 mt-1">By resource/phase</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mini Map -->
+    <div class="mini-map">
+        <div class="text-xs font-semibold text-gray-700 mb-2">Timeline Overview</div>
+        <div style="position: relative; height: 80px; background: #f3f4f6; border-radius: 4px;">
+            <div class="mini-map-viewport" style="left: 20%; width: 30%; height: 100%;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showToast('Advanced Features Suite loaded successfully!', 'success');
+            initializeMonteCarloChart();
+        });
+
+        // Toast
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                info: 'fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <i class="fas ${icons[type]} text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-semibold text-gray-900">${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                    <p class="text-sm text-gray-600">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Scenario Modal
+        function openScenarioModal() {
+            document.getElementById('scenario-modal').classList.add('show');
+        }
+
+        function closeScenarioModal() {
+            document.getElementById('scenario-modal').classList.remove('show');
+        }
+
+        function createScenario() {
+            const name = document.getElementById('scenario-name').value;
+            showToast(`Scenario "${name}" created successfully!`, 'success');
+            closeScenarioModal();
+        }
+
+        // Monte Carlo
+        function runMonteCarlo() {
+            showToast('Running Monte Carlo simulation...', 'info');
+            setTimeout(() => {
+                document.getElementById('montecarlo-modal').classList.add('show');
+                showToast('Simulation complete! 10,000 iterations analyzed.', 'success');
+            }, 2000);
+        }
+
+        function closeMonteCarloModal() {
+            document.getElementById('montecarlo-modal').classList.remove('show');
+        }
+
+        function applyRecommendations() {
+            showToast('Applying Monte Carlo recommendations...', 'info');
+            setTimeout(() => {
+                closeMonteCarloModal();
+                showToast('Recommendations applied successfully!', 'success');
+            }, 1500);
+        }
+
+        function initializeMonteCarloChart() {
+            const ctx = document.getElementById('montecarlo-chart')?.getContext('2d');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['$1.2M', '$1.3M', '$1.4M', '$1.5M', '$1.6M', '$1.7M', '$1.8M'],
+                    datasets: [{
+                        label: 'Probability',
+                        data: [5, 15, 35, 50, 35, 15, 5],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Probability (%)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Budget' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Baseline Comparison
+        function compareBaseline() {
+            showToast('Loading baseline comparison...', 'info');
+            setTimeout(() => {
+                showToast('Baseline comparison ready! View in reports section.', 'success');
+            }, 1500);
+        }
+
+        // Undo/Redo
+        function undoLastAction() {
+            showToast('Last action undone', 'info');
+        }
+
+        function redoLastAction() {
+            showToast('Action redone', 'info');
+        }
+
+        // Gantt View Modes
+        function switchGanttView(mode) {
+            const modes = {
+                compact: 'Compact View (Weekly)',
+                standard: 'Standard View (Daily)',
+                detailed: 'Detailed View (Hourly)',
+                swimlane: 'Swimlane View (By Resource)'
+            };
+            showToast(`Switched to ${modes[mode]}`, 'info');
+        }
+
+        // Filter Chips
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.filter-chip')) {
+                const chip = e.target.closest('.filter-chip');
+                chip.classList.toggle('active');
+            }
+        });
+    </script>
+</body>
+</html>

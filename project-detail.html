@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Enhanced PPM Tool - Project Detail</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .slide-up { animation: slideUp 0.3s ease-out; }
+        
+        .task-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .task-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .task-todo { border-left-color: #ef4444; }
+        .task-progress { border-left-color: #f59e0b; }
+        .task-completed { border-left-color: #10b981; }
+        
+        .progress-ring {
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            transition: transform 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-project-diagram text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">AI-Enhanced PPM Tool</h1>
+                        <p class="text-purple-100 text-sm">Project Detail & Task Management</p>
+                    </div>
+                </div>
+                <button onclick="goBack()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Project Header -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 slide-up">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <h2 id="projectTitle" class="text-3xl font-bold text-gray-800 mb-2">Loading Project...</h2>
+                    <p id="projectDescription" class="text-gray-600 mb-4">Project description loading...</p>
+                    <div class="flex flex-wrap gap-3">
+                        <span id="projectType" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                            <i class="fas fa-tag mr-1"></i>Type: Loading...
+                        </span>
+                        <span id="projectComplexity" class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                            <i class="fas fa-layer-group mr-1"></i>Complexity: Loading...
+                        </span>
+                        <span id="projectStatus" class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                            <i class="fas fa-clock mr-1"></i>Status: Active
+                        </span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <svg class="progress-ring w-20 h-20" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" stroke="#e5e7eb" stroke-width="10" fill="none"/>
+                        <circle id="progressCircle" cx="50" cy="50" r="45" stroke="#10b981" stroke-width="10" fill="none"
+                                stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="round"
+                                transform="rotate(-90 50 50)"/>
+                    </svg>
+                    <p id="progressPercent" class="text-2xl font-bold text-gray-800 mt-2">0%</p>
+                    <p class="text-sm text-gray-600">Complete</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card rounded-xl p-4 text-center">
+                <i class="fas fa-tasks text-3xl text-blue-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="totalTasks">0</p>
+                <p class="text-sm text-gray-600">Total Tasks</p>
+            </div>
+            <div class="stat-card rounded-xl p-4 text-center">
+                <i class="fas fa-spinner text-3xl text-amber-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="inProgressTasks">0</p>
+                <p class="text-sm text-gray-600">In Progress</p>
+            </div>
+            <div class="stat-card rounded-xl p-4 text-center">
+                <i class="fas fa-check-circle text-3xl text-green-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="completedTasks">0</p>
+                <p class="text-sm text-gray-600">Completed</p>
+            </div>
+            <div class="stat-card rounded-xl p-4 text-center">
+                <i class="fas fa-calendar-alt text-3xl text-purple-600 mb-2"></i>
+                <p class="text-2xl font-bold text-gray-800" id="projectTimeline">0d</p>
+                <p class="text-sm text-gray-600">Timeline</p>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Tasks Section (2/3 width) -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-list-check mr-2 text-blue-600"></i>Project Tasks
+                        </h3>
+                        <button onclick="addNewTask()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-plus mr-2"></i>Add Task
+                        </button>
+                        <button onclick="window.location.href='project-planning-project-linked.html?project=ai-powered-ecommerce'" 
+                                class="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-semibold text-sm">
+                            <i class="fas fa-tasks mr-2"></i>Open Project Planning
+                        </button>
+                        </button>
+                    </div>
+
+                    <!-- Task Filters -->
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button onclick="filterTasks('all')" class="filter-btn px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-medium transition">
+                            All Tasks
+                        </button>
+                        <button onclick="filterTasks('todo')" class="filter-btn px-3 py-1 bg-red-100 hover:bg-red-200 rounded-lg text-sm font-medium text-red-800 transition">
+                            To Do
+                        </button>
+                        <button onclick="filterTasks('progress')" class="filter-btn px-3 py-1 bg-amber-100 hover:bg-amber-200 rounded-lg text-sm font-medium text-amber-800 transition">
+                            In Progress
+                        </button>
+                        <button onclick="filterTasks('completed')" class="filter-btn px-3 py-1 bg-green-100 hover:bg-green-200 rounded-lg text-sm font-medium text-green-800 transition">
+                            Completed
+                        </button>
+                    </div>
+
+                    <!-- Tasks List -->
+                    <div id="tasksList" class="space-y-3">
+                        <!-- Tasks will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar (1/3 width) -->
+            <div class="space-y-6">
+                <!-- Resources -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-users mr-2 text-purple-600"></i>Required Resources
+                    </h3>
+                    <div id="resourcesList" class="space-y-3">
+                        <!-- Resources will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Risks -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-exclamation-triangle mr-2 text-red-600"></i>Risk Assessment
+                    </h3>
+                    <div id="risksList" class="space-y-3">
+                        <!-- Risks will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Budget & Timeline -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-line mr-2 text-green-600"></i>Project Metrics
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Budget</span>
+                            <span id="projectBudget" class="font-bold text-gray-800">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Success Score</span>
+                            <span id="successScore" class="font-bold text-green-600">0%</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Risk Level</span>
+                            <span id="riskLevel" class="font-bold text-amber-600">Medium</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Task Modal -->
+    <div id="taskModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 slide-up">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Add New Task</h3>
+            <form id="taskForm" onsubmit="saveTask(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Task Name</label>
+                    <input type="text" id="taskName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="taskDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                    <select id="taskPriority" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                    <input type="date" id="taskDueDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeTaskModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                        Save Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample project data (in real app, this would come from URL parameter or API)
+        let currentProject = null;
+        let currentFilter = 'all';
+
+        // Load project data
+        function loadProject() {
+            // Get project from localStorage (from main dashboard)
+            const projects = JSON.parse(localStorage.getItem('ppm_projects') || '[]');
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('id');
+            
+            if (projectId && projects.length > 0) {
+                currentProject = projects[parseInt(projectId)];
+                
+                // Transform the project data to match our detail view format
+                if (currentProject && currentProject.tasks) {
+                    currentProject.tasks = currentProject.tasks.map(task => ({
+                        id: task.id || Math.random().toString(36).substr(2, 9),
+                        name: task.name || task.title || 'Untitled Task',
+                        description: task.description || task.duration ? `${task.duration} days • ${task.priority} priority` : 'Task description',
+                        status: task.status || 'todo',
+                        priority: task.priority || 'Medium',
+                        progress: task.progress || (task.status === 'completed' ? 100 : task.status === 'progress' ? 50 : 0),
+                        dueDate: task.dueDate || getFutureDate(30)
+                    }));
+                }
+                
+                // Transform resources if needed
+                if (currentProject && currentProject.resources) {
+                    currentProject.resources = currentProject.resources.map(resource => ({
+                        role: resource.role,
+                        experience: resource.experience,
+                        allocation: resource.allocation,
+                        count: resource.count || 1
+                    }));
+                }
+                
+                // Transform risks if needed
+                if (currentProject && currentProject.risks) {
+                    currentProject.risks = currentProject.risks.map(risk => ({
+                        title: risk.title || risk.risk || 'Unknown Risk',
+                        probability: risk.probability || 'Medium',
+                        impact: risk.impact || 'Medium',
+                        mitigation: risk.mitigation || 'Monitor and mitigate as needed'
+                    }));
+                }
+            } else {
+                // Use sample project if no ID provided
+                currentProject = {
+                    name: "AI-Powered E-Commerce Platform",
+                    description: "Build a modern e-commerce platform with AI-powered product recommendations, advanced search capabilities, and seamless user experience across web and mobile devices.",
+                    type: "Software Development",
+                    complexity: "High",
+                    budget: 150000,
+                    timeline: 180,
+                    successScore: 85,
+                    riskLevel: "Medium",
+                    tasks: [
+                        { id: 1, name: "Project Setup & Architecture Design", description: "Set up development environment and define system architecture", status: "completed", priority: "High", progress: 100, dueDate: "2024-01-15" },
+                        { id: 2, name: "Database Design & Implementation", description: "Design and implement database schema", status: "completed", priority: "High", progress: 100, dueDate: "2024-01-30" },
+                        { id: 3, name: "User Authentication System", description: "Implement secure user registration and login", status: "progress", priority: "High", progress: 75, dueDate: "2024-02-15" },
+                        { id: 4, name: "Product Catalog Management", description: "Build product CRUD operations and admin interface", status: "progress", priority: "Medium", progress: 60, dueDate: "2024-02-28" },
+                        { id: 5, name: "Shopping Cart Functionality", description: "Implement shopping cart with add/remove/update features", status: "todo", priority: "High", progress: 0, dueDate: "2024-03-15" },
+                        { id: 6, name: "Payment Gateway Integration", description: "Integrate secure payment processing", status: "todo", priority: "Critical", progress: 0, dueDate: "2024-03-30" }
+                    ],
+                    resources: [
+                        { role: "Frontend Developer", experience: "Senior", allocation: "40%", count: 2 },
+                        { role: "Backend Developer", experience: "Senior", allocation: "30%", count: 2 },
+                        { role: "UI/UX Designer", experience: "Mid", allocation: "15%", count: 1 },
+                        { role: "DevOps Engineer", experience: "Mid", allocation: "10%", count: 1 },
+                        { role: "QA Engineer", experience: "Mid", allocation: "5%", count: 1 }
+                    ],
+                    risks: [
+                        { title: "Technical Complexity", probability: "Medium", impact: "High", mitigation: "Use proven technologies and phased approach" },
+                        { title: "Timeline Pressure", probability: "High", impact: "Medium", mitigation: "Prioritize features and consider MVP approach" },
+                        { title: "Team Coordination", probability: "Low", impact: "Medium", mitigation: "Regular stand-ups and clear communication channels" }
+                    ]
+                };
+            }
+            
+            displayProject();
+        }
+
+        // Helper function to get future date
+        function getFutureDate(daysFromNow) {
+            const date = new Date();
+            date.setDate(date.getDate() + daysFromNow);
+            return date.toISOString().split('T')[0];
+        }
+
+        function displayProject() {
+            if (!currentProject) return;
+
+            // Update project header
+            document.getElementById('projectTitle').textContent = currentProject.name;
+            document.getElementById('projectDescription').textContent = currentProject.description;
+            document.getElementById('projectType').innerHTML = `<i class="fas fa-tag mr-1"></i>Type: ${currentProject.type}`;
+            document.getElementById('projectComplexity').innerHTML = `<i class="fas fa-layer-group mr-1"></i>Complexity: ${currentProject.complexity}`;
+            
+            // Update statistics
+            const tasks = currentProject.tasks || [];
+            const completedTasks = tasks.filter(t => t.status === 'completed').length;
+            const inProgressTasks = tasks.filter(t => t.status === 'progress').length;
+            const todoTasks = tasks.filter(t => t.status === 'todo').length;
+            
+            document.getElementById('totalTasks').textContent = tasks.length;
+            document.getElementById('inProgressTasks').textContent = inProgressTasks;
+            document.getElementById('completedTasks').textContent = completedTasks;
+            document.getElementById('projectTimeline').textContent = currentProject.timeline + 'd';
+            document.getElementById('projectBudget').textContent = '$' + currentProject.budget.toLocaleString();
+            document.getElementById('successScore').textContent = currentProject.successScore + '%';
+            document.getElementById('riskLevel').textContent = currentProject.riskLevel;
+            
+            // Update progress
+            const progressPercent = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
+            document.getElementById('progressPercent').textContent = progressPercent + '%';
+            const progressCircle = document.getElementById('progressCircle');
+            const circumference = 2 * Math.PI * 45;
+            const offset = circumference - (progressPercent / 100) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+            
+            // Display tasks
+            displayTasks();
+            
+            // Display resources
+            displayResources();
+            
+            // Display risks
+            displayRisks();
+        }
+
+        function displayTasks() {
+            const tasksList = document.getElementById('tasksList');
+            const tasks = currentProject.tasks || [];
+            
+            let filteredTasks = tasks;
+            if (currentFilter !== 'all') {
+                filteredTasks = tasks.filter(task => task.status === currentFilter);
+            }
+            
+            tasksList.innerHTML = '';
+            
+            filteredTasks.forEach(task => {
+                const taskCard = document.createElement('div');
+                taskCard.className = `task-card bg-gray-50 rounded-lg p-4 cursor-pointer hover:bg-gray-100 task-${task.status}`;
+                
+                const statusIcon = task.status === 'completed' ? 'check-circle' : 
+                                  task.status === 'progress' ? 'spinner' : 'clock';
+                const statusColor = task.status === 'completed' ? 'text-green-600' : 
+                                   task.status === 'progress' ? 'text-amber-600' : 'text-red-600';
+                const priorityColor = task.priority === 'Critical' ? 'red' : 
+                                    task.priority === 'High' ? 'orange' : 
+                                    task.priority === 'Medium' ? 'yellow' : 'gray';
+                
+                taskCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-${statusIcon} ${statusColor} mr-2"></i>
+                                <h4 class="font-semibold text-gray-800">${task.name}</h4>
+                                <span class="ml-2 px-2 py-1 bg-${priorityColor}-100 text-${priorityColor}-800 text-xs rounded-full">
+                                    ${task.priority}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-2">${task.description}</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                    <span><i class="fas fa-calendar mr-1"></i>${task.dueDate || 'No due date'}</span>
+                                    <span><i class="fas fa-chart-pie mr-1"></i>${task.progress}% complete</span>
+                                </div>
+                                <div class="flex space-x-2">
+                                    ${task.status !== 'completed' ? `<button onclick="updateTaskStatus(${task.id}, 'completed')" class="text-green-600 hover:text-green-800"><i class="fas fa-check"></i></button>` : ''}
+                                    ${task.status !== 'progress' ? `<button onclick="updateTaskStatus(${task.id}, 'progress')" class="text-amber-600 hover:text-amber-800"><i class="fas fa-play"></i></button>` : ''}
+                                    ${task.status !== 'todo' ? `<button onclick="updateTaskStatus(${task.id}, 'todo')" class="text-gray-600 hover:text-gray-800"><i class="fas fa-undo"></i></button>` : ''}
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                <div class="bg-${statusColor.replace('text-', '')} h-2 rounded-full transition-all duration-300" style="width: ${task.progress}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                tasksList.appendChild(taskCard);
+            });
+            
+            if (filteredTasks.length === 0) {
+                tasksList.innerHTML = '<p class="text-center text-gray-500 py-8">No tasks found for this filter.</p>';
+            }
+        }
+
+        function displayResources() {
+            const resourcesList = document.getElementById('resourcesList');
+            const resources = currentProject.resources || [];
+            
+            resourcesList.innerHTML = '';
+            
+            resources.forEach(resource => {
+                const resourceCard = document.createElement('div');
+                resourceCard.className = 'bg-purple-50 rounded-lg p-3';
+                resourceCard.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h5 class="font-semibold text-gray-800">${resource.role}</h5>
+                            <p class="text-sm text-gray-600">${resource.experience} Level • ${resource.count} person</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-purple-600">${resource.allocation}</p>
+                            <p class="text-xs text-gray-500">allocation</p>
+                        </div>
+                    </div>
+                `;
+                resourcesList.appendChild(resourceCard);
+            });
+        }
+
+        function displayRisks() {
+            const risksList = document.getElementById('risksList');
+            const risks = currentProject.risks || [];
+            
+            risksList.innerHTML = '';
+            
+            risks.forEach(risk => {
+                const riskCard = document.createElement('div');
+                const probabilityColor = risk.probability === 'High' ? 'red' : 
+                                        risk.probability === 'Medium' ? 'amber' : 'green';
+                const impactColor = risk.impact === 'High' ? 'red' : 
+                                   risk.impact === 'Medium' ? 'amber' : 'green';
+                
+                riskCard.className = 'bg-red-50 rounded-lg p-3';
+                riskCard.innerHTML = `
+                    <div class="mb-2">
+                        <h5 class="font-semibold text-gray-800">${risk.title}</h5>
+                        <div class="flex space-x-2 mt-1">
+                            <span class="text-xs px-2 py-1 bg-${probabilityColor}-100 text-${probabilityColor}-800 rounded">
+                                ${risk.probability} Probability
+                            </span>
+                            <span class="text-xs px-2 py-1 bg-${impactColor}-100 text-${impactColor}-800 rounded">
+                                ${risk.impact} Impact
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600">${risk.mitigation}</p>
+                `;
+                risksList.appendChild(riskCard);
+            });
+        }
+
+        function filterTasks(filter) {
+            currentFilter = filter;
+            displayTasks();
+            
+            // Update filter button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-blue-500');
+            });
+            event.target.classList.add('ring-2', 'ring-blue-500');
+        }
+
+        function updateTaskStatus(taskId, newStatus) {
+            const task = currentProject.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.status = newStatus;
+                task.progress = newStatus === 'completed' ? 100 : 
+                               newStatus === 'progress' ? 50 : 0;
+                displayProject();
+            }
+        }
+
+        function addNewTask() {
+            document.getElementById('taskModal').classList.remove('hidden');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.add('hidden');
+            document.getElementById('taskForm').reset();
+        }
+
+        function saveTask(event) {
+            event.preventDefault();
+            
+            const newTask = {
+                id: (currentProject.tasks.length + 1),
+                name: document.getElementById('taskName').value,
+                description: document.getElementById('taskDescription').value,
+                priority: document.getElementById('taskPriority').value,
+                dueDate: document.getElementById('taskDueDate').value,
+                status: 'todo',
+                progress: 0
+            };
+            
+            currentProject.tasks.push(newTask);
+            displayProject();
+            closeTaskModal();
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProject();
+        });
+    </script>
+</body>
+</html>

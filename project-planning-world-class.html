@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World-Class Project Planning - Security Enhancement</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .gantt-bar {
+            transition: all 0.3s ease;
+            cursor: move;
+        }
+        .gantt-bar:hover {
+            filter: brightness(1.2);
+            transform: translateY(-2px);
+        }
+        .milestone-diamond {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        .resource-card {
+            transition: all 0.3s ease;
+        }
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- World-Class Header -->
+    <div class="gradient-bg text-white shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2 flex items-center">
+                        <i class="fas fa-rocket mr-4 floating-animation"></i>
+                        World-Class Project Planning
+                    </h1>
+                    <p class="text-xl opacity-90">🔒 Security Enhancement Project • AI-Powered Planning Excellence</p>
+                    <div class="flex items-center space-x-6 mt-4 text-sm">
+                        <span class="bg-white/20 px-3 py-1 rounded-full">
+                            <i class="fas fa-calendar-alt mr-2"></i>Timeline: Q1-Q2 2024
+                        </span>
+                        <span class="bg-white/20 px-3 py-1 rounded-full">
+                            <i class="fas fa-dollar-sign mr-2"></i>Budget: $450,000
+                        </span>
+                        <span class="bg-white/20 px-3 py-1 rounded-full">
+                            <i class="fas fa-users mr-2"></i>Team: 12 Specialists
+                        </span>
+                        <span class="bg-green-400 px-3 py-1 rounded-full font-semibold">
+                            <i class="fas fa-check-circle mr-2"></i>85% Complete
+                        </span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="glass-effect rounded-2xl p-6 text-gray-800">
+                        <div class="text-3xl font-bold text-purple-600">AI OPTIMIZED</div>
+                        <div class="text-sm text-gray-600">Planning Confidence</div>
+                        <div class="text-2xl font-bold">94.7%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- World-Class Navigation Tabs -->
+    <div class="bg-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex space-x-1">
+                <button onclick="switchTab('gantt')" class="tab-btn tab-active px-6 py-4 font-semibold transition">
+                    <i class="fas fa-chart-gantt mr-2"></i>AI Gantt Studio
+                </button>
+                <button onclick="switchTab('milestones')" class="tab-btn px-6 py-4 font-semibold hover:bg-gray-100 transition">
+                    <i class="fas fa-flag mr-2"></i>Smart Milestones
+                </button>
+                <button onclick="switchTab('resources')" class="tab-btn px-6 py-4 font-semibold hover:bg-gray-100 transition">
+                    <i class="fas fa-users-cog mr-2"></i>Resource Studio
+                </button>
+                <button onclick="switchTab('plans')" class="tab-btn px-6 py-4 font-semibold hover:bg-gray-100 transition">
+                    <i class="fas fa-file-alt mr-2"></i>Plans on Page
+                </button>
+                <button onclick="switchTab('scenarios')" class="tab-btn px-6 py-4 font-semibold hover:bg-gray-100 transition">
+                    <i class="fas fa-route mr-2"></i>What-If Scenarios
+                </button>
+                <button onclick="switchTab('executive')" class="tab-btn px-6 py-4 font-semibold hover:bg-gray-100 transition">
+                    <i class="fas fa-chart-line mr-2"></i>Executive View
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- AI GANTT STUDIO TAB -->
+        <div id="gantt-tab" class="tab-content">
+            <!-- Gantt Controls -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-chart-gantt text-purple-600 mr-2"></i>
+                        AI-Powered Interactive Gantt
+                    </h2>
+                    <div class="flex space-x-3">
+                        <button onclick="optimizeGantt()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                            <i class="fas fa-magic mr-2"></i>AI Optimize
+                        </button>
+                        <button onclick="addGanttTask()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                            <i class="fas fa-plus mr-2"></i>Add Task
+                        </button>
+                        <button onclick="exportGantt()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Interactive Gantt Chart -->
+                <div class="bg-gray-50 rounded-lg p-4 overflow-x-auto">
+                    <svg width="1200" height="400" viewBox="0 0 1200 400">
+                        <!-- Grid -->
+                        <defs>
+                            <pattern id="grid" width="100" height="50" patternUnits="userSpaceOnUse">
+                                <path d="M 100 0 L 0 0 0 50" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+                            </pattern>
+                        </defs>
+                        <rect width="1200" height="400" fill="url(#grid)" />
+                        
+                        <!-- Month Headers -->
+                        <text x="150" y="25" font-family="Arial" font-size="14" font-weight="bold" fill="#374151">JANUARY 2024</text>
+                        <text x="450" y="25" font-family="Arial" font-size="14" font-weight="bold" fill="#374151">FEBRUARY 2024</text>
+                        <text x="750" y="25" font-family="Arial" font-size="14" font-weight="bold" fill="#374151">MARCH 2024</text>
+                        
+                        <!-- Task 1: Security Assessment -->
+                        <g class="gantt-bar" cursor="move">
+                            <text x="10" y="65" font-family="Arial" font-size="12" fill="#374151">Security Assessment</text>
+                            <rect x="150" y="50" width="120" height="30" rx="4" fill="#3b82f6" opacity="0.8"/>
+                            <text x="210" y="70" font-family="Arial" font-size="11" fill="white" text-anchor="middle">100%</text>
+                        </g>
+                        
+                        <!-- Task 2: Architecture Design -->
+                        <g class="gantt-bar" cursor="move">
+                            <text x="10" y="105" font-family="Arial" font-size="12" fill="#374151">Architecture Design</text>
+                            <rect x="270" y="90" width="150" height="30" rx="4" fill="#10b981" opacity="0.8"/>
+                            <text x="345" y="110" font-family="Arial" font-size="11" fill="white" text-anchor="middle">100%</text>
+                        </g>
+                        
+                        <!-- Task 3: Implementation Phase 1 -->
+                        <g class="gantt-bar" cursor="move">
+                            <text x="10" y="145" font-family="Arial" font-size="12" fill="#374151">Implementation Phase 1</text>
+                            <rect x="420" y="130" width="200" height="30" rx="4" fill="#8b5cf6" opacity="0.8"/>
+                            <text x="520" y="150" font-family="Arial" font-size="11" fill="white" text-anchor="middle">90%</text>
+                        </g>
+                        
+                        <!-- Task 4: Implementation Phase 2 -->
+                        <g class="gantt-bar" cursor="move">
+                            <text x="10" y="185" font-family="Arial" font-size="12" fill="#374151">Implementation Phase 2</text>
+                            <rect x="620" y="170" width="180" height="30" rx="4" fill="#f59e0b" opacity="0.8"/>
+                            <text x="710" y="190" font-family="Arial" font-size="11" fill="white" text-anchor="middle">75%</text>
+                        </g>
+                        
+                        <!-- Task 5: Testing & Validation -->
+                        <g class="gantt-bar" cursor="move">
+                            <text x="10" y="225" font-family="Arial" font-size="12" fill="#374151">Testing & Validation</text>
+                            <rect x="800" y="210" width="150" height="30" rx="4" fill="#ef4444" opacity="0.8"/>
+                            <text x="875" y="230" font-family="Arial" font-size="11" fill="white" text-anchor="middle">40%</text>
+                        </g>
+                        
+                        <!-- Task 6: Deployment -->
+                        <g class="gantt-bar" cursor="move">
+                            <text x="10" y="265" font-family="Arial" font-size="12" fill="#374151">Deployment</text>
+                            <rect x="950" y="250" width="100" height="30" rx="4" fill="#6b7280" opacity="0.8"/>
+                            <text x="1000" y="270" font-family="Arial" font-size="11" fill="white" text-anchor="middle">0%</text>
+                        </g>
+                        
+                        <!-- Milestone Diamond -->
+                        <g class="milestone-diamond">
+                            <text x="10" y="305" font-family="Arial" font-size="12" fill="#374151">GO LIVE</text>
+                            <polygon points="1050,295 1060,305 1050,315 1040,305" fill="#10b981"/>
+                        </g>
+                        
+                        <!-- Dependencies -->
+                        <path d="M 270,65 L 270,105" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <path d="M 420,105 L 420,145" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <path d="M 620,145 L 620,185" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <path d="M 800,185 L 800,225" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <path d="M 950,225 L 950,265" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        
+                        <!-- Arrow marker -->
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                <polygon points="0 0, 10 5, 0 10" fill="#666"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+                
+                <!-- Gantt Legend -->
+                <div class="flex justify-center space-x-6 mt-4 text-sm">
+                    <div class="flex items-center"><div class="w-4 h-4 bg-blue-500 rounded mr-2"></div>Complete</div>
+                    <div class="flex items-center"><div class="w-4 h-4 bg-purple-500 rounded mr-2"></div>In Progress</div>
+                    <div class="flex items-center"><div class="w-4 h-4 bg-yellow-500 rounded mr-2"></div>At Risk</div>
+                    <div class="flex items-center"><div class="w-4 h-4 bg-gray-500 rounded mr-2"></div>Not Started</div>
+                    <div class="flex items-center"><div class="w-4 h-4 bg-green-500 transform rotate-45 mr-2"></div>Milestone</div>
+                </div>
+            </div>
+
+            <!-- Gantt Analytics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Critical Path Analysis</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Critical Path Duration</span>
+                            <span class="font-bold text-red-600">142 days</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Float Time Available</span>
+                            <span class="font-bold text-yellow-600">8 days</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Schedule Confidence</span>
+                            <span class="font-bold text-green-600">87%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Resource Loading</h3>
+                    <div style="height: 200px; position: relative;"><canvas id="resourceLoadingChart"></canvas></div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Risk Buffer</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Total Buffer Added</span>
+                            <span class="font-bold text-orange-600">18 days</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Risk Coverage</span>
+                            <span class="font-bold text-green-600">94%</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">AI Recommendation</span>
+                            <span class="font-bold text-blue-600">Optimal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SMART MILESTONES TAB -->
+        <div id="milestones-tab" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-flag text-purple-600 mr-2"></i>
+                    Intelligent Milestone Management
+                </h2>
+                
+                <!-- Milestone Timeline -->
+                <div class="relative">
+                    <div class="absolute left-0 right-0 top-1/2 h-1 bg-gray-300"></div>
+                    
+                    <div class="relative flex justify-between">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white font-bold mb-2">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="font-bold text-gray-800">Project Kickoff</div>
+                            <div class="text-sm text-gray-600">Jan 1, 2024</div>
+                            <div class="text-xs text-green-600 font-semibold mt-1">COMPLETED</div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white font-bold mb-2">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="font-bold text-gray-800">Security Assessment</div>
+                            <div class="text-sm text-gray-600">Jan 31, 2024</div>
+                            <div class="text-xs text-green-600 font-semibold mt-1">COMPLETED</div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold mb-2 animate-pulse">
+                                75%
+                            </div>
+                            <div class="font-bold text-gray-800">Implementation Complete</div>
+                            <div class="text-sm text-gray-600">Mar 15, 2024</div>
+                            <div class="text-xs text-purple-600 font-semibold mt-1">IN PROGRESS</div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center text-white font-bold mb-2">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div class="font-bold text-gray-800">Go Live</div>
+                            <div class="text-sm text-gray-600">Mar 31, 2024</div>
+                            <div class="text-xs text-gray-600 font-semibold mt-1">PENDING</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Milestone Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Upcoming Milestones</h3>
+                    <div class="space-y-4">
+                        <div class="border-l-4 border-purple-500 pl-4">
+                            <div class="font-semibold text-gray-800">Implementation Phase 2 Complete</div>
+                            <div class="text-sm text-gray-600">Mar 10, 2024 • 15 days remaining</div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                <div class="bg-purple-500 h-2 rounded-full" style="width: 75%"></div>
+                            </div>
+                        </div>
+                        <div class="border-l-4 border-yellow-500 pl-4">
+                            <div class="font-semibold text-gray-800">Testing & Validation</div>
+                            <div class="text-sm text-gray-600">Mar 20, 2024 • 25 days remaining</div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 40%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Milestone Health</h3>
+                    <div style="height: 200px; position: relative;"><canvas id="milestoneHealthChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESOURCE STUDIO TAB -->
+        <div id="resources-tab" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-users-cog text-purple-600 mr-2"></i>
+                    Resource Planning Studio
+                </h2>
+                
+                <!-- Resource Allocation Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="resource-card bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-shield-alt text-blue-600 text-2xl mr-3"></i>
+                                <div>
+                                    <div class="font-bold text-gray-800">Security Specialists</div>
+                                    <div class="text-sm text-gray-600">4 Team Members</div>
+                                </div>
+                            </div>
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">92% Utilized</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span>Sarah Chen</span>
+                                <span class="text-green-600">Lead</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>Mike Johnson</span>
+                                <span class="text-blue-600">Senior</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>Lisa Park</span>
+                                <span class="text-blue-600">Senior</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>Tom Davis</span>
+                                <span class="text-purple-600">Junior</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="resource-card bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-code text-green-600 text-2xl mr-3"></i>
+                                <div>
+                                    <div class="font-bold text-gray-800">Development Team</div>
+                                    <div class="text-sm text-gray-600">5 Team Members</div>
+                                </div>
+                            </div>
+                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-semibold">85% Utilized</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span>Alex Kumar</span>
+                                <span class="text-green-600">Lead</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>Emma Wilson</span>
+                                <span class="text-blue-600">Senior</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>James Brown</span>
+                                <span class="text-blue-600">Senior</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>Sofia Garcia</span>
+                                <span class="text-purple-600">Junior</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>Ryan Lee</span>
+                                <span class="text-purple-600">Junior</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="resource-card bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-chart-line text-purple-600 text-2xl mr-3"></i>
+                                <div>
+                                    <div class="font-bold text-gray-800">QA & Testing</div>
+                                    <div class="text-sm text-gray-600">3 Team Members</div>
+                                </div>
+                            </div>
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">78% Utilized</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span>Nina Patel</span>
+                                <span class="text-green-600">Lead</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>David Kim</span>
+                                <span class="text-blue-600">Senior</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>Amy Zhang</span>
+                                <span class="text-purple-600">Junior</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Resource Optimization -->
+                <div class="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-lg p-6 mb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">AI Resource Optimization</h3>
+                            <p class="text-gray-600">Our AI has analyzed your resource allocation and found optimization opportunities</p>
+                        </div>
+                        <button onclick="optimizeResources()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 font-semibold">
+                            <i class="fas fa-magic mr-2"></i>Apply AI Optimization
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div class="bg-white rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-600">Efficiency Gain</span>
+                                <span class="text-green-600 font-bold">+18%</span>
+                            </div>
+                            <div class="text-xs text-gray-500">Through better task allocation</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-600">Cost Savings</span>
+                                <span class="text-green-600 font-bold">$45,000</span>
+                            </div>
+                            <div class="text-xs text-gray-500">Annualized optimization</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-600">Time Reduction</span>
+                                <span class="text-green-600 font-bold">-12 days</span>
+                            </div>
+                            <div class="text-xs text-gray-500">Project timeline improvement</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLANS ON PAGE TAB -->
+        <div id="plans-tab" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-file-alt text-purple-600 mr-2"></i>
+                    Executive Plan on a Page
+                </h2>
+                
+                <!-- Executive Summary Card -->
+                <div class="bg-gradient-to-br from-purple-600 to-indigo-600 text-white rounded-xl p-8 mb-6">
+                    <div class="text-center mb-6">
+                        <h3 class="text-3xl font-bold mb-2">SECURITY ENHANCEMENT PROJECT</h3>
+                        <p class="text-xl opacity-90">Zero-Trust Architecture Implementation</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold">$450K</div>
+                            <div class="text-sm opacity-80">Total Budget</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold">142 Days</div>
+                            <div class="text-sm opacity-80">Timeline</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold">12</div>
+                            <div class="text-sm opacity-80">Team Size</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold">85%</div>
+                            <div class="text-sm opacity-80">Complete</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Key Objectives -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h4 class="font-bold text-gray-800 mb-4">
+                            <i class="fas fa-bullseye text-purple-600 mr-2"></i>
+                            Key Objectives
+                        </h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>Implement zero-trust security architecture across all systems</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>Deploy advanced threat detection and response capabilities</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>Establish continuous security monitoring and compliance</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>Achieve SOC 2 Type II certification readiness</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h4 class="font-bold text-gray-800 mb-4">
+                            <i class="fas fa-trophy text-purple-600 mr-2"></i>
+                            Success Metrics
+                        </h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-chart-line text-blue-500 mr-2 mt-1"></i>
+                                <span>Reduce security incidents by 85% within 6 months</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-shield-alt text-blue-500 mr-2 mt-1"></i>
+                                <span>Achieve 99.9% uptime with enhanced security</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-users text-blue-500 mr-2 mt-1"></i>
+                                <span>Train 100% of staff on new security protocols</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-certificate text-blue-500 mr-2 mt-1"></i>
+                                <span>Pass external security audit with zero findings</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Risk & Mitigation -->
+                <div class="bg-red-50 rounded-lg p-6">
+                    <h4 class="font-bold text-gray-800 mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                        Risk Assessment & Mitigation
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <div class="font-semibold text-red-700 mb-2">HIGH RISK</div>
+                            <div class="text-sm text-gray-700">Integration complexity with legacy systems</div>
+                            <div class="text-xs text-red-600 mt-1">Mitigation: Phased rollout with rollback capability</div>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-yellow-700 mb-2">MEDIUM RISK</div>
+                            <div class="text-sm text-gray-700">Team availability and skill gaps</div>
+                            <div class="text-xs text-yellow-600 mt-1">Mitigation: External consultants for specialized tasks</div>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-green-700 mb-2">LOW RISK</div>
+                            <div class="text-sm text-gray-700">Budget overruns due to scope changes</div>
+                            <div class="text-xs text-green-600 mt-1">Mitigation: Strict change control process</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WHAT-IF SCENARIOS TAB -->
+        <div id="scenarios-tab" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-route text-purple-600 mr-2"></i>
+                    What-If Scenario Analysis
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Scenario 1: Aggressive -->
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border-2 border-green-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-gray-800">Aggressive Timeline</h3>
+                            <span class="bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold">142% ROI</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Duration</span>
+                                <span class="font-semibold">110 days (-32 days)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Budget Impact</span>
+                                <span class="font-semibold text-green-600">+$75,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Risk Level</span>
+                                <span class="font-semibold text-red-600">HIGH</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Success Rate</span>
+                                <span class="font-semibold">65%</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-green-200">
+                            <p class="text-sm text-gray-700">Add 2 senior developers and 1 QA specialist. Overtime budget +$25K.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Scenario 2: Conservative -->
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border-2 border-blue-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-lg text-gray-800">Conservative Timeline</h3>
+                            <span class="bg-blue-600 text-white px-3 py-1 rounded text-sm font-semibold">98% ROI</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Duration</span>
+                                <span class="font-semibold">180 days (+38 days)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Budget Impact</span>
+                                <span class="font-semibold text-blue-600">-$15,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Risk Level</span>
+                                <span class="font-semibold text-green-600">LOW</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Success Rate</span>
+                                <span class="font-semibold">95%</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-blue-200">
+                            <p class="text-sm text-gray-700">Extended testing phase, additional training buffer, slower rollout.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Scenario Comparison -->
+                <div class="mt-6">
+                    <h3 class="font-bold text-lg text-gray-800 mb-4">Scenario Comparison</h3>
+                    <div style="height: 300px; position: relative;"><canvas id="scenarioComparisonChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXECUTIVE VIEW TAB -->
+        <div id="executive-tab" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-chart-line text-purple-600 mr-2"></i>
+                    Executive Dashboard
+                </h2>
+                
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-calendar-check text-3xl opacity-80"></i>
+                            <span class="text-2xl font-bold">85%</span>
+                        </div>
+                        <div class="text-sm opacity-90">On-Time Delivery</div>
+                        <div class="text-xs opacity-75 mt-1">Ahead of schedule by 8 days</div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-dollar-sign text-3xl opacity-80"></i>
+                            <span class="text-2xl font-bold">92%</span>
+                        </div>
+                        <div class="text-sm opacity-90">Budget Performance</div>
+                        <div class="text-xs opacity-75 mt-1">$382,500 of $450,000 used</div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-users text-3xl opacity-80"></i>
+                            <span class="text-2xl font-bold">94%</span>
+                        </div>
+                        <div class="text-sm opacity-90">Team Productivity</div>
+                        <div class="text-xs opacity-75 mt-1">Above industry average</div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-shield-alt text-3xl opacity-80"></i>
+                            <span class="text-2xl font-bold">A+</span>
+                        </div>
+                        <div class="text-sm opacity-90">Risk Rating</div>
+                        <div class="text-xs opacity-75 mt-1">Well managed</div>
+                    </div>
+                </div>
+                
+                <!-- Executive Charts -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-4">Burn Rate Analysis</h3>
+                        <div style="height: 250px; position: relative;"><canvas id="burnRateChart"></canvas></div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-4">Progress vs. Plan</h3>
+                        <div style="height: 250px; position: relative;"><canvas id="progressChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.add('hover:bg-gray-100');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // Add active class to clicked button
+            event.target.classList.add('tab-active');
+            event.target.classList.remove('hover:bg-gray-100');
+            
+            // Initialize charts for specific tabs
+            if (tabName === 'gantt') {
+                initResourceLoadingChart();
+            } else if (tabName === 'milestones') {
+                initMilestoneHealthChart();
+            } else if (tabName === 'scenarios') {
+                initScenarioComparisonChart();
+            } else if (tabName === 'executive') {
+                initExecutiveCharts();
+            }
+        }
+        
+        // Chart Initialization Functions
+        function initResourceLoadingChart() {
+            const ctx = document.getElementById('resourceLoadingChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Security', 'Development', 'QA', 'Infrastructure'],
+                        datasets: [{
+                            label: 'Current Load',
+                            data: [92, 85, 78, 65],
+                            backgroundColor: '#8b5cf6'
+                        }, {
+                            label: 'Optimal Load',
+                            data: [85, 85, 85, 85],
+                            backgroundColor: '#e5e7eb'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function initMilestoneHealthChart() {
+            const ctx = document.getElementById('milestoneHealthChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Completed', 'On Track', 'At Risk', 'Not Started'],
+                        datasets: [{
+                            data: [2, 1, 1, 0],
+                            backgroundColor: ['#10b981', '#8b5cf6', '#f59e0b', '#6b7280']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+        }
+        
+        function initScenarioComparisonChart() {
+            const ctx = document.getElementById('scenarioComparisonChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Duration', 'Cost', 'Risk', 'Quality', 'Success Rate'],
+                        datasets: [{
+                            label: 'Aggressive',
+                            data: [90, 60, 30, 85, 65],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)'
+                        }, {
+                            label: 'Current',
+                            data: [70, 80, 70, 90, 85],
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.2)'
+                        }, {
+                            label: 'Conservative',
+                            data: [50, 90, 90, 95, 95],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function initExecutiveCharts() {
+            // Burn Rate Chart
+            const burnRateCtx = document.getElementById('burnRateChart');
+            if (burnRateCtx) {
+                new Chart(burnRateCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Planned Spend',
+                            data: [75, 150, 225, 300, 375, 450],
+                            borderColor: '#e5e7eb',
+                            borderDash: [5, 5],
+                            fill: false
+                        }, {
+                            label: 'Actual Spend',
+                            data: [70, 145, 220, 295, 382, null],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+            
+            // Progress Chart
+            const progressCtx = document.getElementById('progressChart');
+            if (progressCtx) {
+                new Chart(progressCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Planning', 'Design', 'Development', 'Testing', 'Deployment'],
+                        datasets: [{
+                            label: 'Completed',
+                            data: [100, 100, 90, 40, 0],
+                            backgroundColor: '#10b981'
+                        }, {
+                            label: 'Remaining',
+                            data: [0, 0, 10, 60, 100],
+                            backgroundColor: '#e5e7eb'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                stacked: true
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Interactive Functions
+        function optimizeGantt() {
+            alert('AI Gantt Optimization Complete!\n\n✅ Timeline optimized by 12 days\n✅ Resource utilization improved by 15%\n✅ Critical path rebalanced\n✅ Risk buffer increased by 20%');
+        }
+        
+        function addGanttTask() {
+            alert('Add Task functionality would open a modal to:\n\n• Define task parameters\n• Assign resources\n• Set dependencies\n• Calculate duration\n• Add to Gantt chart');
+        }
+        
+        function exportGantt() {
+            alert('Export Gantt chart as:\n\n• PDF for presentations\n• Excel for detailed analysis\n• Image for reports\n• Project XML for import to other tools');
+        }
+        
+        function optimizeResources() {
+            alert('AI Resource Optimization Applied!\n\n✅ Efficiency increased by 18%\n✅ Cost savings: $45,000 annually\n✅ Timeline reduced by 12 days\n✅ Team satisfaction improved by 25%');
+        }
+        
+        // Initialize first tab on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initResourceLoadingChart();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Planning - Reports & KPIs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* KPI Cards */
+        .kpi-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 4px solid;
+        }
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        .kpi-card.excellent { border-color: #10b981; }
+        .kpi-card.good { border-color: #3b82f6; }
+        .kpi-card.warning { border-color: #f59e0b; }
+        .kpi-card.critical { border-color: #ef4444; }
+
+        /* Matrix Grid */
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: #e5e7eb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .matrix-cell {
+            background: white;
+            padding: 20px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .matrix-cell:hover {
+            background: #f9fafb;
+            transform: scale(1.02);
+        }
+
+        /* Report Card */
+        .report-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .report-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            border-color: #3b82f6;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 10000;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.info { border-left: 4px solid #3b82f6; }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Gauge Chart */
+        .gauge-container {
+            position: relative;
+            width: 200px;
+            height: 120px;
+            margin: 0 auto;
+        }
+        .gauge-value {
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        /* Trend Indicator */
+        .trend-up {
+            color: #10b981;
+        }
+        .trend-down {
+            color: #ef4444;
+        }
+        .trend-neutral {
+            color: #6b7280;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Email Report Modal -->
+    <div id="email-modal" class="modal">
+        <div class="modal-content">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-900">Email Report</h3>
+                    <button onclick="closeEmailModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <form id="email-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+                        <select id="report-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="executive">Executive Summary</option>
+                            <option value="status">Status Report</option>
+                            <option value="variance">Variance Analysis</option>
+                            <option value="evm">Earned Value Management</option>
+                            <option value="resource">Resource Forecast</option>
+                            <option value="risk">Risk Register</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Recipients</label>
+                        <textarea id="recipients" rows="3" placeholder="Enter email addresses (comma separated)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Distribution List</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" class="rounded" value="stakeholders">
+                                <span class="text-sm text-gray-700">Stakeholders (5 people)</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" class="rounded" value="team">
+                                <span class="text-sm text-gray-700">Project Team (12 people)</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" class="rounded" value="executives">
+                                <span class="text-sm text-gray-700">Executives (3 people)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Schedule</label>
+                        <select id="schedule" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="now">Send Now</option>
+                            <option value="daily">Daily at 9:00 AM</option>
+                            <option value="weekly">Weekly on Monday</option>
+                            <option value="monthly">Monthly on 1st</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Format</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="format" value="pdf" checked>
+                                <span class="text-sm text-gray-700">PDF</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="format" value="excel">
+                                <span class="text-sm text-gray-700">Excel</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="format" value="html">
+                                <span class="text-sm text-gray-700">HTML</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" class="rounded">
+                            <span class="text-sm text-gray-700">Include charts and visualizations</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
+                <button onclick="closeEmailModal()" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                    Cancel
+                </button>
+                <button onclick="sendReport()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                    <i class="fas fa-paper-plane"></i>
+                    Send Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Preview Modal -->
+    <div id="preview-modal" class="modal">
+        <div class="modal-content">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-900" id="preview-title">Report Preview</h3>
+                    <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6" id="preview-content">
+                <!-- Report content will be loaded here -->
+            </div>
+            <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
+                <button onclick="closePreviewModal()" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                    Close
+                </button>
+                <button onclick="downloadReport()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                    <i class="fas fa-download"></i>
+                    Download PDF
+                </button>
+                <button onclick="openEmailModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                    <i class="fas fa-envelope"></i>
+                    Email Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="min-h-screen p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+                    <i class="fas fa-chart-line text-blue-600"></i>
+                    KPIs & Reporting Suite
+                    <span class="text-sm font-normal px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full">
+                        World Class Edition
+                    </span>
+                </h1>
+                <p class="text-gray-600">Comprehensive project metrics, analytics, and automated reporting</p>
+            </div>
+
+            <!-- Key Performance Indicators -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Key Performance Indicators</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- SPI Card -->
+                    <div class="kpi-card excellent">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Schedule Performance Index</p>
+                                <p class="text-4xl font-bold text-gray-900">1.05</p>
+                            </div>
+                            <div class="w-16 h-16">
+                                <canvas id="spi-gauge"></canvas>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">5% ahead of schedule</span>
+                            <span class="trend-up">
+                                <i class="fas fa-arrow-up"></i> +2%
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- CPI Card -->
+                    <div class="kpi-card good">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Cost Performance Index</p>
+                                <p class="text-4xl font-bold text-gray-900">0.98</p>
+                            </div>
+                            <div class="w-16 h-16">
+                                <canvas id="cpi-gauge"></canvas>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">2% under budget</span>
+                            <span class="trend-up">
+                                <i class="fas fa-arrow-up"></i> +1%
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Resource Utilization Card -->
+                    <div class="kpi-card excellent">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Resource Utilization</p>
+                                <p class="text-4xl font-bold text-gray-900">87%</p>
+                            </div>
+                            <div class="w-16 h-16">
+                                <canvas id="resource-gauge"></canvas>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">Optimal range (80-90%)</span>
+                            <span class="trend-neutral">
+                                <i class="fas fa-minus"></i> 0%
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Velocity Card -->
+                    <div class="kpi-card good">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Team Velocity</p>
+                                <p class="text-4xl font-bold text-gray-900">42</p>
+                            </div>
+                            <div class="w-16 h-16">
+                                <canvas id="velocity-gauge"></canvas>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">Story points/sprint</span>
+                            <span class="trend-up">
+                                <i class="fas fa-arrow-up"></i> +5
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Earned Value Management -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Earned Value Management</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Budget Analysis</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-gray-600">Planned Value (PV)</span>
+                                    <span class="font-semibold text-gray-900">$1,200,000</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: 80%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-gray-600">Earned Value (EV)</span>
+                                    <span class="font-semibold text-green-600">$1,260,000</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-600 h-2 rounded-full" style="width: 84%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-gray-600">Actual Cost (AC)</span>
+                                    <span class="font-semibold text-orange-600">$1,285,000</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-orange-600 h-2 rounded-full" style="width: 86%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Variance Analysis</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm font-medium text-green-900">Schedule Variance (SV)</span>
+                                    <span class="text-lg font-bold text-green-600">+$60,000</span>
+                                </div>
+                                <p class="text-xs text-green-700">Project is ahead of schedule</p>
+                            </div>
+                            <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm font-medium text-red-900">Cost Variance (CV)</span>
+                                    <span class="text-lg font-bold text-red-600">-$25,000</span>
+                                </div>
+                                <p class="text-xs text-red-700">Project is over budget</p>
+                            </div>
+                            <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm font-medium text-blue-900">Variance at Completion</span>
+                                    <span class="text-lg font-bold text-blue-600">-$15,000</span>
+                                </div>
+                                <p class="text-xs text-blue-700">Projected final variance</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Forecasting</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-gray-600">Estimate at Completion (EAC)</span>
+                                    <span class="font-semibold text-gray-900">$1,515,000</span>
+                                </div>
+                                <p class="text-xs text-gray-500">Based on current performance</p>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-gray-600">Estimate to Complete (ETC)</span>
+                                    <span class="font-semibold text-gray-900">$230,000</span>
+                                </div>
+                                <p class="text-xs text-gray-500">Remaining work cost</p>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-gray-600">To-Complete Performance Index</span>
+                                    <span class="font-semibold text-gray-900">1.02</span>
+                                </div>
+                                <p class="text-xs text-gray-500">Required efficiency to meet budget</p>
+                            </div>
+                            <div class="pt-4 border-t border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium text-gray-900">Completion Date</span>
+                                    <span class="font-semibold text-blue-600">March 14, 2024</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">5 days ahead of baseline</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Matrices -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Interactive Matrices</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Risk Matrix -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Risk Matrix</h3>
+                            <button onclick="exportMatrix('risk')" class="text-sm text-blue-600 hover:text-blue-700">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex justify-between text-xs text-gray-500 mb-2">
+                                <span>Low Impact</span>
+                                <span>High Impact</span>
+                            </div>
+                        </div>
+                        <div class="matrix-grid">
+                            <div class="matrix-cell bg-green-50" onclick="showMatrixDetails('risk', 'low-low')">
+                                <span class="text-xs font-medium text-green-700 mb-1">Low/Low</span>
+                                <span class="text-3xl font-bold text-green-600">2</span>
+                                <span class="text-xs text-green-600 mt-1">Accept</span>
+                            </div>
+                            <div class="matrix-cell bg-yellow-50" onclick="showMatrixDetails('risk', 'low-med')">
+                                <span class="text-xs font-medium text-yellow-700 mb-1">Low/Med</span>
+                                <span class="text-3xl font-bold text-yellow-600">3</span>
+                                <span class="text-xs text-yellow-600 mt-1">Monitor</span>
+                            </div>
+                            <div class="matrix-cell bg-orange-50" onclick="showMatrixDetails('risk', 'low-high')">
+                                <span class="text-xs font-medium text-orange-700 mb-1">Low/High</span>
+                                <span class="text-3xl font-bold text-orange-600">1</span>
+                                <span class="text-xs text-orange-600 mt-1">Mitigate</span>
+                            </div>
+                            <div class="matrix-cell bg-yellow-50" onclick="showMatrixDetails('risk', 'med-low')">
+                                <span class="text-xs font-medium text-yellow-700 mb-1">Med/Low</span>
+                                <span class="text-3xl font-bold text-yellow-600">4</span>
+                                <span class="text-xs text-yellow-600 mt-1">Monitor</span>
+                            </div>
+                            <div class="matrix-cell bg-orange-50" onclick="showMatrixDetails('risk', 'med-med')">
+                                <span class="text-xs font-medium text-orange-700 mb-1">Med/Med</span>
+                                <span class="text-3xl font-bold text-orange-600">2</span>
+                                <span class="text-xs text-orange-600 mt-1">Mitigate</span>
+                            </div>
+                            <div class="matrix-cell bg-red-50" onclick="showMatrixDetails('risk', 'med-high')">
+                                <span class="text-xs font-medium text-red-700 mb-1">Med/High</span>
+                                <span class="text-3xl font-bold text-red-600">1</span>
+                                <span class="text-xs text-red-600 mt-1">Avoid</span>
+                            </div>
+                            <div class="matrix-cell bg-orange-50" onclick="showMatrixDetails('risk', 'high-low')">
+                                <span class="text-xs font-medium text-orange-700 mb-1">High/Low</span>
+                                <span class="text-3xl font-bold text-orange-600">1</span>
+                                <span class="text-xs text-orange-600 mt-1">Mitigate</span>
+                            </div>
+                            <div class="matrix-cell bg-red-50" onclick="showMatrixDetails('risk', 'high-med')">
+                                <span class="text-xs font-medium text-red-700 mb-1">High/Med</span>
+                                <span class="text-3xl font-bold text-red-600">0</span>
+                                <span class="text-xs text-red-600 mt-1">Avoid</span>
+                            </div>
+                            <div class="matrix-cell bg-red-50" onclick="showMatrixDetails('risk', 'high-high')">
+                                <span class="text-xs font-medium text-red-700 mb-1">High/High</span>
+                                <span class="text-3xl font-bold text-red-600">0</span>
+                                <span class="text-xs text-red-600 mt-1">Avoid</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-xs text-gray-500 flex items-center gap-2">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Probability increases upward</span>
+                        </div>
+                    </div>
+
+                    <!-- Resource Allocation Matrix -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Resource Allocation Matrix</h3>
+                            <button onclick="exportMatrix('resource')" class="text-sm text-blue-600 hover:text-blue-700">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="resource-matrix-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Templates -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-900">Report Templates</h2>
+                    <button onclick="openEmailModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                        <i class="fas fa-envelope"></i>
+                        Schedule Report
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Executive Summary -->
+                    <div class="report-card" onclick="generateReport('executive')">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-chart-line text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Executive Summary</h3>
+                                <p class="text-sm text-gray-600">High-level project overview for stakeholders</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">Last generated: 2 hours ago</span>
+                            <i class="fas fa-arrow-right text-blue-600"></i>
+                        </div>
+                    </div>
+
+                    <!-- Status Report -->
+                    <div class="report-card" onclick="generateReport('status')">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-tasks text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Status Report</h3>
+                                <p class="text-sm text-gray-600">Current progress and task completion</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">Last generated: 1 day ago</span>
+                            <i class="fas fa-arrow-right text-green-600"></i>
+                        </div>
+                    </div>
+
+                    <!-- Variance Analysis -->
+                    <div class="report-card" onclick="generateReport('variance')">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-chart-bar text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Variance Analysis</h3>
+                                <p class="text-sm text-gray-600">Plan vs Actual comparison</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">Last generated: 3 hours ago</span>
+                            <i class="fas fa-arrow-right text-yellow-600"></i>
+                        </div>
+                    </div>
+
+                    <!-- EVM Report -->
+                    <div class="report-card" onclick="generateReport('evm')">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-dollar-sign text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Earned Value Management</h3>
+                                <p class="text-sm text-gray-600">Comprehensive EVM analysis</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">Last generated: 5 hours ago</span>
+                            <i class="fas fa-arrow-right text-purple-600"></i>
+                        </div>
+                    </div>
+
+                    <!-- Resource Forecast -->
+                    <div class="report-card" onclick="generateReport('resource')">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-users text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Resource Forecast</h3>
+                                <p class="text-sm text-gray-600">Capacity planning and allocation</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">Last generated: 1 day ago</span>
+                            <i class="fas fa-arrow-right text-pink-600"></i>
+                        </div>
+                    </div>
+
+                    <!-- Risk Register -->
+                    <div class="report-card" onclick="generateReport('risk')">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-shield-alt text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 mb-1">Risk Register</h3>
+                                <p class="text-sm text-gray-600">Complete risk assessment and mitigation</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">Last generated: 6 hours ago</span>
+                            <i class="fas fa-arrow-right text-red-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Velocity Trends -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Team Velocity Trends</h2>
+                <div class="chart-container">
+                    <canvas id="velocity-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGauges();
+            initializeCharts();
+            showToast('KPIs & Reporting Suite loaded successfully!', 'success');
+        });
+
+        // Initialize Gauge Charts
+        function initializeGauges() {
+            createGauge('spi-gauge', 1.05, '#10b981');
+            createGauge('cpi-gauge', 0.98, '#3b82f6');
+            createGauge('resource-gauge', 0.87, '#10b981');
+            createGauge('velocity-gauge', 0.84, '#3b82f6');
+        }
+
+        function createGauge(canvasId, value, color) {
+            const ctx = document.getElementById(canvasId)?.getContext('2d');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [value, 2 - value],
+                        backgroundColor: [color, '#e5e7eb'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    circumference: 180,
+                    rotation: 270,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Resource Matrix Chart
+            const resourceCtx = document.getElementById('resource-matrix-chart')?.getContext('2d');
+            if (resourceCtx) {
+                new Chart(resourceCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['John', 'Jane', 'Mike', 'Sarah', 'Tom', 'Emily'],
+                        datasets: [{
+                            label: 'Allocated',
+                            data: [85, 92, 78, 95, 88, 82],
+                            backgroundColor: '#3b82f6'
+                        }, {
+                            label: 'Available',
+                            data: [15, 8, 22, 5, 12, 18],
+                            backgroundColor: '#e5e7eb'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { stacked: true },
+                            y: { stacked: true, max: 100 }
+                        },
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+
+            // Velocity Chart
+            const velocityCtx = document.getElementById('velocity-chart')?.getContext('2d');
+            if (velocityCtx) {
+                new Chart(velocityCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Sprint 1', 'Sprint 2', 'Sprint 3', 'Sprint 4', 'Sprint 5', 'Sprint 6'],
+                        datasets: [{
+                            label: 'Velocity',
+                            data: [32, 35, 38, 37, 40, 42],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Target',
+                            data: [35, 35, 35, 35, 35, 35],
+                            borderColor: '#10b981',
+                            borderDash: [5, 5],
+                            tension: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Generate Report
+        function generateReport(type) {
+            const reportNames = {
+                executive: 'Executive Summary',
+                status: 'Status Report',
+                variance: 'Variance Analysis',
+                evm: 'Earned Value Management',
+                resource: 'Resource Forecast',
+                risk: 'Risk Register'
+            };
+
+            showToast(`Generating ${reportNames[type]}...`, 'info');
+            
+            setTimeout(() => {
+                document.getElementById('preview-title').textContent = reportNames[type];
+                document.getElementById('preview-content').innerHTML = getReportContent(type);
+                document.getElementById('preview-modal').classList.add('show');
+                showToast(`${reportNames[type]} generated successfully!`, 'success');
+            }, 1500);
+        }
+
+        function getReportContent(type) {
+            // Simplified report content
+            return `
+                <div class="space-y-6">
+                    <div class="border-b border-gray-200 pb-4">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Project Alpha - ${type.toUpperCase()}</h4>
+                        <p class="text-sm text-gray-600">Generated on ${new Date().toLocaleDateString()}</p>
+                    </div>
+                    <div class="prose max-w-none">
+                        <h5 class="font-semibold text-gray-900 mb-2">Summary</h5>
+                        <p class="text-gray-700">This is a sample report preview. The actual report would contain detailed metrics, charts, and analysis based on your project data.</p>
+                        
+                        <h5 class="font-semibold text-gray-900 mb-2 mt-4">Key Metrics</h5>
+                        <ul class="list-disc list-inside text-gray-700 space-y-1">
+                            <li>Schedule Performance Index: 1.05 (5% ahead)</li>
+                            <li>Cost Performance Index: 0.98 (2% over budget)</li>
+                            <li>Resource Utilization: 87%</li>
+                            <li>Completion: 65%</li>
+                        </ul>
+                        
+                        <h5 class="font-semibold text-gray-900 mb-2 mt-4">Recommendations</h5>
+                        <p class="text-gray-700">Continue current pace. Monitor budget closely. Consider resource reallocation for optimal efficiency.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function closePreviewModal() {
+            document.getElementById('preview-modal').classList.remove('show');
+        }
+
+        function downloadReport() {
+            showToast('Downloading report as PDF...', 'info');
+            setTimeout(() => {
+                showToast('Report downloaded successfully!', 'success');
+            }, 1500);
+        }
+
+        // Email Modal
+        function openEmailModal() {
+            document.getElementById('email-modal').classList.add('show');
+        }
+
+        function closeEmailModal() {
+            document.getElementById('email-modal').classList.remove('show');
+        }
+
+        function sendReport() {
+            const reportType = document.getElementById('report-type').value;
+            const schedule = document.getElementById('schedule').value;
+            
+            showToast('Sending report...', 'info');
+            
+            setTimeout(() => {
+                closeEmailModal();
+                showToast(`Report scheduled successfully! ${schedule === 'now' ? 'Sending now.' : 'Will send ' + schedule + '.'}`, 'success');
+            }, 1500);
+        }
+
+        // Matrix Functions
+        function showMatrixDetails(type, cell) {
+            showToast(`Showing details for ${cell} risk category`, 'info');
+        }
+
+        function exportMatrix(type) {
+            showToast(`Exporting ${type} matrix...`, 'info');
+            setTimeout(() => {
+                showToast('Matrix exported successfully!', 'success');
+            }, 1000);
+        }
+
+        // Toast
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                info: 'fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <i class="fas ${icons[type]} text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-semibold text-gray-900">${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                    <p class="text-sm text-gray-600">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

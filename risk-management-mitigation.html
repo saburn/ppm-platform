@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Management - Mitigation Strategies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 40px;
+            bottom: -10px;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        .timeline-item:last-child::before {
+            display: none;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div id="toastContainer"></div>
+
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold flex items-center">
+                        <i class="fas fa-shield-alt mr-3"></i>
+                        Risk Management - Mitigation Strategies
+                    </h1>
+                    <p class="text-purple-100 mt-2">Proactive risk mitigation with 92% effectiveness rate</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-plus mr-2"></i>New Strategy
+                    </button>
+                    <button class="bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-download mr-2"></i>Export Plan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-check-circle text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">+8%</span>
+                </div>
+                <p class="text-green-100 text-sm font-medium">Effectiveness Rate</p>
+                <p class="text-3xl font-bold mt-2">92%</p>
+            </div>
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-tasks text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">Active</span>
+                </div>
+                <p class="text-blue-100 text-sm font-medium">Active Strategies</p>
+                <p class="text-3xl font-bold mt-2">28</p>
+            </div>
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-dollar-sign text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">Saved</span>
+                </div>
+                <p class="text-purple-100 text-sm font-medium">Losses Avoided</p>
+                <p class="text-3xl font-bold mt-2">$450K</p>
+            </div>
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-clock text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">Avg</span>
+                </div>
+                <p class="text-orange-100 text-sm font-medium">Response Time</p>
+                <p class="text-3xl font-bold mt-2">2.5 days</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Mitigation Effectiveness</h3>
+                <div class="chart-container">
+                    <canvas id="effectivenessChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Cost vs Benefit Analysis</h3>
+                <div class="chart-container">
+                    <canvas id="costBenefitChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-6">Active Mitigation Plans</h3>
+            
+            <div class="space-y-6">
+                <div class="border-l-4 border-green-500 bg-green-50 rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h4 class="font-bold text-gray-800 text-lg">Database Performance Optimization</h4>
+                                <span class="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-semibold">IN PROGRESS</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">Comprehensive plan to address database performance degradation and prevent system downtime.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="bg-white rounded-lg p-3">
+                            <div class="text-sm text-gray-500">Risk Severity</div>
+                            <div class="text-lg font-bold text-red-600">Critical</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-3">
+                            <div class="text-sm text-gray-500">Budget Allocated</div>
+                            <div class="text-lg font-bold text-gray-800">$85K</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-3">
+                            <div class="text-sm text-gray-500">Completion</div>
+                            <div class="text-lg font-bold text-green-600">65%</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-gray-600">Progress</span>
+                            <span class="font-semibold text-gray-800">65%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-green-500 h-3 rounded-full" style="width: 65%"></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="timeline-item">
+                            <div class="timeline-dot bg-green-500">
+                                <i class="fas fa-check text-white text-sm"></i>
+                            </div>
+                            <div class="bg-white rounded-lg p-3">
+                                <div class="font-semibold text-gray-800">Phase 1: Database Audit</div>
+                                <div class="text-sm text-gray-600">Completed Dec 15, 2024</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot bg-green-500">
+                                <i class="fas fa-check text-white text-sm"></i>
+                            </div>
+                            <div class="bg-white rounded-lg p-3">
+                                <div class="font-semibold text-gray-800">Phase 2: Query Optimization</div>
+                                <div class="text-sm text-gray-600">Completed Dec 20, 2024</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot bg-blue-500">
+                                <i class="fas fa-spinner text-white text-sm"></i>
+                            </div>
+                            <div class="bg-white rounded-lg p-3">
+                                <div class="font-semibold text-gray-800">Phase 3: Index Rebuilding</div>
+                                <div class="text-sm text-gray-600">In Progress - Due Dec 28, 2024</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot bg-gray-300">
+                                <i class="fas fa-clock text-gray-600 text-sm"></i>
+                            </div>
+                            <div class="bg-white rounded-lg p-3">
+                                <div class="font-semibold text-gray-800">Phase 4: Performance Testing</div>
+                                <div class="text-sm text-gray-600">Scheduled - Jan 5, 2025</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 mt-4 pt-4 border-t border-green-200">
+                        <img src="https://i.pravatar.cc/32?img=33" alt="Owner" class="w-8 h-8 rounded-full">
+                        <div class="flex-1">
+                            <div class="text-sm font-semibold text-gray-800">Michael Chen</div>
+                            <div class="text-xs text-gray-500">Strategy Owner</div>
+                        </div>
+                        <button class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition-all">
+                            <i class="fas fa-eye mr-1"></i>View Details
+                        </button>
+                    </div>
+                </div>
+
+                <div class="border-l-4 border-blue-500 bg-blue-50 rounded-lg p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h4 class="font-bold text-gray-800 text-lg">Budget Control Framework</h4>
+                                <span class="bg-blue-500 text-white text-xs px-3 py-1 rounded-full font-semibold">PLANNING</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">Implement enhanced budget monitoring and approval workflows to prevent Q1 overruns.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="bg-white rounded-lg p-3">
+                            <div class="text-sm text-gray-500">Risk Severity</div>
+                            <div class="text-lg font-bold text-orange-600">High</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-3">
+                            <div class="text-sm text-gray-500">Budget Allocated</div>
+                            <div class="text-lg font-bold text-gray-800">$45K</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-3">
+                            <div class="text-sm text-gray-500">Completion</div>
+                            <div class="text-lg font-bold text-blue-600">25%</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-gray-600">Progress</span>
+                            <span class="font-semibold text-gray-800">25%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-blue-500 h-3 rounded-full" style="width: 25%"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-4 mb-4">
+                        <div class="font-semibold text-gray-800 mb-2">Key Actions:</div>
+                        <ul class="space-y-2">
+                            <li class="flex items-start gap-2 text-sm text-gray-700">
+                                <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                <span>Implement real-time budget tracking dashboard</span>
+                            </li>
+                            <li class="flex items-start gap-2 text-sm text-gray-700">
+                                <i class="fas fa-circle text-blue-500 mt-1 text-xs"></i>
+                                <span>Establish weekly budget review meetings</span>
+                            </li>
+                            <li class="flex items-start gap-2 text-sm text-gray-700">
+                                <i class="fas fa-circle text-gray-300 mt-1 text-xs"></i>
+                                <span>Create automated alert system for overruns</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="flex items-center gap-3 pt-4 border-t border-blue-200">
+                        <img src="https://i.pravatar.cc/32?img=12" alt="Owner" class="w-8 h-8 rounded-full">
+                        <div class="flex-1">
+                            <div class="text-sm font-semibold text-gray-800">Sarah Johnson</div>
+                            <div class="text-xs text-gray-500">Strategy Owner</div>
+                        </div>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all">
+                            <i class="fas fa-eye mr-1"></i>View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-lg p-6">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-green-500 text-white rounded-full p-4">
+                        <i class="fas fa-trophy text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">Success Rate</h4>
+                        <p class="text-sm text-gray-600">This quarter</p>
+                    </div>
+                </div>
+                <ul class="space-y-2">
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                        <span>18 risks fully mitigated</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                        <span>6 risks partially mitigated</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                        <span>92% effectiveness rate</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg p-6">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-blue-500 text-white rounded-full p-4">
+                        <i class="fas fa-dollar-sign text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">Cost Efficiency</h4>
+                        <p class="text-sm text-gray-600">ROI analysis</p>
+                    </div>
+                </div>
+                <ul class="space-y-2">
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-arrow-down text-green-500 mt-1"></i>
+                        <span>$130K mitigation cost</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-arrow-up text-green-500 mt-1"></i>
+                        <span>$450K losses avoided</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-chart-line text-blue-500 mt-1"></i>
+                        <span>3.5x ROI achieved</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg p-6">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-purple-500 text-white rounded-full p-4">
+                        <i class="fas fa-clock text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">Response Time</h4>
+                        <p class="text-sm text-gray-600">Performance</p>
+                    </div>
+                </div>
+                <ul class="space-y-2">
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-bolt text-purple-500 mt-1"></i>
+                        <span>2.5 days avg response</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-bolt text-purple-500 mt-1"></i>
+                        <span>40% faster than target</span>
+                    </li>
+                    <li class="flex items-start gap-2 text-sm text-gray-700">
+                        <i class="fas fa-bolt text-purple-500 mt-1"></i>
+                        <span>Zero delayed responses</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-check-circle text-2xl"></i>
+                    <span class="font-semibold">${message}</span>
+                </div>
+            `;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        const effectCtx = document.getElementById('effectivenessChart').getContext('2d');
+        new Chart(effectCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Effectiveness %',
+                    data: [78, 82, 85, 88, 90, 92],
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 100 } }
+            }
+        });
+
+        const costCtx = document.getElementById('costBenefitChart').getContext('2d');
+        new Chart(costCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                datasets: [
+                    {
+                        label: 'Mitigation Cost',
+                        data: [30, 35, 32, 33],
+                        backgroundColor: '#ef4444'
+                    },
+                    {
+                        label: 'Losses Avoided',
+                        data: [120, 145, 95, 90],
+                        backgroundColor: '#10b981'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            showToast('Mitigation strategies loaded successfully');
+        });
+    </script>
+</body>
+</html>

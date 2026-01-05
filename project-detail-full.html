@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Details - Cloud Migration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-button.active { background-color: #3B82F6; color: white; }
+        .progress-step { transition: all 0.3s ease; }
+        .progress-step.completed { background-color: #10B981; }
+        .progress-step.current { background-color: #3B82F6; }
+        .progress-step.pending { background-color: #E5E7EB; }
+        .editable:hover { background-color: #F3F4F6; cursor: pointer; }
+        .form-input { transition: all 0.2s ease; }
+        .form-input:focus { border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b sticky top-0 z-40">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="text-gray-600 hover:text-gray-800 mr-4">
+                        <i class="fas fa-arrow-left text-xl"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">Cloud Migration</h1>
+                        <p class="text-sm text-gray-600">Technology Transformation Portfolio</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        <i class="fas fa-circle text-green-500 mr-1" style="font-size: 8px;"></i>
+                        Active
+                    </span>
+                    <button onclick="saveAllChanges()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-save mr-2"></i>Save Changes
+                    </button>
+                    <div class="relative">
+                        <button class="text-gray-600 hover:text-gray-800">
+                            <i class="fas fa-ellipsis-v text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Quick Stats Bar -->
+    <div class="bg-white border-b">
+        <div class="container mx-auto px-6 py-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-gray-800">78%</div>
+                    <div class="text-sm text-gray-600">Progress</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">$936K</div>
+                    <div class="text-sm text-gray-600">Spent of $1.2M</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">Mar 15</div>
+                    <div class="text-sm text-gray-600">Target Date</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">8</div>
+                    <div class="text-sm text-gray-600">Team Members</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-white border-b sticky top-16 z-30">
+        <div class="container mx-auto px-6">
+            <div class="flex space-x-1 overflow-x-auto">
+                <button onclick="switchTab('overview')" class="tab-button active px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-info-circle mr-2"></i>Overview
+                </button>
+                <button onclick="switchTab('details')" class="tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-edit mr-2"></i>Details
+                </button>
+                <button onclick="switchTab('team')" class="tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-users mr-2"></i>Team
+                </button>
+                <button onclick="switchTab('tasks')" class="tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-tasks mr-2"></i>Tasks
+                </button>
+                <button onclick="switchTab('timeline')" class="tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-chart-gantt mr-2"></i>Timeline
+                </button>
+                <button onclick="switchTab('budget')" class="tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-dollar-sign mr-2"></i>Budget
+                </button>
+                <button onclick="switchTab('risks')" class="tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>RAID
+                </button>
+                <button onclick="switchTab('documents')" class="tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-file-alt mr-2"></i>Documents
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Main Content -->
+                <div class="md:col-span-2 space-y-6">
+                    <!-- Project Description -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Project Description</h3>
+                            <button onclick="enableEdit('description')" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                        <div id="description" class="editable rounded-lg p-3">
+                            <p class="text-gray-700">Migrate all enterprise applications to cloud infrastructure to improve scalability, reduce costs, and enhance security posture. This involves migrating 25 critical applications, implementing new security protocols, and establishing cloud governance frameworks.</p>
+                        </div>
+                    </div>
+
+                    <!-- Key Metrics -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Key Performance Indicators</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-medium text-gray-700 mb-3">Schedule Performance</h4>
+                                <div class="space-y-3">
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span>Planned vs Actual</span>
+                                            <span class="font-medium">92% on track</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-green-500 h-2 rounded-full" style="width: 92%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span>Milestone Completion</span>
+                                            <span class="font-medium">3 of 4</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-500 h-2 rounded-full" style="width: 75%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-700 mb-3">Budget Performance</h4>
+                                <div class="space-y-3">
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span>Burn Rate</span>
+                                            <span class="font-medium">$78K/month</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-yellow-500 h-2 rounded-full" style="width: 78%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span>Cost Variance</span>
+                                            <span class="font-medium text-green-600">+2% under budget</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-green-500 h-2 rounded-full" style="width: 52%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start">
+                                <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-check text-blue-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-medium text-gray-800">Infrastructure setup completed</p>
+                                    <p class="text-sm text-gray-600">by Sarah Chen • 2 hours ago</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="bg-yellow-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-exclamation-triangle text-yellow-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-medium text-gray-800">Budget alert: Approaching limit for Q1</p>
+                                    <p class="text-sm text-gray-600">System • 5 hours ago</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="bg-green-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-user-plus text-green-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-medium text-gray-800">2 new developers added to team</p>
+                                    <p class="text-sm text-gray-600">Mike Johnson • 1 day ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="space-y-6">
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+                        <div class="space-y-2">
+                            <button onclick="updateStatus()" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-sync mr-2"></i>Update Status
+                            </button>
+                            <button onclick="addTask()" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+                                <i class="fas fa-plus mr-2"></i>Add Task
+                            </button>
+                            <button onclick="requestResource()" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
+                                <i class="fas fa-users mr-2"></i>Request Resource
+                            </button>
+                            <button onclick="logRisk()" class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>Log Risk
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Project Info -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Project Information</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <span class="text-sm text-gray-600">Project Manager</span>
+                                <p class="font-medium">Sarah Chen</p>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-600">Priority</span>
+                                <p class="font-medium text-yellow-600">High</p>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-600">Start Date</span>
+                                <p class="font-medium">Sep 1, 2023</p>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-600">End Date</span>
+                                <p class="font-medium">Mar 15, 2024</p>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-600">Last Updated</span>
+                                <p class="font-medium">2 hours ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Tab -->
+        <div id="details" class="tab-content">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Project Details</h3>
+                <form class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+                            <input type="text" value="Cloud Migration" class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Project Code</label>
+                            <input type="text" value="TECH-001" class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                            <select class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                <option value="critical">Critical</option>
+                                <option value="high" selected>High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                <option value="planning">Planning</option>
+                                <option value="active" selected>Active</option>
+                                <option value="on-hold">On Hold</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                            <input type="date" value="2023-09-01" class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Target End Date</label>
+                            <input type="date" value="2024-03-15" class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project Description</label>
+                        <textarea rows="4" class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">Migrate all enterprise applications to cloud infrastructure to improve scalability, reduce costs, and enhance security posture.</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project Objectives</label>
+                        <div id="objectives" class="space-y-2">
+                            <div class="flex items-center space-x-2">
+                                <input type="text" value="Reduce infrastructure costs by 40%" class="form-input flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                <button type="button" onclick="removeObjective(this)" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="text" value="Improve scalability and performance" class="form-input flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                <button type="button" onclick="removeObjective(this)" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="text" value="Enhance security posture" class="form-input flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                <button type="button" onclick="removeObjective(this)" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addObjective()" class="mt-2 text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-plus mr-1"></i>Add Objective
+                        </button>
+                    </div>
+
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Save Details
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Team Tab -->
+        <div id="team" class="tab-content">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">Project Team</h3>
+                    <button onclick="addTeamMember()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-plus mr-2"></i>Add Team Member
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="text-left py-3 px-4">Name</th>
+                                <th class="text-left py-3 px-4">Role</th>
+                                <th class="text-left py-3 px-4">Skills</th>
+                                <th class="text-left py-3 px-4">Allocation</th>
+                                <th class="text-left py-3 px-4">Status</th>
+                                <th class="text-left py-3 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <img src="https://picsum.photos/seed/sarah/40/40.jpg" alt="Sarah Chen" class="w-8 h-8 rounded-full mr-3">
+                                        <div>
+                                            <div class="font-medium">Sarah Chen</div>
+                                            <div class="text-sm text-gray-600">Project Manager</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">Project Manager</td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Leadership</span>
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Cloud</span>
+                                </td>
+                                <td class="py-3 px-4">100%</td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Active</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <button class="text-blue-600 hover:text-blue-800 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <img src="https://picsum.photos/seed/mike/40/40.jpg" alt="Mike Johnson" class="w-8 h-8 rounded-full mr-3">
+                                        <div>
+                                            <div class="font-medium">Mike Johnson</div>
+                                            <div class="text-sm text-gray-600">Cloud Architect</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">Cloud Architect</td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">AWS</span>
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Azure</span>
+                                </td>
+                                <td class="py-3 px-4">90%</td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Active</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <button class="text-blue-600 hover:text-blue-800 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks Tab -->
+        <div id="tasks" class="tab-content">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">Project Tasks</h3>
+                    <div class="flex space-x-2">
+                        <button onclick="addTask()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-plus mr-2"></i>Add Task
+                        </button>
+                        <select class="px-3 py-2 border border-gray-300 rounded-lg">
+                            <option>All Tasks</option>
+                            <option>In Progress</option>
+                            <option>Completed</option>
+                            <option>Upcoming</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <!-- Task items will be loaded here -->
+                    <div class="p-4 border rounded-lg hover:bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input type="checkbox" checked class="mr-3">
+                                <div>
+                                    <div class="font-medium">Setup Cloud Infrastructure</div>
+                                    <div class="text-sm text-gray-600">Due: Oct 15, 2023 • Assigned to: Mike Johnson</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Completed</span>
+                                <button class="text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Tab -->
+        <div id="timeline" class="tab-content">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Project Timeline</h3>
+                <div class="mb-4">
+                    <canvas id="ganttChart" width="800" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Tab -->
+        <div id="budget" class="tab-content">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Budget Management</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-4">Budget Overview</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span>Total Budget</span>
+                                <span class="font-medium">$1,200,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Spent to Date</span>
+                                <span class="font-medium">$936,000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Remaining</span>
+                                <span class="font-medium text-green-600">$264,000</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-4">Budget Burn Chart</h4>
+                        <canvas id="budgetChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risks Tab -->
+        <div id="risks" class="tab-content">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">RAID Log</h3>
+                    <div class="flex space-x-2">
+                        <button onclick="addRisk()" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
+                            <i class="fas fa-plus mr-2"></i>Add Risk
+                        </button>
+                        <button onclick="addIssue()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                            <i class="fas fa-plus mr-2"></i>Add Issue
+                        </button>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-4">Risk Matrix</h4>
+                        <canvas id="riskMatrix" width="400" height="400"></canvas>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-4">Active Risks & Issues</h4>
+                        <div class="space-y-3">
+                            <div class="p-3 border rounded-lg">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="font-medium">Data Migration Complexity</div>
+                                        <div class="text-sm text-gray-600">High Impact • Medium Probability</div>
+                                    </div>
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Risk</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents Tab -->
+        <div id="documents" class="tab-content">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">Project Documents</h3>
+                    <button onclick="uploadDocument()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-upload mr-2"></i>Upload Document
+                    </button>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="p-4 border rounded-lg hover:bg-gray-50">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-pdf text-red-500 text-2xl mr-3"></i>
+                            <div class="flex-1">
+                                <div class="font-medium">Project Charter</div>
+                                <div class="text-sm text-gray-600">2.3 MB • Updated 2 days ago</div>
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Navigation functions
+        function goBack() {
+            window.location.href = 'project-summary-dashboard.html';
+        }
+
+        function saveAllChanges() {
+            // Save all form data
+            alert('All changes saved successfully!');
+        }
+
+        // Quick action functions
+        function updateStatus() {
+            alert('Status update functionality coming next...');
+        }
+
+        function addTask() {
+            alert('Task creation functionality coming next...');
+        }
+
+        function requestResource() {
+            alert('Resource request functionality coming next...');
+        }
+
+        function logRisk() {
+            alert('Risk logging functionality coming next...');
+        }
+
+        // Edit functionality
+        function enableEdit(fieldId) {
+            const field = document.getElementById(fieldId);
+            field.contentEditable = true;
+            field.focus();
+        }
+
+        // Team management
+        function addTeamMember() {
+            alert('Add team member functionality coming next...');
+        }
+
+        // Objective management
+        function addObjective() {
+            const objectivesDiv = document.getElementById('objectives');
+            const newObjective = document.createElement('div');
+            newObjective.className = 'flex items-center space-x-2';
+            newObjective.innerHTML = `
+                <input type="text" placeholder="Enter new objective" class="form-input flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                <button type="button" onclick="removeObjective(this)" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            objectivesDiv.appendChild(newObjective);
+        }
+
+        function removeObjective(button) {
+            button.parentElement.remove();
+        }
+
+        // Initialize charts on tab switch
+        document.addEventListener('DOMContentLoaded', function() {
+            // Will initialize charts when tabs are clicked
+        });
+
+        // Initialize timeline chart when timeline tab is opened
+        document.querySelector('[onclick="switchTab(\'timeline\')"]').addEventListener('click', function() {
+            setTimeout(() => {
+                const ctx = document.getElementById('ganttChart');
+                if (ctx) {
+                    new Chart(ctx.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: ['Infrastructure Setup', 'Data Migration', 'App Migration', 'Testing'],
+                            datasets: [{
+                                label: 'Timeline',
+                                data: [100, 80, 60, 40],
+                                backgroundColor: '#3B82F6'
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
+                }
+            }, 100);
+        });
+
+        // Initialize budget chart when budget tab is opened
+        document.querySelector('[onclick="switchTab(\'budget\')"]').addEventListener('click', function() {
+            setTimeout(() => {
+                const ctx = document.getElementById('budgetChart');
+                if (ctx) {
+                    new Chart(ctx.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
+                            datasets: [{
+                                label: 'Budget Burn',
+                                data: [120000, 240000, 360000, 480000, 600000, 720000],
+                                borderColor: '#3B82F6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
+                }
+            }, 100);
+        });
+
+        // Initialize risk matrix when risks tab is opened
+        document.querySelector('[onclick="switchTab(\'risks\')"]').addEventListener('click', function() {
+            setTimeout(() => {
+                const ctx = document.getElementById('riskMatrix');
+                if (ctx) {
+                    new Chart(ctx.getContext('2d'), {
+                        type: 'scatter',
+                        data: {
+                            datasets: [{
+                                label: 'Risks',
+                                data: [
+                                    {x: 3, y: 4, label: 'Data Migration'},
+                                    {x: 2, y: 3, label: 'Vendor Lock-in'},
+                                    {x: 4, y: 2, label: 'Performance'}
+                                ],
+                                backgroundColor: '#F59E0B'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    min: 0,
+                                    max: 5,
+                                    title: {
+                                        display: true,
+                                        text: 'Probability'
+                                    }
+                                },
+                                y: {
+                                    min: 0,
+                                    max: 5,
+                                    title: {
+                                        display: true,
+                                        text: 'Impact'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

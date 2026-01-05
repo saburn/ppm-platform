@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PPM Pro - Resource Allocation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="GLOBAL-STYLES-FIXED.css">
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-200px);
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 50px;
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: #3b82f6;
+        }
+        
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-left-color: #3b82f6;
+        }
+        
+        .resource-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .heatmap-cell {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .heatmap-cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .approval-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-250px);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <i class="fas fa-brain mr-2 text-blue-400"></i>
+                    AI PPM Pro
+                </h2>
+                <button onclick="toggleSidebar()" class="text-white hover:text-blue-400 transition">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="MAIN-DASHBOARD-FIXED.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="project-management-hub.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-project-diagram w-5 mr-3"></i>
+                    Projects
+                </a>
+                <a href="gantt-chart-beautiful.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-chart-gantt w-5 mr-3"></i>
+                    Gantt Charts
+                </a>
+                <a href="resource-allocation-beautiful.html" class="nav-item active text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-users w-5 mr-3"></i>
+                    Resources
+                </a>
+                <a href="raid-management-beautiful.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-shield-alt w-5 mr-3"></i>
+                    RAID Management
+                </a>
+                <a href="automated-reports-fixed.html" class="nav-item text-gray-300 hover:text-white px-4 py-3 rounded-lg flex items-center">
+                    <i class="fas fa-chart-line w-5 mr-3"></i>
+                    Reports
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="p-8">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Resource Allocation</h1>
+                    <p class="text-gray-600">Manage team resources, capacity planning, and workload distribution</p>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="requestResource()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-plus mr-2"></i>Request Resource
+                    </button>
+                    <button onclick="optimizeAllocation()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-magic mr-2"></i>AI Optimize
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resource Overview Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="resource-card bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="text-green-500 text-sm font-semibold">+5</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">142</h3>
+                    <p class="text-gray-600">Total Resources</p>
+                </div>
+                
+                <div class="resource-card bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                        <span class="text-blue-500 text-sm font-semibold">86%</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">122</h3>
+                    <p class="text-gray-600">Allocated</p>
+                </div>
+                
+                <div class="resource-card bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-yellow-100 p-3 rounded-lg">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                        </div>
+                        <span class="text-orange-500 text-sm font-semibold">-3</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">20</h3>
+                    <p class="text-gray-600">Available</p>
+                </div>
+                
+                <div class="resource-card bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-purple-100 p-3 rounded-lg">
+                            <i class="fas fa-exclamation-triangle text-purple-600 text-xl"></i>
+                        </div>
+                        <span class="approval-badge bg-red-500 text-white text-xs px-2 py-1 rounded-full">3</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">Pending</h3>
+                    <p class="text-gray-600">Approvals</p>
+                </div>
+            </div>
+
+            <!-- Resource Utilization Chart - PROPERLY SIZED -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <h2 class="text-xl font-semibold mb-4">Resource Utilization Trends</h2>
+                <div class="chart-wrapper">
+                    <canvas id="utilizationChart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Team Distribution Chart - PROPERLY SIZED -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-lg font-semibold mb-4">Team Distribution</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="teamDistributionChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-lg font-semibold mb-4">Cost Analysis</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="costAnalysisChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Capacity Heatmap -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <h2 class="text-xl font-semibold mb-4">Team Capacity Heatmap</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="text-left py-2 px-3">Team/Resource</th>
+                                <th class="text-center py-2 px-3">Mon</th>
+                                <th class="text-center py-2 px-3">Tue</th>
+                                <th class="text-center py-2 px-3">Wed</th>
+                                <th class="text-center py-2 px-3">Thu</th>
+                                <th class="text-center py-2 px-3">Fri</th>
+                                <th class="text-center py-2 px-3">Avg</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="py-2 px-3 font-medium">Development</td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-green-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('Development', 'Monday', '85%')">85%</div></td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-yellow-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('Development', 'Tuesday', '92%')">92%</div></td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-green-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('Development', 'Wednesday', '88%')">88%</div></td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-red-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('Development', 'Thursday', '95%')">95%</div></td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-green-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('Development', 'Friday', '82%')">82%</div></td>
+                                <td class="text-center font-semibold">87.4%</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-2 px-3 font-medium">Design</td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-green-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('Design', 'Monday', '78%')">78%</div></td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-yellow-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('Design', 'Tuesday', '82%')">82%</div></td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-green-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('Design', 'Wednesday', '85%')">85%</div></td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-yellow-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('Design', 'Thursday', '80%')">80%</div></td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-green-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('Design', 'Friday', '76%')">76%</div></td>
+                                <td class="text-center font-semibold">80.2%</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-2 px-3 font-medium">QA Testing</td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-yellow-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('QA', 'Monday', '92%')">92%</div></td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-red-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('QA', 'Tuesday', '95%')">95%</div></td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-yellow-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('QA', 'Wednesday', '88%')">88%</div></td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-green-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('QA', 'Thursday', '90%')">90%</div></td>
+                                <td class="text-center p-2"><div class="heatmap-cell bg-yellow-500 text-white p-2 rounded text-sm" onclick="showResourceDetails('QA', 'Friday', '87%')">87%</div></td>
+                                <td class="text-center font-semibold">90.4%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="flex items-center gap-4 mt-4 text-sm">
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-green-500 rounded"></div>
+                        <span>Good (70-85%)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-yellow-500 rounded"></div>
+                        <span>High (86-92%)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-red-500 rounded"></div>
+                        <span>Critical (>92%)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Requests -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Resource Requests -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">Resource Requests</h3>
+                    <div class="space-y-3 max-h-64 overflow-y-auto">
+                        <div class="border rounded-lg p-3">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <div class="font-medium">Senior Developer - Project Alpha</div>
+                                    <div class="text-sm text-gray-600">Requested by: John Doe • 2 hours ago</div>
+                                </div>
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">Pending</span>
+                            </div>
+                            <div class="text-sm text-gray-700 mb-2">
+                                Need experienced React developer for 8 weeks. Frontend optimization project.
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="approveRequest('req1')" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                    <i class="fas fa-check mr-1"></i>Approve
+                                </button>
+                                <button onclick="rejectRequest('req1')" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">
+                                    <i class="fas fa-times mr-1"></i>Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Recommendations -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">
+                        <i class="fas fa-robot mr-2 text-purple-600"></i>AI Recommendations
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-lightbulb text-blue-600 mt-1"></i>
+                                <div>
+                                    <div class="font-medium">Optimize Development Team</div>
+                                    <div class="text-sm text-gray-700 mt-1">
+                                        Reallocate 2 developers from Project Gamma to Project Alpha
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Confidence: 94%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button onclick="toggleMobileMenu()" class="fixed top-4 left-4 z-50 bg-blue-600 text-white p-3 rounded-lg md:hidden">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Resource Request Modal -->
+    <div id="resourceModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Resource Request</h3>
+                <button onclick="closeResourceModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="resourceModalBody">
+                <!-- Modal content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation Functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+        
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('mobile-open');
+        }
+        
+        // Initialize Charts with Proper Sizing
+        document.addEventListener('DOMContentLoaded', function() {
+            // Utilization Chart
+            const utilCtx = document.getElementById('utilizationChart').getContext('2d');
+            new Chart(utilCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                    datasets: [{
+                        label: 'Development',
+                        data: [85, 88, 92, 87, 90, 86],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Design',
+                        data: [78, 82, 85, 80, 76, 82],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'QA',
+                        data: [92, 95, 88, 90, 87, 91],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 10
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Team Distribution Chart
+            const teamCtx = document.getElementById('teamDistributionChart').getContext('2d');
+            new Chart(teamCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Development', 'Design', 'QA', 'DevOps', 'PM'],
+                    datasets: [{
+                        data: [45, 20, 18, 12, 5],
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#10b981',
+                            '#f59e0b',
+                            '#8b5cf6',
+                            '#ef4444'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 10
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Cost Analysis Chart
+            const costCtx = document.getElementById('costAnalysisChart').getContext('2d');
+            new Chart(costCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Dev', 'Design', 'QA', 'DevOps'],
+                    datasets: [{
+                        label: 'Budget',
+                        data: [120000, 80000, 60000, 90000],
+                        backgroundColor: '#3b82f6'
+                    }, {
+                        label: 'Actual',
+                        data: [110000, 75000, 65000, 85000],
+                        backgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 10
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000) + 'K';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Resource Functions
+        function requestResource() {
+            showNotification('Resource request form would open here.');
+        }
+        
+        function optimizeAllocation() {
+            showNotification('AI optimization is analyzing your resource allocation...');
+        }
+        
+        function approveRequest(requestId) {
+            showNotification('Resource request approved!');
+        }
+        
+        function rejectRequest(requestId) {
+            showNotification('Resource request rejected.');
+        }
+        
+        function showResourceDetails(team, day, utilization) {
+            showNotification(`${team} utilization on ${day}: ${utilization}`);
+        }
+        
+        function closeResourceModal() {
+            document.getElementById('resourceModal').classList.remove('show');
+        }
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    ${message}
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('resourceModal');
+            if (event.target == modal) {
+                closeResourceModal();
+            }
+        }
+    </script>
+</body>
+</html>

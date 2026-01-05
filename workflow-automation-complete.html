@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Automation - Complete Suite | PPM System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .tab-button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+        }
+        .tab-button:not(.active) {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .tab-button:not(.active):hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        .status-active { background: #10b981; color: white; }
+        .status-paused { background: #f59e0b; color: white; }
+        .status-draft { background: #6b7280; color: white; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-project-diagram text-3xl"></i>
+                    <div>
+                        <h1 class="text-3xl font-bold">Workflow Automation</h1>
+                        <p class="text-purple-200">Complete Automation Suite</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showCreateWorkflow()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        <i class="fas fa-plus mr-2"></i>Create Workflow
+                    </button>
+                    <button onclick="exportAll()" class="bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex space-x-2">
+                <button class="tab-button active" onclick="switchTab('workflows')">
+                    <i class="fas fa-list mr-2"></i>Workflows
+                </button>
+                <button class="tab-button" onclick="switchTab('builder')">
+                    <i class="fas fa-tools mr-2"></i>Builder
+                </button>
+                <button class="tab-button" onclick="switchTab('templates')">
+                    <i class="fas fa-layer-group mr-2"></i>Templates
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Workflows Tab -->
+        <div id="workflows-tab" class="tab-content active">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i class="fas fa-robot text-blue-600 text-2xl"></i>
+                        </div>
+                        <span class="text-green-600 text-sm font-semibold">
+                            <i class="fas fa-arrow-up mr-1"></i>12
+                        </span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Active Workflows</h3>
+                    <p class="text-3xl font-bold text-gray-900">24</p>
+                    <p class="text-sm text-gray-500 mt-2">Running automation</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                        </div>
+                        <span class="text-green-600 text-sm font-semibold">99.8%</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Success Rate</h3>
+                    <p class="text-3xl font-bold text-gray-900">2,847</p>
+                    <p class="text-sm text-gray-500 mt-2">Executions this month</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-purple-100 p-3 rounded-lg">
+                            <i class="fas fa-clock text-purple-600 text-2xl"></i>
+                        </div>
+                        <span class="text-green-600 text-sm font-semibold">
+                            <i class="fas fa-arrow-down mr-1"></i>60%
+                        </span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Time Saved</h3>
+                    <p class="text-3xl font-bold text-gray-900">847h</p>
+                    <p class="text-sm text-gray-500 mt-2">Manual effort reduced</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-orange-100 p-3 rounded-lg">
+                            <i class="fas fa-dollar-sign text-orange-600 text-2xl"></i>
+                        </div>
+                        <span class="text-green-600 text-sm font-semibold">$500K</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Cost Savings</h3>
+                    <p class="text-3xl font-bold text-gray-900">Annual</p>
+                    <p class="text-sm text-gray-500 mt-2">From automation</p>
+                </div>
+            </div>
+
+            <!-- Workflow List -->
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Active Workflows</h2>
+                    <div class="flex items-center space-x-4">
+                        <input type="text" placeholder="Search workflows..." class="border border-gray-300 rounded-lg px-4 py-2 text-sm w-64">
+                        <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <option>All Status</option>
+                            <option>Active</option>
+                            <option>Paused</option>
+                            <option>Draft</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-4" id="workflow-list">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Execution Chart -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Execution Statistics</h2>
+                <canvas id="executionChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+
+        <!-- Builder Tab -->
+        <div id="builder-tab" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Visual Workflow Builder</h2>
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+                    <i class="fas fa-project-diagram text-6xl text-gray-400 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Drag & Drop Workflow Builder</h3>
+                    <p class="text-gray-600 mb-6">Create complex workflows with our visual builder</p>
+                    <button onclick="openBuilder()" class="bg-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                        <i class="fas fa-plus mr-2"></i>Start Building
+                    </button>
+                </div>
+            </div>
+
+            <!-- Available Actions -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Available Actions (50+)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-4 border-2 border-gray-200 rounded-lg">
+                        <h4 class="font-semibold text-gray-900 mb-3">Project Actions</h4>
+                        <ul class="space-y-2 text-sm text-gray-600">
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Create project</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Update status</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Assign resources</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Set budget</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 border-2 border-gray-200 rounded-lg">
+                        <h4 class="font-semibold text-gray-900 mb-3">Notification Actions</h4>
+                        <ul class="space-y-2 text-sm text-gray-600">
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Send email</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Send notification</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Create alert</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Post message</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 border-2 border-gray-200 rounded-lg">
+                        <h4 class="font-semibold text-gray-900 mb-3">Data Actions</h4>
+                        <ul class="space-y-2 text-sm text-gray-600">
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Create record</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Update field</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Delete record</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Run calculation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Templates Tab -->
+        <div id="templates-tab" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Workflow Templates</h2>
+                    <input type="text" placeholder="Search templates..." class="border border-gray-300 rounded-lg px-4 py-2 text-sm w-64">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="border-2 border-gray-200 rounded-xl p-6 hover:border-purple-500 transition cursor-pointer card-hover">
+                        <div class="bg-blue-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                            <i class="fas fa-user-plus text-blue-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-2">Project Onboarding</h3>
+                        <p class="text-sm text-gray-600 mb-4">Automate new project setup with team assignments and initial tasks</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs text-gray-500">8 steps</span>
+                            <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">Popular</span>
+                        </div>
+                        <button onclick="useTemplate('onboarding')" class="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                            Use Template
+                        </button>
+                    </div>
+
+                    <div class="border-2 border-gray-200 rounded-xl p-6 hover:border-purple-500 transition cursor-pointer card-hover">
+                        <div class="bg-green-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                            <i class="fas fa-check-double text-green-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-2">Approval Routing</h3>
+                        <p class="text-sm text-gray-600 mb-4">Route approvals based on amount, department, and priority</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs text-gray-500">6 steps</span>
+                            <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">Recommended</span>
+                        </div>
+                        <button onclick="useTemplate('approval')" class="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                            Use Template
+                        </button>
+                    </div>
+
+                    <div class="border-2 border-gray-200 rounded-xl p-6 hover:border-purple-500 transition cursor-pointer card-hover">
+                        <div class="bg-purple-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                            <i class="fas fa-bell text-purple-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-2">Status Notifications</h3>
+                        <p class="text-sm text-gray-600 mb-4">Send notifications when project status changes</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs text-gray-500">4 steps</span>
+                            <span class="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded">Quick Setup</span>
+                        </div>
+                        <button onclick="useTemplate('notification')" class="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                            Use Template
+                        </button>
+                    </div>
+
+                    <div class="border-2 border-gray-200 rounded-xl p-6 hover:border-purple-500 transition cursor-pointer card-hover">
+                        <div class="bg-orange-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                            <i class="fas fa-tasks text-orange-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-2">Task Assignment</h3>
+                        <p class="text-sm text-gray-600 mb-4">Automatically assign tasks based on skills and availability</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs text-gray-500">5 steps</span>
+                            <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">Popular</span>
+                        </div>
+                        <button onclick="useTemplate('task-assignment')" class="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                            Use Template
+                        </button>
+                    </div>
+
+                    <div class="border-2 border-gray-200 rounded-xl p-6 hover:border-purple-500 transition cursor-pointer card-hover">
+                        <div class="bg-red-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-2">Risk Escalation</h3>
+                        <p class="text-sm text-gray-600 mb-4">Escalate high-risk items to management automatically</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs text-gray-500">7 steps</span>
+                            <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">Recommended</span>
+                        </div>
+                        <button onclick="useTemplate('risk-escalation')" class="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                            Use Template
+                        </button>
+                    </div>
+
+                    <div class="border-2 border-gray-200 rounded-xl p-6 hover:border-purple-500 transition cursor-pointer card-hover">
+                        <div class="bg-indigo-100 p-3 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                            <i class="fas fa-chart-line text-indigo-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-2">Weekly Reports</h3>
+                        <p class="text-sm text-gray-600 mb-4">Generate and send weekly status reports automatically</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs text-gray-500">3 steps</span>
+                            <span class="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded">Quick Setup</span>
+                        </div>
+                        <button onclick="useTemplate('weekly-reports')" class="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                            Use Template
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const workflows = [
+            { id: 1, name: 'Project Onboarding', trigger: 'Project Created', executions: 156, status: 'active', successRate: 99.4 },
+            { id: 2, name: 'Budget Approval', trigger: 'Budget > $50K', executions: 89, status: 'active', successRate: 100 },
+            { id: 3, name: 'Task Assignment', trigger: 'Task Created', executions: 542, status: 'active', successRate: 98.9 },
+            { id: 4, name: 'Status Notifications', trigger: 'Status Changed', executions: 1247, status: 'active', successRate: 99.8 },
+            { id: 5, name: 'Weekly Reports', trigger: 'Schedule: Weekly', executions: 24, status: 'active', successRate: 100 }
+        ];
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function renderWorkflows() {
+            const list = document.getElementById('workflow-list');
+            list.innerHTML = workflows.map(wf => `
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-1">
+                            <h4 class="font-semibold text-gray-900">${wf.name}</h4>
+                            <span class="status-${wf.status} px-2 py-1 rounded text-xs">${wf.status.toUpperCase()}</span>
+                        </div>
+                        <p class="text-sm text-gray-600">Trigger: ${wf.trigger}</p>
+                        <div class="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                            <span><i class="fas fa-play-circle mr-1"></i>${wf.executions} runs</span>
+                            <span><i class="fas fa-check-circle mr-1"></i>${wf.successRate}% success</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="editWorkflow(${wf.id})" class="p-2 text-purple-600 hover:bg-purple-50 rounded-lg">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="toggleWorkflow(${wf.id})" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('executionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Successful',
+                        data: [342, 389, 412, 398, 445, 287, 156],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Failed',
+                        data: [2, 1, 3, 2, 1, 0, 1],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function showCreateWorkflow() { showToast('Opening workflow creator...', 'info'); }
+        function openBuilder() { showToast('Opening visual builder...', 'info'); }
+        function useTemplate(template) { showToast(`Loading ${template} template...`, 'success'); }
+        function editWorkflow(id) { showToast('Opening workflow editor...', 'info'); }
+        function toggleWorkflow(id) { showToast('Workflow paused', 'success'); }
+        function exportAll() { showToast('Exporting workflows...', 'success'); }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            toast.className = `fixed top-20 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50`;
+            toast.innerHTML = `<div class="flex items-center space-x-3"><i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} text-xl"></i><span class="font-semibold">${message}</span></div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderWorkflows();
+            initChart();
+        });
+    </script>
+</body>
+</html>

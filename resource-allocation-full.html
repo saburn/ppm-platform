@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Management - PPM Champion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .resource-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .resource-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .approval-step {
+            transition: all 0.3s ease;
+        }
+        .approval-step.completed {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+        }
+        .approval-step.current {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            color: white;
+        }
+        .approval-step.pending {
+            background: #E5E7EB;
+            color: #6B7280;
+        }
+        .skill-tag {
+            transition: all 0.2s ease;
+        }
+        .skill-tag:hover {
+            transform: scale(1.05);
+        }
+        .capacity-cell {
+            transition: all 0.2s ease;
+        }
+        .capacity-cell:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        .request-priority-high { border-left: 4px solid #EF4444; }
+        .request-priority-medium { border-left: 4px solid #F59E0B; }
+        .request-priority-low { border-left: 4px solid #10B981; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="text-gray-600 hover:text-gray-800 mr-4">
+                        <i class="fas fa-arrow-left text-xl"></i>
+                    </button>
+                    <i class="fas fa-users text-blue-600 text-2xl mr-3"></i>
+                    <h1 class="text-xl font-bold text-gray-800">Resource Management</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="openCapacityPlanner()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                        <i class="fas fa-chart-line mr-2"></i>Capacity Planner
+                    </button>
+                    <button onclick="openResourceRequest()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-plus mr-2"></i>Request Resource
+                    </button>
+                    <div class="relative">
+                        <button class="text-gray-600 hover:text-gray-800">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">5</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Resource Navigation Tabs -->
+    <div class="bg-white border-b sticky top-16 z-40">
+        <div class="container mx-auto px-6">
+            <div class="flex space-x-1 overflow-x-auto">
+                <button onclick="switchResourceTab('dashboard')" class="resource-tab-button px-6 py-3 text-sm font-medium rounded-t-lg bg-blue-600 text-white">
+                    <i class="fas fa-th-large mr-2"></i>Dashboard
+                </button>
+                <button onclick="switchResourceTab('requests')" class="resource-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-clipboard-list mr-2"></i>Requests
+                </button>
+                <button onclick="switchResourceTab('allocation')" class="resource-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-sitemap mr-2"></i>Allocation
+                </button>
+                <button onclick="switchResourceTab('capacity')" class="resource-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-chart-pie mr-2"></i>Capacity
+                </button>
+                <button onclick="switchResourceTab('skills')" class="resource-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-graduation-cap mr-2"></i>Skills Matrix
+                </button>
+                <button onclick="switchResourceTab('approvals')" class="resource-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100">
+                    <i class="fas fa-check-circle mr-2"></i>Approvals
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Dashboard Tab -->
+        <div id="resource-dashboard" class="resource-tab-content">
+            <!-- Key Metrics -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600 text-sm">Total Resources</span>
+                        <span class="text-green-600 text-xs bg-green-100 px-2 py-1 rounded">+8%</span>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800">62</div>
+                    <div class="text-sm text-gray-600">48 allocated • 14 available</div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600 text-sm">Utilization Rate</span>
+                        <span class="text-yellow-600 text-xs bg-yellow-100 px-2 py-1 rounded">Optimal</span>
+                    </div>
+                    <div class="text-3xl font-bold text-blue-600">78%</div>
+                    <div class="text-sm text-gray-600">Industry avg: 75%</div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600 text-sm">Pending Requests</span>
+                        <span class="text-red-600 text-xs bg-red-100 px-2 py-1 rounded">Action Needed</span>
+                    </div>
+                    <div class="text-3xl font-bold text-orange-600">7</div>
+                    <div class="text-sm text-gray-600">3 high priority • 4 normal</div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600 text-sm">Skills Coverage</span>
+                        <span class="text-blue-600 text-xs bg-blue-100 px-2 py-1 rounded">Good</span>
+                    </div>
+                    <div class="text-3xl font-bold text-green-600">92%</div>
+                    <div class="text-sm text-gray-600">127 skills covered</div>
+                </div>
+            </div>
+
+            <!-- Resource Utilization Overview -->
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Department Utilization</h3>
+                    <canvas id="utilizationChart" width="400" height="250"></canvas>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Skills Demand</h3>
+                    <canvas id="skillsDemandChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Critical Resource Alerts -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Critical Resource Alerts</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="border-l-4 border-red-500 bg-red-50 p-4 rounded">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-red-500 mt-1 mr-3"></i>
+                            <div>
+                                <h4 class="font-semibold text-red-800">DevOps Engineers Overallocated</h4>
+                                <p class="text-red-600 text-sm">All 4 DevOps engineers at 95%+ capacity for next 3 months</p>
+                                <button onclick="viewDevOpsDetails()" class="text-red-600 hover:text-red-800 text-sm font-medium mt-2">
+                                    View Details →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-l-4 border-yellow-500 bg-yellow-50 p-4 rounded">
+                        <div class="flex items-start">
+                            <i class="fas fa-clock text-yellow-500 mt-1 mr-3"></i>
+                            <div>
+                                <h4 class="font-semibold text-yellow-800">Cloud Architect Resource Shortage</h4>
+                                <p class="text-yellow-600 text-sm">3 pending requests but only 1 available architect</p>
+                                <button onclick="viewCloudArchitectDetails()" class="text-yellow-600 hover:text-yellow-800 text-sm font-medium mt-2">
+                                    Review Requests →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Performing Resources -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Top Performing Resources</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="resource-card bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                        <div class="flex items-center mb-3">
+                            <img src="https://picsum.photos/seed/sarah/50/50.jpg" alt="Sarah Chen" class="w-12 h-12 rounded-full mr-3">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Sarah Chen</h4>
+                                <p class="text-sm text-blue-600">Cloud Architect</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Efficiency Score</span>
+                                <span class="font-semibold text-blue-600">96%</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Projects Completed</span>
+                                <span class="font-medium">12</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Client Rating</span>
+                                <span class="font-medium">4.9/5.0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="resource-card bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                        <div class="flex items-center mb-3">
+                            <img src="https://picsum.photos/seed/mike/50/50.jpg" alt="Mike Johnson" class="w-12 h-12 rounded-full mr-3">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Mike Johnson</h4>
+                                <p class="text-sm text-green-600">DevOps Engineer</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Efficiency Score</span>
+                                <span class="font-semibold text-green-600">94%</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Projects Completed</span>
+                                <span class="font-medium">15</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Client Rating</span>
+                                <span class="font-medium">4.8/5.0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="resource-card bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+                        <div class="flex items-center mb-3">
+                            <img src="https://picsum.photos/seed/emily/50/50.jpg" alt="Emily Davis" class="w-12 h-12 rounded-full mr-3">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Emily Davis</h4>
+                                <p class="text-sm text-purple-600">Full Stack Developer</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Efficiency Score</span>
+                                <span class="font-semibold text-purple-600">92%</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Projects Completed</span>
+                                <span class="font-medium">10</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Client Rating</span>
+                                <span class="font-medium">4.7/5.0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requests Tab -->
+        <div id="resource-requests" class="resource-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm">
+                <div class="p-6 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-800">Resource Requests</h3>
+                    <div class="flex space-x-2">
+                        <select class="px-3 py-2 border border-gray-300 rounded-lg">
+                            <option>All Status</option>
+                            <option>Pending</option>
+                            <option>Approved</option>
+                            <option>Rejected</option>
+                        </select>
+                        <button onclick="openResourceRequest()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-plus mr-2"></i>New Request
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <!-- High Priority Request -->
+                        <div class="request-priority-high bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-2">
+                                        <h4 class="font-semibold text-gray-800">Senior Cloud Architect</h4>
+                                        <span class="ml-3 px-2 py-1 bg-red-100 text-red-800 rounded text-xs">High Priority</span>
+                                        <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Pending</span>
+                                    </div>
+                                    <p class="text-gray-600 mb-2">Cloud Migration Project - Need expert with AWS and Azure experience for 3 months</p>
+                                    <div class="grid md:grid-cols-3 gap-4 text-sm">
+                                        <div>
+                                            <span class="text-gray-600">Requested by:</span>
+                                            <span class="font-medium ml-1">Sarah Chen</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-600">Duration:</span>
+                                            <span class="font-medium ml-1">Jan 15 - Apr 15, 2024</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-600">Requested:</span>
+                                            <span class="font-medium ml-1">2 days ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <button onclick="viewRequestDetails(1)" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 mr-2">
+                                        Review
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Medium Priority Request -->
+                        <div class="request-priority-medium bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-2">
+                                        <h4 class="font-semibold text-gray-800">UX Designer</h4>
+                                        <span class="ml-3 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Medium Priority</span>
+                                        <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">In Review</span>
+                                    </div>
+                                    <p class="text-gray-600 mb-2">Mobile App Development - Need UI/UX designer with mobile app experience</p>
+                                    <div class="grid md:grid-cols-3 gap-4 text-sm">
+                                        <div>
+                                            <span class="text-gray-600">Requested by:</span>
+                                            <span class="font-medium ml-1">Emily Davis</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-600">Duration:</span>
+                                            <span class="font-medium ml-1">Feb 1 - Mar 31, 2024</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-600">Requested:</span>
+                                            <span class="font-medium ml-1">5 days ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <button onclick="viewRequestDetails(2)" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 mr-2">
+                                        Review
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Allocation Tab -->
+        <div id="resource-allocation" class="resource-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Current Resource Allocation</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b bg-gray-50">
+                                <th class="text-left py-3 px-4">Resource</th>
+                                <th class="text-left py-3 px-4">Role</th>
+                                <th class="text-left py-3 px-4">Skills</th>
+                                <th class="text-left py-3 px-4">Current Project</th>
+                                <th class="text-left py-3 px-4">Allocation</th>
+                                <th class="text-left py-3 px-4">Available</th>
+                                <th class="text-left py-3 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b hover:bg-gray-50 capacity-cell">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <img src="https://picsum.photos/seed/sarah2/40/40.jpg" alt="Sarah Chen" class="w-8 h-8 rounded-full mr-3">
+                                        <div>
+                                            <div class="font-medium">Sarah Chen</div>
+                                            <div class="text-sm text-gray-600">ID: RES001</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">Cloud Architect</td>
+                                <td class="py-3 px-4">
+                                    <span class="skill-tag px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs mr-1">AWS</span>
+                                    <span class="skill-tag px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs mr-1">Azure</span>
+                                    <span class="skill-tag px-2 py-1 bg-green-100 text-green-800 rounded text-xs">DevOps</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="font-medium">Cloud Migration</div>
+                                    <div class="text-sm text-gray-600">Tech Transformation</div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div class="bg-red-500 h-2 rounded-full" style="width: 95%"></div>
+                                        </div>
+                                        <span class="font-medium text-red-600">95%</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="text-sm text-gray-600">Feb 1, 2024</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <button onclick="reallocateResource('RES001')" class="text-blue-600 hover:text-blue-800 mr-2">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </button>
+                                    <button onclick="viewResourceDetails('RES001')" class="text-gray-600 hover:text-gray-800">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <tr class="border-b hover:bg-gray-50 capacity-cell">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <img src="https://picsum.photos/seed/mike2/40/40.jpg" alt="Mike Johnson" class="w-8 h-8 rounded-full mr-3">
+                                        <div>
+                                            <div class="font-medium">Mike Johnson</div>
+                                            <div class="text-sm text-gray-600">ID: RES002</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">DevOps Engineer</td>
+                                <td class="py-3 px-4">
+                                    <span class="skill-tag px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs mr-1">Docker</span>
+                                    <span class="skill-tag px-2 py-1 bg-red-100 text-red-800 rounded text-xs mr-1">K8s</span>
+                                    <span class="skill-tag px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">CI/CD</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="font-medium">Infrastructure Setup</div>
+                                    <div class="text-sm text-gray-600">Cloud Migration</div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div class="bg-green-500 h-2 rounded-full" style="width: 80%"></div>
+                                        </div>
+                                        <span class="font-medium text-green-600">80%</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="text-sm text-gray-600">Jan 15, 2024</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <button onclick="reallocateResource('RES002')" class="text-blue-600 hover:text-blue-800 mr-2">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </button>
+                                    <button onclick="viewResourceDetails('RES002')" class="text-gray-600 hover:text-gray-800">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Other tabs (simplified for brevity) -->
+        <div id="resource-capacity" class="resource-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Capacity Planning</h3>
+                <canvas id="capacityChart" width="800" height="400"></canvas>
+            </div>
+        </div>
+
+        <div id="resource-skills" class="resource-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Skills Matrix</h3>
+                <canvas id="skillsMatrixChart" width="800" height="600"></canvas>
+            </div>
+        </div>
+
+        <div id="resource-approvals" class="resource-tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Approval Workflows</h3>
+                <div class="space-y-4">
+                    <!-- Approval workflow items -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Request Modal -->
+    <div id="resourceRequestModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">Resource Request</h3>
+                <button onclick="closeResourceRequest()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <form class="space-y-6">
+                    <!-- Step 1: Role Request -->
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Step 1: Define Role Requirements</h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Role Type</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option>Cloud Architect</option>
+                                    <option>DevOps Engineer</option>
+                                    <option>Full Stack Developer</option>
+                                    <option>UX Designer</option>
+                                    <option>Project Manager</option>
+                                    <option>Data Scientist</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Experience Level</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option>Junior (1-3 years)</option>
+                                    <option>Mid-level (3-5 years)</option>
+                                    <option>Senior (5-8 years)</option>
+                                    <option>Lead (8+ years)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Required Skills</label>
+                            <div class="flex flex-wrap gap-2">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="rounded text-blue-600 mr-2">
+                                    <span class="text-sm">AWS</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="rounded text-blue-600 mr-2">
+                                    <span class="text-sm">Azure</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="rounded text-blue-600 mr-2">
+                                    <span class="text-sm">Docker</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="rounded text-blue-600 mr-2">
+                                    <span class="text-sm">Kubernetes</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="rounded text-blue-600 mr-2">
+                                    <span class="text-sm">React</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Project Details -->
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Step 2: Project Information</h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option>Cloud Migration</option>
+                                    <option>Mobile App Development</option>
+                                    <option>Data Analytics Platform</option>
+                                    <option>CRM Implementation</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option>High</option>
+                                    <option>Medium</option>
+                                    <option>Low</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Justification</label>
+                            <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Explain why this resource is needed..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Approval Flow -->
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-4">Step 3: Approval Flow</h4>
+                        <div class="space-y-3">
+                            <div class="approval-step completed p-3 rounded-lg flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="fas fa-check-circle mr-3"></i>
+                                    <div>
+                                        <div class="font-medium">Project Manager Approval</div>
+                                        <div class="text-sm opacity-75">Sarah Chen</div>
+                                    </div>
+                                </div>
+                                <span class="text-sm">Completed</span>
+                            </div>
+                            
+                            <div class="approval-step current p-3 rounded-lg flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="fas fa-clock mr-3"></i>
+                                    <div>
+                                        <div class="font-medium">Department Head Approval</div>
+                                        <div class="text-sm opacity-75">David Brown</div>
+                                    </div>
+                                </div>
+                                <span class="text-sm">Pending</span>
+                            </div>
+                            
+                            <div class="approval-step pending p-3 rounded-lg flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="fas fa-circle mr-3"></i>
+                                    <div>
+                                        <div class="font-medium">Resource Manager Approval</div>
+                                        <div class="text-sm opacity-75">Lisa Wang</div>
+                                    </div>
+                                </div>
+                                <span class="text-sm">Waiting</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" onclick="closeResourceRequest()" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Submit Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Resource tab switching
+        function switchResourceTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.resource-tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Reset all buttons
+            document.querySelectorAll('.resource-tab-button').forEach(button => {
+                button.className = 'resource-tab-button px-6 py-3 text-sm font-medium rounded-t-lg hover:bg-gray-100';
+            });
+            
+            // Show selected tab
+            document.getElementById('resource-' + tabName).classList.remove('hidden');
+            
+            // Highlight selected button
+            event.target.className = 'resource-tab-button px-6 py-3 text-sm font-medium rounded-t-lg bg-blue-600 text-white';
+        }
+
+        // Navigation
+        function goBack() {
+            window.location.href = 'project-summary-dashboard.html';
+        }
+
+        // Resource request modal
+        function openResourceRequest() {
+            document.getElementById('resourceRequestModal').classList.remove('hidden');
+        }
+
+        function closeResourceRequest() {
+            document.getElementById('resourceRequestModal').classList.add('hidden');
+        }
+
+        // View functions
+        function viewRequestDetails(requestId) {
+            alert('View request details functionality coming next...');
+        }
+
+        function viewDevOpsDetails() {
+            alert('DevOps resource details coming next...');
+        }
+
+        function viewCloudArchitectDetails() {
+            alert('Cloud architect resource details coming next...');
+        }
+
+        function reallocateResource(resourceId) {
+            alert('Resource reallocation functionality coming next...');
+        }
+
+        function viewResourceDetails(resourceId) {
+            alert('Resource details functionality coming next...');
+        }
+
+        function openCapacityPlanner() {
+            switchResourceTab('capacity');
+        }
+
+        // Initialize charts
+        window.addEventListener('load', function() {
+            // Utilization Chart
+            const utilizationCtx = document.getElementById('utilizationChart');
+            if (utilizationCtx) {
+                new Chart(utilizationCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Engineering', 'Design', 'QA', 'DevOps', 'Management'],
+                        datasets: [{
+                            label: 'Current Utilization',
+                            data: [85, 72, 78, 95, 68],
+                            backgroundColor: '#3B82F6'
+                        }, {
+                            label: 'Optimal Range',
+                            data: [75, 75, 75, 75, 75],
+                            type: 'line',
+                            borderColor: '#10B981',
+                            borderDash: [5, 5]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Skills Demand Chart
+            const skillsDemandCtx = document.getElementById('skillsDemandChart');
+            if (skillsDemandCtx) {
+                new Chart(skillsDemandCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Cloud Skills', 'DevOps', 'Full Stack', 'Mobile', 'Data Science'],
+                        datasets: [{
+                            data: [35, 25, 20, 12, 8],
+                            backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

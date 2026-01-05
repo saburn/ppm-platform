@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Meeting Automation - AI-Powered Meeting Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .meeting-card {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            transition: all 0.3s ease;
+        }
+        .meeting-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(34, 197, 94, 0.3);
+        }
+        .ai-glow {
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.4),
+                        0 0 60px rgba(34, 197, 94, 0.2),
+                        0 0 90px rgba(34, 197, 94, 0.1);
+        }
+        .live-meeting {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+        .scheduled-meeting {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+        .completed-meeting {
+            background: linear-gradient(135deg, rgba(107, 114, 128, 0.2), rgba(75, 85, 99, 0.2));
+            border: 1px solid rgba(107, 114, 128, 0.4);
+        }
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .transcript-highlight {
+            background: linear-gradient(90deg, rgba(34, 197, 94, 0.2), transparent);
+            border-left: 3px solid #22c55e;
+        }
+        .action-item {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1));
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        .insight-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900 text-white min-h-screen">
+    
+    <!-- Header -->
+    <header class="glass-morphism border-b border-white/10 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="ai-glow rounded-lg p-2 bg-green-600/20">
+                        <i class="fas fa-video text-2xl text-green-400"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                            Smart Meeting Automation
+                        </h1>
+                        <p class="text-sm text-green-300">AI-Powered Meeting Intelligence</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 bg-green-500/20 px-3 py-1 rounded-full">
+                        <div class="w-2 h-2 bg-green-500 rounded-full pulse-animation"></div>
+                        <span class="text-sm text-green-400">AI Assistant Active</span>
+                    </div>
+                    <button onclick="startSmartMeeting()" class="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-2 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105">
+                        <i class="fas fa-play mr-2"></i>Start Smart Meeting
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- Meeting Intelligence Overview -->
+        <section class="mb-8">
+            <div class="glass-morphism rounded-2xl p-8 ai-glow">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-400">89.3%</div>
+                        <div class="text-sm text-gray-400">Meeting Efficiency</div>
+                        <div class="text-xs text-green-400 mt-1">↑ 12% this week</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-emerald-400">156</div>
+                        <div class="text-sm text-gray-400">Hours Saved</div>
+                        <div class="text-xs text-emerald-400 mt-1">This month</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-400">94.7%</div>
+                        <div class="text-sm text-gray-400">AI Accuracy</div>
+                        <div class="text-xs text-blue-400 mt-1">Transcription</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-purple-400">247</div>
+                        <div class="text-sm text-gray-400">Action Items</div>
+                        <div class="text-xs text-purple-400 mt-1">Auto-generated</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-orange-400">42</div>
+                        <div class="text-sm text-gray-400">Meetings Today</div>
+                        <div class="text-xs text-orange-400 mt-1">8 in progress</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Active Meetings Dashboard -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                <i class="fas fa-broadcast-tower mr-3"></i>Active Meetings Dashboard
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Live Meetings -->
+                <div class="meeting-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-red-300">Live Now</h3>
+                        <span class="bg-red-600/20 text-red-400 text-xs px-2 py-1 rounded-full">3 Active</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="live-meeting p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-red-300">Design Review</span>
+                                <span class="text-xs text-red-400">45:23</span>
+                            </div>
+                            <div class="flex items-center space-x-2 text-xs text-gray-400 mb-2">
+                                <i class="fas fa-users"></i>
+                                <span>8 participants</span>
+                                <i class="fas fa-microphone ml-2"></i>
+                                <span>5 speaking</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="joinMeeting('design-review')" class="flex-1 bg-red-600 hover:bg-red-700 py-1 rounded text-xs transition-all">
+                                    Join
+                                </button>
+                                <button onclick="watchMeeting('design-review')" class="flex-1 bg-red-600/20 hover:bg-red-600/30 py-1 rounded text-xs transition-all">
+                                    Watch
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="live-meeting p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-red-300">Sprint Planning</span>
+                                <span class="text-xs text-red-400">23:45</span>
+                            </div>
+                            <div class="flex items-center space-x-2 text-xs text-gray-400 mb-2">
+                                <i class="fas fa-users"></i>
+                                <span>12 participants</span>
+                                <i class="fas fa-microphone ml-2"></i>
+                                <span>7 speaking</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="joinMeeting('sprint-planning')" class="flex-1 bg-red-600 hover:bg-red-700 py-1 rounded text-xs transition-all">
+                                    Join
+                                </button>
+                                <button onclick="watchMeeting('sprint-planning')" class="flex-1 bg-red-600/20 hover:bg-red-600/30 py-1 rounded text-xs transition-all">
+                                    Watch
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Meetings -->
+                <div class="meeting-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-blue-300">Upcoming</h3>
+                        <span class="bg-blue-600/20 text-blue-400 text-xs px-2 py-1 rounded-full">5 Today</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="scheduled-meeting p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-blue-300">Client Review</span>
+                                <span class="text-xs text-blue-400">In 15 min</span>
+                            </div>
+                            <div class="flex items-center space-x-2 text-xs text-gray-400 mb-2">
+                                <i class="fas fa-users"></i>
+                                <span>6 participants</span>
+                                <i class="fas fa-clock ml-2"></i>
+                                <span>1 hour</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="joinMeeting('client-review')" class="flex-1 bg-blue-600 hover:bg-blue-700 py-1 rounded text-xs transition-all">
+                                    Join Early
+                                </button>
+                                <button onclick="prepareMeeting('client-review')" class="flex-1 bg-blue-600/20 hover:bg-blue-600/30 py-1 rounded text-xs transition-all">
+                                    Prepare
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="scheduled-meeting p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-blue-300">Architecture Review</span>
+                                <span class="text-xs text-blue-400">2:00 PM</span>
+                            </div>
+                            <div class="flex items-center space-x-2 text-xs text-gray-400 mb-2">
+                                <i class="fas fa-users"></i>
+                                <span>8 participants</span>
+                                <i class="fas fa-clock ml-2"></i>
+                                <span>45 min</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="joinMeeting('architecture-review')" class="flex-1 bg-blue-600 hover:bg-blue-700 py-1 rounded text-xs transition-all">
+                                    Schedule
+                                </button>
+                                <button onclick="prepareMeeting('architecture-review')" class="flex-1 bg-blue-600/20 hover:bg-blue-600/30 py-1 rounded text-xs transition-all">
+                                    Prepare
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meeting Insights -->
+                <div class="meeting-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-purple-300">AI Insights</h3>
+                        <span class="bg-purple-600/20 text-purple-400 text-xs px-2 py-1 rounded-full">Live</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="insight-card p-3 rounded-lg">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-lightbulb text-yellow-400 mt-1"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-purple-300">Meeting Optimization</div>
+                                    <div class="text-xs text-gray-300 mt-1">
+                                        Design review could be 30% shorter with async prep
+                                    </div>
+                                    <div class="text-xs text-purple-400 mt-1">Savings: 45 minutes</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="insight-card p-3 rounded-lg">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-users text-green-400 mt-1"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-purple-300">Participant Analysis</div>
+                                    <div class="text-xs text-gray-300 mt-1">
+                                        3 team members underutilized in recent meetings
+                                    </div>
+                                    <div class="text-xs text-green-400 mt-1">Action: Optimize involvement</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="insight-card p-3 rounded-lg">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-chart-line text-blue-400 mt-1"></i>
+                                <div>
+                                    <div class="text-sm font-medium text-purple-300">Efficiency Trend</div>
+                                    <div class="text-xs text-gray-300 mt-1">
+                                        Meeting efficiency up 12% this week
+                                    </div>
+                                    <div class="text-xs text-blue-400 mt-1">Best day: Tuesday</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Meeting Assistant -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                <i class="fas fa-robot mr-3"></i>AI Meeting Assistant
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Live Transcription -->
+                <div class="meeting-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-green-300">Live Transcription</h3>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-red-500 rounded-full pulse-animation"></div>
+                            <span class="text-xs text-red-400">Recording</span>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-4 h-64 overflow-y-auto mb-4">
+                        <div class="space-y-3">
+                            <div class="transcript-highlight p-2 rounded">
+                                <div class="flex items-center space-x-2 mb-1">
+                                    <span class="text-xs text-green-400">Sarah Johnson</span>
+                                    <span class="text-xs text-gray-400">10:23 AM</span>
+                                </div>
+                                <p class="text-sm text-gray-300">
+                                    The AI integration is performing exceptionally well with 94.7% accuracy on predictions. 
+                                    We should consider expanding this to other modules.
+                                </p>
+                            </div>
+                            
+                            <div class="transcript-highlight p-2 rounded">
+                                <div class="flex items-center space-x-2 mb-1">
+                                    <span class="text-xs text-blue-400">Mike Chen</span>
+                                    <span class="text-xs text-gray-400">10:25 AM</span>
+                                </div>
+                                <p class="text-sm text-gray-300">
+                                    I agree. The predictive analytics engine has already saved us $1.8M in resource optimization. 
+                                    The ROI is clear.
+                                </p>
+                            </div>
+                            
+                            <div class="transcript-highlight p-2 rounded">
+                                <div class="flex items-center space-x-2 mb-1">
+                                    <span class="text-xs text-purple-400">Lisa Wong</span>
+                                    <span class="text-xs text-gray-400">10:27 AM</span>
+                                </div>
+                                <p class="text-sm text-gray-300">
+                                    From a design perspective, the collaboration hub has increased team productivity by 67%. 
+                                    Users love the real-time features.
+                                </p>
+                            </div>
+                            
+                            <div class="bg-yellow-600/10 p-2 rounded border-l-2 border-yellow-500">
+                                <div class="flex items-center space-x-2 mb-1">
+                                    <i class="fas fa-microphone text-yellow-400 text-xs"></i>
+                                    <span class="text-xs text-yellow-400">Speaking...</span>
+                                </div>
+                                <p class="text-sm text-gray-400 italic">
+                                    The next phase should focus on...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="toggleRecording()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-all">
+                            <i class="fas fa-stop mr-2"></i>Stop Recording
+                        </button>
+                        <button onclick="saveTranscript()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-all">
+                            <i class="fas fa-save mr-2"></i>Save
+                        </button>
+                        <button onclick="shareTranscript()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-all">
+                            <i class="fas fa-share mr-2"></i>Share
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AI Action Items -->
+                <div class="meeting-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-yellow-300">AI-Generated Action Items</h3>
+                        <span class="bg-yellow-600/20 text-yellow-400 text-xs px-2 py-1 rounded-full">7 New</span>
+                    </div>
+                    <div class="space-y-3 max-h-64 overflow-y-auto">
+                        <div class="action-item p-3 rounded-lg">
+                            <div class="flex items-start space-x-2">
+                                <input type="checkbox" class="mt-1" onchange="updateActionItem(this)">
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-yellow-300">Expand AI Integration</div>
+                                    <div class="text-xs text-gray-400">Integrate predictive analytics into remaining modules</div>
+                                    <div class="flex items-center space-x-3 mt-1">
+                                        <span class="text-xs text-purple-400">
+                                            <i class="fas fa-user mr-1"></i>Sarah Johnson
+                                        </span>
+                                        <span class="text-xs text-blue-400">
+                                            <i class="fas fa-calendar mr-1"></i>Due: Next Week
+                                        </span>
+                                        <span class="text-xs text-green-400">
+                                            <i class="fas fa-flag mr-1"></i>High Priority
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-item p-3 rounded-lg">
+                            <div class="flex items-start space-x-2">
+                                <input type="checkbox" class="mt-1" onchange="updateActionItem(this)">
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-yellow-300">Resource Optimization Report</div>
+                                    <div class="text-xs text-gray-400">Document $1.8M savings and optimization strategies</div>
+                                    <div class="flex items-center space-x-3 mt-1">
+                                        <span class="text-xs text-purple-400">
+                                            <i class="fas fa-user mr-1"></i>Mike Chen
+                                        </span>
+                                        <span class="text-xs text-blue-400">
+                                            <i class="fas fa-calendar mr-1"></i>Due: Friday
+                                        </span>
+                                        <span class="text-xs text-orange-400">
+                                            <i class="fas fa-flag mr-1"></i>Medium
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-item p-3 rounded-lg">
+                            <div class="flex items-start space-x-2">
+                                <input type="checkbox" class="mt-1" onchange="updateActionItem(this)">
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-yellow-300">User Feedback Analysis</div>
+                                    <div class="text-xs text-gray-400">Analyze 67% productivity increase in collaboration hub</div>
+                                    <div class="flex items-center space-x-3 mt-1">
+                                        <span class="text-xs text-purple-400">
+                                            <i class="fas fa-user mr-1"></i>Lisa Wong
+                                        </span>
+                                        <span class="text-xs text-blue-400">
+                                            <i class="fas fa-calendar mr-1"></i>Due: Thursday
+                                        </span>
+                                        <span class="text-xs text-green-400">
+                                            <i class="fas fa-flag mr-1"></i>High
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-item p-3 rounded-lg opacity-60">
+                            <div class="flex items-start space-x-2">
+                                <input type="checkbox" checked class="mt-1">
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-gray-400 line-through">Complete Phase 3 Development</div>
+                                    <div class="text-xs text-gray-500">All AI systems deployed and functional</div>
+                                    <div class="flex items-center space-x-3 mt-1">
+                                        <span class="text-xs text-green-400">
+                                            <i class="fas fa-check mr-1"></i>Completed
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex space-x-2">
+                        <button onclick="exportActionItems()" class="flex-1 bg-yellow-600 hover:bg-yellow-700 py-2 rounded-lg text-sm transition-all">
+                            <i class="fas fa-download mr-2"></i>Export Actions
+                        </button>
+                        <button onclick="assignActions()" class="flex-1 bg-purple-600 hover:bg-purple-700 py-2 rounded-lg text-sm transition-all">
+                            <i class="fas fa-user-plus mr-2"></i>Assign to Team
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Meeting Analytics Dashboard -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                <i class="fas fa-chart-line mr-3"></i>Meeting Analytics Dashboard
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Meeting Efficiency Trends -->
+                <div class="glass-morphism rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-green-300 mb-4">Meeting Efficiency Trends</h3>
+                    <div class="h-64" id="efficiencyTrendsChart"></div>
+                </div>
+
+                <!-- Participation Analysis -->
+                <div class="glass-morphism rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-emerald-300 mb-4">Team Participation Analysis</h3>
+                    <div class="h-64" id="participationChart"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Smart Meeting Scheduler -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                <i class="fas fa-calendar-check mr-3"></i>Smart Meeting Scheduler
+            </h2>
+            <div class="meeting-card rounded-xl p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- AI Suggestions -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-green-300 mb-4">AI Optimization Suggestions</h3>
+                        <div class="space-y-3">
+                            <div class="bg-white/5 p-3 rounded-lg">
+                                <div class="flex items-start space-x-2">
+                                    <i class="fas fa-lightbulb text-yellow-400 mt-1"></i>
+                                    <div>
+                                        <div class="text-sm font-medium text-green-300">Optimal Meeting Time</div>
+                                        <div class="text-xs text-gray-400 mt-1">
+                                            Tuesday 10:00 AM has 89% attendance rate
+                                        </div>
+                                        <div class="text-xs text-green-400 mt-1">Efficiency: +23%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white/5 p-3 rounded-lg">
+                                <div class="flex items-start space-x-2">
+                                    <i class="fas fa-clock text-blue-400 mt-1"></i>
+                                    <div>
+                                        <div class="text-sm font-medium text-green-300">Duration Optimization</div>
+                                        <div class="text-xs text-gray-400 mt-1">
+                                            45-minute meetings increase focus by 34%
+                                        </div>
+                                        <div class="text-xs text-blue-400 mt-1">Time saved: 2.5 hours/week</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white/5 p-3 rounded-lg">
+                                <div class="flex items-start space-x-2">
+                                    <i class="fas fa-users text-purple-400 mt-1"></i>
+                                    <div>
+                                        <div class="text-sm font-medium text-green-300">Participant Optimization</div>
+                                        <div class="text-xs text-gray-400 mt-1">
+                                            Reduce meeting size by 20% for faster decisions
+                                        </div>
+                                        <div class="text-xs text-purple-400 mt-1">Decision speed: +45%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Schedule -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-blue-300 mb-4">Quick Schedule</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-sm text-gray-300">Meeting Type</label>
+                                <select class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 mt-1">
+                                    <option>Team Standup</option>
+                                    <option>Project Review</option>
+                                    <option>Client Meeting</option>
+                                    <option>Brainstorming Session</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-300">Duration</label>
+                                <select class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 mt-1">
+                                    <option>15 minutes</option>
+                                    <option>30 minutes</option>
+                                    <option>45 minutes</option>
+                                    <option>60 minutes</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-300">Participants</label>
+                                <input type="text" placeholder="Add team members..." 
+                                       class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 mt-1">
+                            </div>
+                            <button onclick="scheduleSmartMeeting()" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded-lg transition-all">
+                                <i class="fas fa-magic mr-2"></i>AI Optimize & Schedule
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Schedule -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-purple-300 mb-4">Today's Schedule</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center space-x-3 p-2 bg-white/5 rounded">
+                                <div class="text-xs text-gray-400">9:00 AM</div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-purple-300">Daily Standup</div>
+                                    <div class="text-xs text-gray-400">Dev Team • 15 min</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 p-2 bg-white/5 rounded">
+                                <div class="text-xs text-gray-400">10:30 AM</div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-purple-300">Design Review</div>
+                                    <div class="text-xs text-gray-400">Design Team • 45 min</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 p-2 bg-white/5 rounded">
+                                <div class="text-xs text-gray-400">2:00 PM</div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-purple-300">Sprint Planning</div>
+                                    <div class="text-xs text-gray-400">All Teams • 60 min</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 p-2 bg-white/5 rounded">
+                                <div class="text-xs text-gray-400">4:00 PM</div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-purple-300">Retrospective</div>
+                                    <div class="text-xs text-gray-400">All Hands • 45 min</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-morphism border-t border-white/10 mt-12">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-video text-green-400"></i>
+                        <span class="text-sm text-green-300">Smart Meeting Automation v2.0</span>
+                    </div>
+                    <div class="text-sm text-gray-400">156 hours saved • 247 action items • 89.3% efficiency</div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="exportMeetingReport()" class="text-sm bg-green-600/20 hover:bg-green-600/30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-download mr-2"></i>Meeting Report
+                    </button>
+                    <button onclick="configureSettings()" class="text-sm bg-emerald-600/20 hover:bg-emerald-600/30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Smart Meeting Automation
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            startRealTimeUpdates();
+            initializeAIAssistant();
+        });
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Efficiency Trends Chart
+            const efficiencyCtx = document.getElementById('efficiencyTrendsChart').getContext('2d');
+            new Chart(efficiencyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                    datasets: [
+                        {
+                            label: 'Meeting Efficiency %',
+                            data: [82, 85, 89, 87, 89],
+                            borderColor: 'rgb(34, 197, 94)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Attendance Rate %',
+                            data: [88, 92, 94, 91, 93],
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'rgba(255, 255, 255, 0.7)' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 75,
+                            max: 100,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        }
+                    }
+                }
+            });
+
+            // Participation Chart
+            const participationData = [{
+                values: [25, 20, 18, 15, 12, 10],
+                labels: ['Sarah Johnson', 'Mike Chen', 'Lisa Wong', 'John Davis', 'Emma Wilson', 'Others'],
+                type: 'pie',
+                marker: {
+                    colors: [
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(139, 92, 246, 0.8)',
+                        'rgba(236, 72, 153, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(107, 114, 128, 0.8)'
+                    ]
+                }
+            }];
+
+            const participationLayout = {
+                title: 'Meeting Participation Distribution',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: 'white' }
+            };
+
+            Plotly.newPlot('participationChart', participationData, participationLayout, {displayModeBar: false});
+        }
+
+        // Real-Time Updates
+        function startRealTimeUpdates() {
+            setInterval(() => {
+                updateMeetingStats();
+            }, 10000);
+        }
+
+        function updateMeetingStats() {
+            // Simulate real-time meeting statistics updates
+            const efficiencyElement = document.querySelector('.text-green-400');
+            const currentEfficiency = parseFloat(efficiencyElement.textContent);
+            const newEfficiency = Math.min(95, currentEfficiency + (Math.random() * 2 - 1));
+            efficiencyElement.textContent = newEfficiency.toFixed(1) + '%';
+        }
+
+        // AI Assistant Initialization
+        function initializeAIAssistant() {
+            console.log('🤖 Smart Meeting AI Assistant initialized');
+            console.log('📊 Analyzing meeting patterns for optimization');
+            console.log('🎯 94.7% transcription accuracy achieved');
+        }
+
+        // Interactive Functions
+        function startSmartMeeting() {
+            showNotification('🚀 Launching AI-powered smart meeting with real-time assistance...', 'info');
+        }
+
+        function joinMeeting(meetingId) {
+            showNotification(`🎥 Joining meeting: ${meetingId} with AI-enhanced features...`, 'info');
+        }
+
+        function watchMeeting(meetingId) {
+            showNotification(`👀 Opening observer mode for: ${meetingId}`, 'info');
+        }
+
+        function prepareMeeting(meetingId) {
+            showNotification(`📋 AI preparing meeting materials and agenda for: ${meetingId}`, 'info');
+        }
+
+        function toggleRecording() {
+            showNotification('⏹️ Meeting recording stopped and processed by AI', 'success');
+        }
+
+        function saveTranscript() {
+            showNotification('💾 Meeting transcript saved with AI-generated summary', 'success');
+        }
+
+        function shareTranscript() {
+            showNotification('📤 Meeting transcript shared with participants', 'success');
+        }
+
+        function updateActionItem(checkbox) {
+            if (checkbox.checked) {
+                showNotification('✅ Action item marked as complete and logged', 'success');
+            }
+        }
+
+        function exportActionItems() {
+            showNotification('📄 Exporting action items with AI prioritization...', 'info');
+        }
+
+        function assignActions() {
+            showNotification('👥 AI assigning action items to optimal team members...', 'info');
+        }
+
+        function scheduleSmartMeeting() {
+            showNotification('🧠 AI optimizing meeting schedule and sending invitations...', 'info');
+        }
+
+        function exportMeetingReport() {
+            showNotification('📊 Generating comprehensive meeting analytics report...', 'info');
+        }
+
+        function configureSettings() {
+            showNotification('⚙️ Opening meeting automation settings...', 'info');
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-500 ${
+                type === 'success' ? 'bg-green-600' :
+                type === 'warning' ? 'bg-yellow-600' :
+                type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' :
+                        type === 'warning' ? 'fa-exclamation-triangle' :
+                        type === 'error' ? 'fa-times-circle' : 'fa-info-circle'
+                    }"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

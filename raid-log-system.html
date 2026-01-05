@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAID Log Management - AI PPM Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        .sidebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+        
+        .raid-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .raid-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .risk-high { border-left-color: #ef4444; }
+        .risk-medium { border-left-color: #f59e0b; }
+        .risk-low { border-left-color: #10b981; }
+        
+        .assumption-high { border-left-color: #8b5cf6; }
+        .assumption-medium { border-left-color: #a78bfa; }
+        .assumption-low { border-left-color: #c4b5fd; }
+        
+        .issue-high { border-left-color: #dc2626; }
+        .issue-medium { border-left-color: #f87171; }
+        .issue-low { border-left-color: #fca5a5; }
+        
+        .dependency-high { border-left-color: #0ea5e9; }
+        .dependency-medium { border-left-color: #38bdf8; }
+        .dependency-low { border-left-color: #7dd3fc; }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-active { background: #fef3c7; color: #92400e; }
+        .status-monitoring { background: #dbeafe; color: #1e40af; }
+        .status-mitigated { background: #d1fae5; color: #065f46; }
+        .status-closed { background: #f3f4f6; color: #374151; }
+        .status-escalated { background: #fee2e2; color: #991b1b; }
+        
+        .probability-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .prob-high { background: #fee2e2; color: #991b1b; }
+        .prob-medium { background: #fed7aa; color: #9a3412; }
+        .prob-low { background: #dcfce7; color: #166534; }
+        
+        .impact-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .impact-critical { background: #fecaca; color: #7f1d1d; }
+        .impact-high { background: #fee2e2; color: #991b1b; }
+        .impact-medium { background: #fed7aa; color: #9a3412; }
+        .impact-low { background: #dcfce7; color: #166534; }
+        
+        .risk-score {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 50px;
+        }
+        
+        .score-critical { background: #7f1d1d; color: white; }
+        .score-high { background: #dc2626; color: white; }
+        .score-medium { background: #f59e0b; color: white; }
+        .score-low { background: #10b981; color: white; }
+        
+        .ai-insight {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border: 1px solid #667eea30;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+        
+        .ai-insight-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .mitigation-card {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+        }
+        
+        .mitigation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .timeline-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .urgency-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .urgency-critical { background: #ef4444; }
+        .urgency-high { background: #f59e0b; }
+        .urgency-medium { background: #3b82f6; }
+        .urgency-low { background: #10b981; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .tab-button {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .heatmap-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .heatmap-cell:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        
+        .risk-timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .timeline-track {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e5e7eb;
+            transform: translateY(-50%);
+        }
+        
+        .timeline-point {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #667eea;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .timeline-point:hover {
+            transform: translate(-50%, -50%) scale(1.2);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .prediction-confidence {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        
+        .confidence-bar {
+            flex: 1;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #667eea 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .action-button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+            background: white;
+        }
+        
+        .action-button:hover {
+            background: #f9fafb;
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="p-6">
+            <h2 class="text-2xl font-bold text-white mb-8">AI PPM Tool</h2>
+            
+            <nav class="space-y-2">
+                <a href="#" class="flex items-center text-white/80 hover:text-white p-3 rounded-lg transition">
+                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="#" class="flex items-center text-white/80 hover:text-white p-3 rounded-lg transition">
+                    <i class="fas fa-project-diagram w-5 mr-3"></i>
+                    Projects
+                </a>
+                <a href="#" class="flex items-center text-white/80 hover:text-white p-3 rounded-lg transition">
+                    <i class="fas fa-users w-5 mr-3"></i>
+                    Resources
+                </a>
+                <a href="#" class="flex items-center text-white/80 hover:text-white p-3 rounded-lg transition">
+                    <i class="fas fa-chart-gantt w-5 mr-3"></i>
+                    Gantt Charts
+                </a>
+                <a href="#" class="flex items-center text-white bg-white/10 p-3 rounded-lg">
+                    <i class="fas fa-shield-alt w-5 mr-3"></i>
+                    RAID Logs
+                </a>
+                <a href="#" class="flex items-center text-white/80 hover:text-white p-3 rounded-lg transition">
+                    <i class="fas fa-file-alt w-5 mr-3"></i>
+                    Reports
+                </a>
+                <a href="#" class="flex items-center text-white/80 hover:text-white p-3 rounded-lg transition">
+                    <i class="fas fa-robot w-5 mr-3"></i>
+                    AI Assistant
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="px-6 py-4 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">RAID Log Management</h1>
+                    <p class="text-gray-600">AI-powered Risks, Assumptions, Issues, and Dependencies tracking with predictive analytics</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="openAIMitigation()" class="action-button">
+                        <i class="fas fa-magic mr-2"></i>AI Mitigation
+                    </button>
+                    <button onclick="generateReport()" class="action-button">
+                        <i class="fas fa-file-download mr-2"></i>Generate Report
+                    </button>
+                    <button onclick="openRAIDModal()" class="btn-primary">
+                        <i class="fas fa-plus mr-2"></i>Add RAID Item
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="p-6">
+            <!-- AI Risk Prediction Dashboard -->
+            <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 mb-6 text-white">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-2xl font-bold mb-2">AI Risk Intelligence Center</h2>
+                        <p class="text-white/90 mb-4">Predictive analytics identifying 87% of risks before they materialize</p>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <p class="text-white/80 text-sm">Critical Risks</p>
+                                <p class="text-3xl font-bold">3</p>
+                            </div>
+                            <div>
+                                <p class="text-white/80 text-sm">AI Predictions</p>
+                                <p class="text-3xl font-bold">12</p>
+                            </div>
+                            <div>
+                                <p class="text-white/80 text-sm">Mitigation Success</p>
+                                <p class="text-3xl font-bold">94%</p>
+                            </div>
+                            <div>
+                                <p class="text-white/80 text-sm">Confidence Score</p>
+                                <p class="text-3xl font-bold">91%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <button onclick="runAIAnalysis()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-brain mr-2"></i>Run AI Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RAID Overview Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg p-6 shadow-sm border-t-4 border-red-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Risks</p>
+                            <p class="text-2xl font-bold text-gray-900">24</p>
+                            <p class="text-xs text-red-600 mt-1">3 Critical</p>
+                        </div>
+                        <div class="text-red-500 text-3xl">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-sm border-t-4 border-purple-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Assumptions</p>
+                            <p class="text-2xl font-bold text-gray-900">18</p>
+                            <p class="text-xs text-purple-600 mt-1">5 Validated</p>
+                        </div>
+                        <div class="text-purple-500 text-3xl">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-sm border-t-4 border-orange-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Issues</p>
+                            <p class="text-2xl font-bold text-gray-900">8</p>
+                            <p class="text-xs text-orange-600 mt-1">2 Escalated</p>
+                        </div>
+                        <div class="text-orange-500 text-3xl">
+                            <i class="fas fa-bug"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-sm border-t-4 border-blue-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Dependencies</p>
+                            <p class="text-2xl font-bold text-gray-900">15</p>
+                            <p class="text-xs text-blue-600 mt-1">4 External</p>
+                        </div>
+                        <div class="text-blue-500 text-3xl">
+                            <i class="fas fa-link"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter and View Options -->
+            <div class="bg-white rounded-lg p-4 mb-6 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex flex-wrap gap-2">
+                        <button class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm">All RAID</button>
+                        <button onclick="filterRAID('risks')" class="action-button">Risks</button>
+                        <button onclick="filterRAID('assumptions')" class="action-button">Assumptions</button>
+                        <button onclick="filterRAID('issues')" class="action-button">Issues</button>
+                        <button onclick="filterRAID('dependencies')" class="action-button">Dependencies</button>
+                        <div class="h-6 w-px bg-gray-300 mx-2"></div>
+                        <button onclick="filterUrgency('critical')" class="action-button text-red-600">Critical</button>
+                        <button onclick="filterUrgency('high')" class="action-button text-orange-600">High</button>
+                        <button onclick="filterUrgency('medium')" class="action-button text-blue-600">Medium</button>
+                        <button onclick="filterUrgency('low')" class="action-button text-green-600">Low</button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <select class="form-input max-w-xs">
+                            <option>Sort by: Risk Score</option>
+                            <option>Sort by: Date Created</option>
+                            <option>Sort by: Status</option>
+                            <option>Sort by: Probability</option>
+                        </select>
+                        <div class="flex bg-gray-100 rounded-lg">
+                            <button onclick="setView('cards')" class="px-3 py-2 rounded-l-lg bg-white text-purple-600">
+                                <i class="fas fa-th-large"></i>
+                            </button>
+                            <button onclick="setView('table')" class="px-3 py-2 rounded-r-lg">
+                                <i class="fas fa-table"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Heatmap -->
+            <div class="bg-white rounded-lg p-6 mb-6 shadow-sm">
+                <h3 class="text-lg font-semibold mb-4">Risk Matrix Heatmap</h3>
+                <div class="grid grid-cols-5 gap-4">
+                    <div></div>
+                    <div class="text-center text-sm font-medium">Very Low</div>
+                    <div class="text-center text-sm font-medium">Low</div>
+                    <div class="text-center text-sm font-medium">Medium</div>
+                    <div class="text-center text-sm font-medium">High</div>
+                    <div class="text-center text-sm font-medium">Critical</div>
+                </div>
+                <div class="grid grid-cols-5 gap-2">
+                    <div class="text-sm font-medium pr-4">Critical</div>
+                    <div class="heatmap-cell" style="background: #fef3c7; color: #92400e;">1</div>
+                    <div class="heatmap-cell" style="background: #fed7aa; color: #9a3412;">2</div>
+                    <div class="heatmap-cell" style="background: #fdba74; color: #92400e;">3</div>
+                    <div class="heatmap-cell" style="background: #f87171; color: #991b1b;">2</div>
+                    <div class="heatmap-cell" style="background: #dc2626; color: white;">3</div>
+                </div>
+                <div class="grid grid-cols-5 gap-2">
+                    <div class="text-sm font-medium pr-4">High</div>
+                    <div class="heatmap-cell" style="background: #dcfce7; color: #166534;">0</div>
+                    <div class="heatmap-cell" style="background: #fef3c7; color: #92400e;">1</div>
+                    <div class="heatmap-cell" style="background: #fed7aa; color: #9a3412;">3</div>
+                    <div class="heatmap-cell" style="background: #fdba74; color: #92400e;">4</div>
+                    <div class="heatmap-cell" style="background: #f87171; color: #991b1b;">1</div>
+                </div>
+                <div class="grid grid-cols-5 gap-2">
+                    <div class="text-sm font-medium pr-4">Medium</div>
+                    <div class="heatmap-cell" style="background: #dcfce7; color: #166534;">0</div>
+                    <div class="heatmap-cell" style="background: #dcfce7; color: #166534;">2</div>
+                    <div class="heatmap-cell" style="background: #fef3c7; color: #92400e;">2</div>
+                    <div class="heatmap-cell" style="background: #fed7aa; color: #9a3412;">1</div>
+                    <div class="heatmap-cell" style="background: #fdba74; color: #92400e;">0</div>
+                </div>
+                <div class="grid grid-cols-5 gap-2">
+                    <div class="text-sm font-medium pr-4">Low</div>
+                    <div class="heatmap-cell" style="background: #dcfce7; color: #166534;">1</div>
+                    <div class="heatmap-cell" style="background: #dcfce7; color: #166534;">0</div>
+                    <div class="heatmap-cell" style="background: #dcfce7; color: #166534;">1</div>
+                    <div class="heatmap-cell" style="background: #fef3c7; color: #92400e;">0</div>
+                    <div class="heatmap-cell" style="background: #fed7aa; color: #9a3412;">0</div>
+                </div>
+                <div class="grid grid-cols-5 gap-2">
+                    <div class="text-sm font-medium pr-4">Very Low</div>
+                    <div class="heatmap-cell" style="background: #dcfce7; color: #166534;">2</div>
+                    <div class="heatmap-cell" style="background: #dcfce7; color: #166534;">1</div>
+                    <div class="heatmap-cell" style="background: #dcfce7; color: #166534;">0</div>
+                    <div class="heatmap-cell" style="background: #dcfce7; color: #166534;">0</div>
+                    <div class="heatmap-cell" style="background: #fef3c7; color: #92400e;">0</div>
+                </div>
+                <p class="text-xs text-gray-600 mt-4">Numbers represent count of risks in each probability/impact category</p>
+            </div>
+
+            <!-- RAID Items Grid -->
+            <div id="raidGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- RAID items will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- RAID Modal -->
+    <div id="raidModal" class="modal">
+        <div class="modal-content">
+            <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 rounded-t-16">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">Add RAID Item</h2>
+                    <button onclick="closeRAIDModal()" class="text-white/80 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <!-- Tabs -->
+                <div class="flex border-b border-gray-200 mb-6">
+                    <button class="tab-button active" onclick="switchRAIDTab('risk')">Risk</button>
+                    <button class="tab-button" onclick="switchRAIDTab('assumption')">Assumption</button>
+                    <button class="tab-button" onclick="switchRAIDTab('issue')">Issue</button>
+                    <button class="tab-button" onclick="switchRAIDTab('dependency')">Dependency</button>
+                </div>
+
+                <!-- Tab Content -->
+                <div id="raidTabContent">
+                    <!-- Risk Tab -->
+                    <div id="riskTab" class="tab-content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Risk Title *</label>
+                                <input type="text" class="form-input" id="riskTitle" placeholder="Enter risk title">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                <select class="form-input" id="riskCategory">
+                                    <option>Technical</option>
+                                    <option>Financial</option>
+                                    <option>Schedule</option>
+                                    <option>Resource</option>
+                                    <option>External</option>
+                                    <option>Quality</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Probability</label>
+                                <select class="form-input" id="riskProbability">
+                                    <option value="very-low">Very Low (1-10%)</option>
+                                    <option value="low">Low (11-30%)</option>
+                                    <option value="medium">Medium (31-60%)</option>
+                                    <option value="high">High (61-90%)</option>
+                                    <option value="very-high">Very High (91-100%)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Impact</label>
+                                <select class="form-input" id="riskImpact">
+                                    <option value="very-low">Very Low</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Risk Owner</label>
+                                <input type="text" class="form-input" id="riskOwner" placeholder="Assign risk owner">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>
+                                <select class="form-input" id="riskProject">
+                                    <option>E-commerce Platform Redesign</option>
+                                    <option>Mobile Banking App</option>
+                                    <option>Cloud Migration Initiative</option>
+                                    <option>AI Customer Service Bot</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Risk Description</label>
+                            <textarea class="form-input" id="riskDescription" rows="3" placeholder="Describe the risk in detail"></textarea>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mitigation Strategies</label>
+                            <div id="mitigationStrategies" class="space-y-2">
+                                <div class="flex gap-2">
+                                    <input type="text" class="form-input" placeholder="Enter mitigation strategy">
+                                    <button onclick="removeMitigation(this)" class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button onclick="addMitigation()" class="mt-2 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+                                <i class="fas fa-plus mr-2"></i>Add Mitigation Strategy
+                            </button>
+                        </div>
+
+                        <div class="mt-4">
+                            <button onclick="aiAssessRisk()" class="btn-primary mr-3">
+                                <i class="fas fa-brain mr-2"></i>AI Risk Assessment
+                            </button>
+                            <span class="text-sm text-gray-600">Let AI analyze and enhance your risk assessment</span>
+                        </div>
+                    </div>
+
+                    <!-- Other tabs (Assumption, Issue, Dependency) would have similar forms -->
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <button onclick="closeRAIDModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button onclick="saveRAIDDraft()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Save Draft
+                    </button>
+                    <button onclick="submitRAIDItem()" class="btn-primary">
+                        Add RAID Item
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="project-management-data.js"></script>
+    <script>
+        // Sample RAID data
+        const raidItems = [
+            {
+                id: 1,
+                type: 'risk',
+                title: 'Scope creep due to changing requirements',
+                description: 'Client frequently requesting additional features outside original scope',
+                category: 'Scope',
+                probability: 'high',
+                impact: 'high',
+                riskScore: 16,
+                status: 'active',
+                owner: 'Sarah Johnson',
+                project: 'E-commerce Platform Redesign',
+                dateCreated: '2024-01-15',
+                lastUpdated: '2024-03-10',
+                aiPrediction: {
+                    willMaterialize: true,
+                    confidence: 87,
+                    timeframe: '2-3 weeks',
+                    financialImpact: '$45,000',
+                    recommendedActions: ['Implement change control process', 'Schedule regular scope review meetings']
+                },
+                mitigations: [
+                    { strategy: 'Implement strict change control process', status: 'in-progress', owner: 'Sarah Johnson' },
+                    { strategy: 'Regular scope review with stakeholders', status: 'planned', owner: 'Mike Chen' }
+                ]
+            },
+            {
+                id: 2,
+                type: 'risk',
+                title: 'Key developer availability during critical phase',
+                description: 'Lead frontend developer has planned vacation during final testing phase',
+                category: 'Resource',
+                probability: 'medium',
+                impact: 'critical',
+                riskScore: 15,
+                status: 'monitoring',
+                owner: 'David Kumar',
+                project: 'Mobile Banking App',
+                dateCreated: '2024-02-01',
+                lastUpdated: '2024-03-15',
+                aiPrediction: {
+                    willMaterialize: false,
+                    confidence: 72,
+                    timeframe: '6-8 weeks',
+                    financialImpact: '$25,000',
+                    recommendedActions: ['Cross-train backup developer', 'Adjust vacation schedule']
+                },
+                mitigations: [
+                    { strategy: 'Cross-train backup developer', status: 'completed', owner: 'David Kumar' },
+                    { strategy: 'Adjust critical timeline', status: 'in-progress', owner: 'Mike Chen' }
+                ]
+            },
+            {
+                id: 3,
+                type: 'assumption',
+                title: 'Third-party payment gateway API stability',
+                description: 'Assuming payment gateway will handle peak transaction volume',
+                category: 'External',
+                validity: 'unvalidated',
+                impact: 'high',
+                status: 'active',
+                owner: 'Emily Rodriguez',
+                project: 'E-commerce Platform Redesign',
+                dateCreated: '2024-01-20',
+                lastUpdated: '2024-03-12',
+                aiPrediction: {
+                    validity: 78,
+                    riskLevel: 'medium',
+                    validationRequired: true,
+                    recommendedActions: ['Load testing with peak volumes', 'Backup payment provider']
+                }
+            },
+            {
+                id: 4,
+                type: 'issue',
+                title: 'Database performance degradation under load',
+                description: 'Current database configuration struggling with concurrent user load',
+                category: 'Technical',
+                severity: 'high',
+                status: 'escalated',
+                owner: 'Jennifer Lee',
+                project: 'Mobile Banking App',
+                dateCreated: '2024-02-15',
+                lastUpdated: '2024-03-18',
+                aiPrediction: {
+                    resolutionTime: '5-7 days',
+                    costImpact: '$15,000',
+                    affectedUsers: '2,500+',
+                    recommendedActions: ['Database optimization', 'Consider read replicas']
+                },
+                resolutions: [
+                    { action: 'Database indexing optimization', status: 'in-progress', owner: 'Jennifer Lee' },
+                    { action: 'Query performance analysis', status: 'completed', owner: 'Alex Thompson' }
+                ]
+            },
+            {
+                id: 5,
+                type: 'dependency',
+                title: 'Security compliance approval from external auditor',
+                description: 'Final security audit and approval required for production deployment',
+                category: 'External',
+                criticality: 'high',
+                status: 'active',
+                owner: 'Lisa Park',
+                project: 'Security Compliance Upgrade',
+                dateCreated: '2024-01-10',
+                lastUpdated: '2024-03-14',
+                aiPrediction: {
+                    delayProbability: 35,
+                    expectedDelay: '2-3 weeks',
+                    mitigationImpact: 'High',
+                    recommendedActions: ['Early engagement with auditor', 'Pre-audit preparation']
+                }
+            },
+            {
+                id: 6,
+                type: 'risk',
+                title: 'AI model accuracy below acceptable threshold',
+                description: 'Current AI customer service bot achieving only 78% accuracy',
+                category: 'Technical',
+                probability: 'medium',
+                impact: 'high',
+                riskScore: 12,
+                status: 'mitigated',
+                owner: 'Jessica Jackson',
+                project: 'AI Customer Service Bot',
+                dateCreated: '2024-02-05',
+                lastUpdated: '2024-03-16',
+                aiPrediction: {
+                    willMaterialize: false,
+                    confidence: 91,
+                    timeframe: 'N/A',
+                    financialImpact: '$0',
+                    recommendedActions: ['Continue model training', 'Expand training dataset']
+                },
+                mitigations: [
+                    { strategy: 'Expand training dataset', status: 'completed', owner: 'Jessica Jackson' },
+                    { strategy: 'Model hyperparameter tuning', status: 'completed', owner: 'Michelle Anderson' }
+                ]
+            }
+        ];
+
+        // Load RAID items on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRAIDItems();
+        });
+
+        function loadRAIDItems() {
+            const grid = document.getElementById('raidGrid');
+            grid.innerHTML = '';
+            
+            raidItems.forEach(item => {
+                const card = createRAIDCard(item);
+                grid.appendChild(card);
+            });
+        }
+
+        function createRAIDCard(item) {
+            const card = document.createElement('div');
+            card.className = `raid-card ${item.type}-${item.probability || item.impact || item.severity || item.criticality}`;
+            card.style.position = 'relative';
+            
+            const urgencyClass = item.type === 'risk' ? item.impact : 
+                               item.type === 'issue' ? item.severity : 
+                               item.type === 'dependency' ? item.criticality : 'medium';
+            
+            card.innerHTML = `
+                ${urgencyClass === 'critical' || urgencyClass === 'high' ? '<div class="urgency-indicator urgency-critical"></div>' : ''}
+                
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="text-xs font-semibold text-gray-500 uppercase">${item.type}</span>
+                        <h3 class="text-lg font-semibold text-gray-900 mt-1">${item.title}</h3>
+                    </div>
+                    <span class="status-badge status-${item.status}">${item.status}</span>
+                </div>
+                
+                <p class="text-sm text-gray-700 mb-4">${item.description}</p>
+                
+                ${item.type === 'risk' ? `
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="probability-badge prob-${item.probability}">${item.probability.replace('-', ' ')} probability</span>
+                        <span class="impact-badge impact-${item.impact}">${item.impact} impact</span>
+                    </div>
+                    <div class="text-center mb-3">
+                        <span class="risk-score score-${getRiskScoreLevel(item.riskScore)}">Score: ${item.riskScore}</span>
+                    </div>
+                ` : ''}
+                
+                <div class="flex items-center justify-between text-xs text-gray-600 mb-3">
+                    <span><i class="fas fa-user mr-1"></i>${item.owner}</span>
+                    <span><i class="fas fa-project-diagram mr-1"></i>${item.project}</span>
+                </div>
+                
+                ${item.aiPrediction ? `
+                    <div class="ai-insight">
+                        <div class="ai-insight-header">
+                            <i class="fas fa-brain"></i>
+                            <span>AI Prediction</span>
+                            <span class="text-xs bg-purple-600 text-white px-2 py-1 rounded-full">${item.aiPrediction.confidence || item.aiPrediction.validity}% confidence</span>
+                        </div>
+                        <div class="text-sm text-gray-700">
+                            ${item.type === 'risk' ? `
+                                <p class="mb-2"><strong>Will materialize:</strong> ${item.aiPrediction.willMaterialize ? 'Yes' : 'No'}</p>
+                                <p class="mb-2"><strong>Timeframe:</strong> ${item.aiPrediction.timeframe}</p>
+                                <p class="mb-2"><strong>Financial impact:</strong> ${item.aiPrediction.financialImpact}</p>
+                            ` : item.type === 'assumption' ? `
+                                <p class="mb-2"><strong>Validity score:</strong> ${item.aiPrediction.validity}%</p>
+                                <p class="mb-2"><strong>Risk level:</strong> ${item.aiPrediction.riskLevel}</p>
+                            ` : item.type === 'issue' ? `
+                                <p class="mb-2"><strong>Resolution time:</strong> ${item.aiPrediction.resolutionTime}</p>
+                                <p class="mb-2"><strong>Cost impact:</strong> ${item.aiPrediction.costImpact}</p>
+                            ` : item.type === 'dependency' ? `
+                                <p class="mb-2"><strong>Delay probability:</strong> ${item.aiPrediction.delayProbability}%</p>
+                                <p class="mb-2"><strong>Expected delay:</strong> ${item.aiPrediction.expectedDelay}</p>
+                            ` : ''}
+                        </div>
+                    </div>
+                ` : ''}
+                
+                ${item.mitigations || item.resolutions ? `
+                    <div class="mt-3">
+                        <p class="text-sm font-medium text-gray-700 mb-2">${item.mitigations ? 'Mitigations:' : 'Resolutions:'}</p>
+                        ${(item.mitigations || item.resolutions).slice(0, 2).map(item => `
+                            <div class="mitigation-card">
+                                <div class="mitigation-header">
+                                    <span class="text-sm">${item.strategy || item.action}</span>
+                                    <span class="status-badge status-${item.status} text-xs">${item.status}</span>
+                                </div>
+                                <p class="text-xs text-gray-600">Owner: ${item.owner}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+                
+                <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+                    <div class="timeline-indicator">
+                        <i class="fas fa-clock mr-1"></i>
+                        Updated: ${formatDate(item.lastUpdated)}
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editRAIDItem(${item.id})" class="text-blue-600 hover:text-blue-800 text-sm">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                        <button onclick="viewRAIDDetails(${item.id})" class="text-purple-600 hover:text-purple-800 text-sm">
+                            <i class="fas fa-eye mr-1"></i>Details
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function getRiskScoreLevel(score) {
+            if (score >= 15) return 'critical';
+            if (score >= 10) return 'high';
+            if (score >= 5) return 'medium';
+            return 'low';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function openRAIDModal() {
+            document.getElementById('raidModal').classList.add('active');
+        }
+
+        function closeRAIDModal() {
+            document.getElementById('raidModal').classList.remove('active');
+        }
+
+        function switchRAIDTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').style.display = 'block';
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        function addMitigation() {
+            const container = document.getElementById('mitigationStrategies');
+            const mitigationHtml = `
+                <div class="flex gap-2">
+                    <input type="text" class="form-input" placeholder="Enter mitigation strategy">
+                    <button onclick="removeMitigation(this)" class="text-red-600 hover:text-red-800">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', mitigationHtml);
+        }
+
+        function removeMitigation(button) {
+            button.parentElement.remove();
+        }
+
+        function aiAssessRisk() {
+            console.log('AI assessing risk...');
+            // AI risk assessment logic
+        }
+
+        function submitRAIDItem() {
+            console.log('Submitting RAID item...');
+            // Submit logic
+        }
+
+        function saveRAIDDraft() {
+            console.log('Saving RAID draft...');
+            // Save draft logic
+        }
+
+        function filterRAID(type) {
+            console.log('Filtering RAID items by type:', type);
+            // Filter logic
+        }
+
+        function filterUrgency(urgency) {
+            console.log('Filtering RAID items by urgency:', urgency);
+            // Filter logic
+        }
+
+        function setView(viewType) {
+            console.log('Setting view to:', viewType);
+            // View toggle logic
+        }
+
+        function openAIMitigation() {
+            console.log('Opening AI mitigation...');
+            // AI mitigation modal
+        }
+
+        function generateReport() {
+            console.log('Generating RAID report...');
+            // Report generation logic
+        }
+
+        function runAIAnalysis() {
+            console.log('Running AI analysis...');
+            // AI analysis logic
+        }
+
+        function editRAIDItem(itemId) {
+            console.log('Editing RAID item:', itemId);
+            // Edit logic
+        }
+
+        function viewRAIDDetails(itemId) {
+            console.log('Viewing RAID item details:', itemId);
+            // View details logic
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('raidModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRAIDModal();
+            }
+        });
+    </script>
+</body>
+</html>

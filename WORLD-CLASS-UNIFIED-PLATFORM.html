@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProjectAI Pro - World-Class Unified Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .module-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+        .module-card:hover::before {
+            left: 100%;
+        }
+        .module-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+        }
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .status-online {
+            animation: online-pulse 2s infinite;
+        }
+        @keyframes online-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Advanced Navigation Header -->
+    <nav class="glass-effect shadow-xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-rocket text-purple-600 text-3xl mr-3 floating-animation"></i>
+                    <div>
+                        <span class="font-bold text-xl text-gray-800">ProjectAI Pro</span>
+                        <div class="flex items-center mt-1">
+                            <span class="w-2 h-2 bg-green-500 rounded-full status-online mr-2"></span>
+                            <span class="text-xs text-green-600 font-semibold">ALL SYSTEMS OPERATIONAL</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="openUnifiedDashboard()" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-purple-50 transition">
+                        <i class="fas fa-chart-line mr-1"></i> Dashboard
+                    </button>
+                    <button onclick="openAllProjects()" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-purple-50 transition">
+                        <i class="fas fa-project-diagram mr-1"></i> Projects
+                    </button>
+                    <button onclick="openIntelligenceHub()" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-purple-50 transition">
+                        <i class="fas fa-brain mr-1"></i> AI Hub
+                    </button>
+                    <button onclick="openCollaborationCenter()" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-purple-50 transition">
+                        <i class="fas fa-users mr-1"></i> Collaborate
+                    </button>
+                    <button onclick="launchWorldClassExperience()" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:from-purple-700 hover:to-indigo-700 pulse-glow transition">
+                        <i class="fas fa-crown mr-2"></i> LAUNCH PLATFORM
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Real-time Data -->
+    <div class="gradient-bg text-white py-16 relative overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-20"></div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold mb-6 slide-in">🚀 World-Class Enterprise Platform</h1>
+                <p class="text-xl mb-8 opacity-90">40+ AI Systems • Real-time Intelligence • Seamless Integration</p>
+                
+                <!-- Live Stats Dashboard -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                    <div class="glass-effect rounded-lg p-6 text-center">
+                        <i class="fas fa-dollar-sign text-3xl mb-3"></i>
+                        <div class="text-3xl font-bold counter" data-target="8400000">$0</div>
+                        <div class="text-sm opacity-80">Portfolio Value</div>
+                    </div>
+                    <div class="glass-effect rounded-lg p-6 text-center">
+                        <i class="fas fa-tasks text-3xl mb-3"></i>
+                        <div class="text-3xl font-bold counter" data-target="42">0</div>
+                        <div class="text-sm opacity-80">Active Projects</div>
+                    </div>
+                    <div class="glass-effect rounded-lg p-6 text-center">
+                        <i class="fas fa-users text-3xl mb-3"></i>
+                        <div class="text-3xl font-bold counter" data-target="156">0</div>
+                        <div class="text-sm opacity-80">Team Members</div>
+                    </div>
+                    <div class="glass-effect rounded-lg p-6 text-center">
+                        <i class="fas fa-robot text-3xl mb-3"></i>
+                        <div class="text-3xl font-bold counter" data-target="40">0</div>
+                        <div class="text-sm opacity-80">AI Systems</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- World-Class Experience Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        <!-- Strategic Command Center -->
+        <div class="glass-effect rounded-2xl shadow-xl p-8 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-bold text-gray-800">
+                    <i class="fas fa-crown text-yellow-500 mr-2"></i>
+                    Strategic Command Center
+                </h2>
+                <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold">
+                    <i class="fas fa-check-circle mr-1"></i> Enterprise Ready
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div onclick="launchPortfolioIntelligence()" class="module-card bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <i class="fas fa-chart-pie text-4xl"></i>
+                        <span class="bg-white/20 px-2 py-1 rounded text-xs">EXECUTIVE</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Portfolio Intelligence</h3>
+                    <p class="text-blue-100 mb-4">$8.4M portfolio with real-time optimization and strategic insights</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">Advanced Analytics</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+                
+                <div onclick="launchProgrammeCommand()" class="module-card bg-gradient-to-br from-green-500 to-green-700 text-white rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <i class="fas fa-sitemap text-4xl"></i>
+                        <span class="bg-white/20 px-2 py-1 rounded text-xs">STRATEGIC</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Programme Command</h3>
+                    <p class="text-green-100 mb-4">6 strategic programmes with 156% ROI and cross-functional optimization</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">Program Management</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+                
+                <div onclick="launchProjectHub()" class="module-card bg-gradient-to-br from-purple-500 to-purple-700 text-white rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <i class="fas fa-rocket text-4xl"></i>
+                        <span class="bg-white/20 px-2 py-1 rounded text-xs">OPERATIONAL</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Project Hub</h3>
+                    <p class="text-purple-100 mb-4">42 active projects with 17 integrated modules and real-time collaboration</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">Project Excellence</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Intelligence Suite -->
+        <div class="glass-effect rounded-2xl shadow-xl p-8 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-bold text-gray-800">
+                    <i class="fas fa-brain text-purple-600 mr-2"></i>
+                    AI Intelligence Suite
+                </h2>
+                <span class="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-semibold">
+                    94.7% Accuracy • 40+ Systems
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div onclick="launchEnhancedGantt()" class="module-card bg-gradient-to-br from-purple-100 to-purple-200 border-2 border-purple-300 rounded-xl p-4 text-center">
+                    <i class="fas fa-chart-gantt text-purple-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-gray-800">Enhanced Gantt</h4>
+                    <p class="text-sm text-gray-600">Interactive AI Scheduling</p>
+                </div>
+                
+                <div onclick="launchRAIDIntelligence()" class="module-card bg-gradient-to-br from-red-100 to-red-200 border-2 border-red-300 rounded-xl p-4 text-center">
+                    <i class="fas fa-fire text-red-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-gray-800">RAID Intelligence</h4>
+                    <p class="text-sm text-gray-600">3D Risk Analysis</p>
+                </div>
+                
+                <div onclick="launchPredictiveAnalytics()" class="module-card bg-gradient-to-br from-blue-100 to-blue-200 border-2 border-blue-300 rounded-xl p-4 text-center">
+                    <i class="fas fa-brain text-blue-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-gray-800">Predictive Analytics</h4>
+                    <p class="text-sm text-gray-600">94.7% Accuracy</p>
+                </div>
+                
+                <div onclick="launchScenarioPlanning()" class="module-card bg-gradient-to-br from-green-100 to-green-200 border-2 border-green-300 rounded-xl p-4 text-center">
+                    <i class="fas fa-magic text-green-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-gray-800">AI Scenario Planning</h4>
+                    <p class="text-sm text-gray-600">142% ROI</p>
+                </div>
+                
+                <div onclick="launchResourceOptimization()" class="module-card bg-gradient-to-br from-orange-100 to-orange-200 border-2 border-orange-300 rounded-xl p-4 text-center">
+                    <i class="fas fa-users-cog text-orange-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-gray-800">Resource Optimization</h4>
+                    <p class="text-sm text-gray-600">$1.8M Savings</p>
+                </div>
+                
+                <div onclick="launchExecutiveAI()" class="module-card bg-gradient-to-br from-indigo-100 to-indigo-200 border-2 border-indigo-300 rounded-xl p-4 text-center">
+                    <i class="fas fa-lightbulb text-indigo-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-gray-800">Executive AI</h4>
+                    <p class="text-sm text-gray-600">$4.7M Value</p>
+                </div>
+                
+                <div onclick="launchCollaborationHub()" class="module-card bg-gradient-to-br from-pink-100 to-pink-200 border-2 border-pink-300 rounded-xl p-4 text-center">
+                    <i class="fas fa-users text-pink-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-gray-800">Collaboration Hub</h4>
+                    <p class="text-sm text-gray-600">Real-time Sync</p>
+                </div>
+                
+                <div onclick="launchMeetingAutomation()" class="module-card bg-gradient-to-br from-yellow-100 to-yellow-200 border-2 border-yellow-300 rounded-xl p-4 text-center">
+                    <i class="fas fa-video text-yellow-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-gray-800">Meeting Automation</h4>
+                    <p class="text-sm text-gray-600">156 Hours Saved</p>
+                </div>
+                
+                <div onclick="launchVideoConference()" class="module-card bg-gradient-to-br from-teal-100 to-teal-200 border-2 border-teal-300 rounded-xl p-4 text-center">
+                    <i class="fas fa-video text-teal-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-gray-800">Video Conference</h4>
+                    <p class="text-sm text-gray-600">HD Quality</p>
+                </div>
+                
+                <div onclick="launchDocumentEditor()" class="module-card bg-gradient-to-br from-cyan-100 to-cyan-200 border-2 border-cyan-300 rounded-xl p-4 text-center">
+                    <i class="fas fa-file-alt text-cyan-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-gray-800">Document Editor</h4>
+                    <p class="text-sm text-gray-600">Real-time Co-edit</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complete Module Suite -->
+        <div class="glass-effect rounded-2xl shadow-xl p-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-bold text-gray-800">
+                    <i class="fas fa-th text-blue-600 mr-2"></i>
+                    Complete Module Suite
+                </h2>
+                <span class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold">
+                    17 Fully Integrated Systems
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <div onclick="launchModule('project-planning-complete.html')" class="module-card bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3 text-center hover:border-blue-400">
+                    <i class="fas fa-tasks text-blue-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Project Planning</div>
+                </div>
+                
+                <div onclick="launchModule('resource-management-complete.html')" class="module-card bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-3 text-center hover:border-green-400">
+                    <i class="fas fa-users text-green-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Resource Mgmt</div>
+                </div>
+                
+                <div onclick="launchModule('time-tracking-complete.html')" class="module-card bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-3 text-center hover:border-purple-400">
+                    <i class="fas fa-clock text-purple-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Time Tracking</div>
+                </div>
+                
+                <div onclick="launchModule('collaboration-complete.html')" class="module-card bg-gradient-to-br from-pink-50 to-pink-100 border border-pink-200 rounded-lg p-3 text-center hover:border-pink-400">
+                    <i class="fas fa-comments text-pink-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Collaboration</div>
+                </div>
+                
+                <div onclick="launchModule('risk-management-complete.html')" class="module-card bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-3 text-center hover:border-red-400">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Risk Management</div>
+                </div>
+                
+                <div onclick="launchModule('budget-tracking-complete.html')" class="module-card bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-3 text-center hover:border-yellow-400">
+                    <i class="fas fa-dollar-sign text-yellow-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Budget Tracking</div>
+                </div>
+                
+                <div onclick="launchModule('reports-analytics-complete.html')" class="module-card bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-3 text-center hover:border-indigo-400">
+                    <i class="fas fa-chart-bar text-indigo-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Reports & Analytics</div>
+                </div>
+                
+                <div onclick="launchModule('dashboards-complete.html')" class="module-card bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-lg p-3 text-center hover:border-teal-400">
+                    <i class="fas fa-tachometer-alt text-teal-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Executive Dashboards</div>
+                </div>
+                
+                <div onclick="launchModule('integrations-complete.html')" class="module-card bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-3 text-center hover:border-orange-400">
+                    <i class="fas fa-plug text-orange-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Integrations</div>
+                </div>
+                
+                <div onclick="launchModule('portfolio-management-complete.html')" class="module-card bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-lg p-3 text-center hover:border-cyan-400">
+                    <i class="fas fa-briefcase text-cyan-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Portfolio Mgmt</div>
+                </div>
+                
+                <div onclick="launchModule('workflow-automation-complete.html')" class="module-card bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-3 text-center hover:border-gray-400">
+                    <i class="fas fa-robot text-gray-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Workflow Automation</div>
+                </div>
+                
+                <div onclick="launchModule('document-management-complete.html')" class="module-card bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3 text-center hover:border-blue-400">
+                    <i class="fas fa-file-alt text-blue-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Document Management</div>
+                </div>
+                
+                <div onclick="launchModule('scenario-planning-complete.html')" class="module-card bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-3 text-center hover:border-green-400">
+                    <i class="fas fa-route text-green-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Scenario Planning</div>
+                </div>
+                
+                <div onclick="launchModule('goals-alignment-complete.html')" class="module-card bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-3 text-center hover:border-purple-400">
+                    <i class="fas fa-bullseye text-purple-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Goals & Alignment</div>
+                </div>
+                
+                <div onclick="launchModule('roadmap-view-complete.html')" class="module-card bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-3 text-center hover:border-red-400">
+                    <i class="fas fa-map text-red-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Roadmap View</div>
+                </div>
+                
+                <div onclick="launchModule('portfolio-designer-complete.html')" class="module-card bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-3 text-center hover:border-yellow-400">
+                    <i class="fas fa-paint-brush text-yellow-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Portfolio Designer</div>
+                </div>
+                
+                <div onclick="launchModule('board-view-complete.html')" class="module-card bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-3 text-center hover:border-indigo-400">
+                    <i class="fas fa-th text-indigo-600 text-xl mb-1"></i>
+                    <div class="text-xs font-bold text-gray-800">Board View</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="glass-effect rounded-2xl p-8 max-w-md text-center">
+            <i class="fas fa-rocket text-6xl text-purple-600 mb-4 floating-animation"></i>
+            <h3 class="text-2xl font-bold mb-2">🚀 Launching World-Class Experience!</h3>
+            <p class="text-gray-600 mb-4">Your Enterprise Platform is initializing...</p>
+            <div class="flex justify-center space-x-2 mb-4">
+                <div class="w-3 h-3 bg-purple-600 rounded-full animate-bounce"></div>
+                <div class="w-3 h-3 bg-purple-600 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                <div class="w-3 h-3 bg-purple-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            </div>
+            <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg">
+                <i class="fas fa-check-circle mr-2"></i>Enterprise Systems Ready
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base URL
+        const BASE_URL = 'https://8081-81b692f1-20ea-4395-a03a-59557290c58d.proxy.daytona.works';
+
+        // Animated Counter
+        function animateCounter() {
+            const counters = document.querySelectorAll('.counter');
+            counters.forEach(counter => {
+                const target = parseInt(counter.dataset.target);
+                const increment = target / 100;
+                let current = 0;
+                
+                const updateCounter = () => {
+                    current += increment;
+                    if (current < target) {
+                        counter.textContent = counter.dataset.target.startsWith('$') ? 
+                            '$' + Math.floor(current).toLocaleString() : Math.floor(current);
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.textContent = counter.dataset.target.startsWith('$') ? 
+                            '$' + target.toLocaleString() : target;
+                    }
+                };
+                updateCounter();
+            });
+        }
+
+        // Launch Functions
+        function showSuccessModal() {
+            const modal = document.getElementById('successModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 2500);
+        }
+
+        function launchPortfolioIntelligence() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/portfolio-dashboard.html`, '_blank'), 1500);
+        }
+
+        function launchProgrammeCommand() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/programme-dashboard.html?programme=digital-transformation`, '_blank'), 1500);
+        }
+
+        function launchProjectHub() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/project-modules-hub.html`, '_blank'), 1500);
+        }
+
+        function launchEnhancedGantt() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/interactive-gantt-enhanced.html`, '_blank'), 1500);
+        }
+
+        function launchRAIDIntelligence() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/raid-heat-map-intelligence.html`, '_blank'), 1500);
+        }
+
+        function launchPredictiveAnalytics() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/predictive-analytics-engine.html`, '_blank'), 1500);
+        }
+
+        function launchScenarioPlanning() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/scenario-planning-ai.html`, '_blank'), 1500);
+        }
+
+        function launchResourceOptimization() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/resource-optimization-ai.html`, '_blank'), 1500);
+        }
+
+        function launchExecutiveAI() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/executive-recommendations-ai.html`, '_blank'), 1500);
+        }
+
+        function launchCollaborationHub() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/real-time-collaboration-hub.html`, '_blank'), 1500);
+        }
+
+        function launchMeetingAutomation() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/smart-meeting-automation.html`, '_blank'), 1500);
+        }
+
+        function launchVideoConference() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/video-conference-integration.html`, '_blank'), 1500);
+        }
+
+        function launchDocumentEditor() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/collaborative-document-editor.html`, '_blank'), 1500);
+        }
+
+        function launchModule(module) {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/${module}`, '_blank'), 1500);
+        }
+
+        function openUnifiedDashboard() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/portfolio-dashboard.html`, '_blank'), 1500);
+        }
+
+        function openAllProjects() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/project-modules-hub.html`, '_blank'), 1500);
+        }
+
+        function openIntelligenceHub() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/predictive-analytics-engine.html`, '_blank'), 1500);
+        }
+
+        function openCollaborationCenter() {
+            showSuccessModal();
+            setTimeout(() => window.open(`${BASE_URL}/real-time-collaboration-hub.html`, '_blank'), 1500);
+        }
+
+        function launchWorldClassExperience() {
+            showSuccessModal();
+            
+            // Launch multiple key systems
+            const systems = [
+                'portfolio-dashboard.html',
+                'programme-dashboard.html',
+                'interactive-gantt-enhanced.html',
+                'raid-heat-map-intelligence.html',
+                'predictive-analytics-engine.html'
+            ];
+            
+            systems.forEach((system, index) => {
+                setTimeout(() => {
+                    window.open(`${BASE_URL}/${system}`, '_blank');
+                }, index * 500);
+            });
+        }
+
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', function() {
+            animateCounter();
+            
+            // Add entrance animations to cards
+            const cards = document.querySelectorAll('.module-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Management - Core Module</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .risk-card {
+            transition: all 0.3s;
+        }
+        .risk-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .risk-matrix {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .risk-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .risk-cell:hover {
+            transform: scale(1.05);
+        }
+        .risk-low { background: #d1fae5; color: #065f46; }
+        .risk-medium { background: #fef3c7; color: #92400e; }
+        .risk-high { background: #fee2e2; color: #991b1b; }
+        .risk-critical { background: #991b1b; color: white; }
+        .slide-panel {
+            position: fixed;
+            right: -600px;
+            top: 0;
+            width: 600px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.3);
+            transition: right 0.3s ease-out;
+            z-index: 999;
+            overflow-y: auto;
+        }
+        .slide-panel.active {
+            right: 0;
+        }
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Risk Details Panel -->
+    <div id="riskPanel" class="slide-panel">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Risk Details</h3>
+                <button onclick="closeRiskPanel()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="riskForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Risk Title</label>
+                    <input type="text" id="riskTitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <select id="riskCategory" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option>Technical</option>
+                        <option>Financial</option>
+                        <option>Operational</option>
+                        <option>Strategic</option>
+                        <option>Compliance</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Probability</label>
+                        <select id="riskProbability" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="1">Low (1)</option>
+                            <option value="2">Medium (2)</option>
+                            <option value="3">High (3)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Impact</label>
+                        <select id="riskImpact" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="1">Low (1)</option>
+                            <option value="2">Medium (2)</option>
+                            <option value="3">High (3)</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="riskDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mitigation Strategy</label>
+                    <textarea id="riskMitigation" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Owner</label>
+                    <select id="riskOwner" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option>Sarah Johnson</option>
+                        <option>Michael Chen</option>
+                        <option>Emily Rodriguez</option>
+                        <option>David Kim</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select id="riskStatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option>Open</option>
+                        <option>In Progress</option>
+                        <option>Mitigated</option>
+                        <option>Closed</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                    <i class="fas fa-save mr-2"></i>Save Risk
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold flex items-center">
+                        <i class="fas fa-exclamation-triangle mr-3"></i>
+                        Risk Management - Core Module
+                    </h1>
+                    <p class="text-purple-100 mt-2">AI-powered risk prediction with 87% accuracy & 60-day advance warning</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="openRiskPanel()" class="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-plus mr-2"></i>Add Risk
+                    </button>
+                    <button class="bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <i class="fas fa-download mr-2"></i>Export Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-exclamation-circle text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">Critical</span>
+                </div>
+                <p class="text-red-100 text-sm font-medium">High Risks</p>
+                <p class="text-3xl font-bold mt-2">8</p>
+            </div>
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-exclamation-triangle text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">Warning</span>
+                </div>
+                <p class="text-orange-100 text-sm font-medium">Medium Risks</p>
+                <p class="text-3xl font-bold mt-2">15</p>
+            </div>
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-check-circle text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">Safe</span>
+                </div>
+                <p class="text-green-100 text-sm font-medium">Low Risks</p>
+                <p class="text-3xl font-bold mt-2">12</p>
+            </div>
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-full p-3">
+                        <i class="fas fa-robot text-2xl"></i>
+                    </div>
+                    <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded-full">AI</span>
+                </div>
+                <p class="text-purple-100 text-sm font-medium">AI Accuracy</p>
+                <p class="text-3xl font-bold mt-2">87%</p>
+            </div>
+        </div>
+
+        <!-- Risk Matrix -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">Risk Matrix (3x3)</h3>
+                    <p class="text-sm text-gray-500 mt-1">Click on cells to view risks in that category</p>
+                </div>
+                <div class="flex gap-4 text-sm">
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 rounded risk-low"></div>
+                        <span>Low (1-2)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 rounded risk-medium"></div>
+                        <span>Medium (3-4)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 rounded risk-high"></div>
+                        <span>High (6)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 rounded risk-critical"></div>
+                        <span>Critical (9)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-4 gap-4">
+                <div class="text-center font-semibold text-gray-700"></div>
+                <div class="text-center font-semibold text-gray-700">Low Impact</div>
+                <div class="text-center font-semibold text-gray-700">Medium Impact</div>
+                <div class="text-center font-semibold text-gray-700">High Impact</div>
+                
+                <div class="text-right font-semibold text-gray-700 flex items-center justify-end">High Probability</div>
+                <div class="risk-cell risk-medium">3 risks</div>
+                <div class="risk-cell risk-high">5 risks</div>
+                <div class="risk-cell risk-critical">3 risks</div>
+                
+                <div class="text-right font-semibold text-gray-700 flex items-center justify-end">Medium Probability</div>
+                <div class="risk-cell risk-low">4 risks</div>
+                <div class="risk-cell risk-medium">8 risks</div>
+                <div class="risk-cell risk-high">5 risks</div>
+                
+                <div class="text-right font-semibold text-gray-700 flex items-center justify-end">Low Probability</div>
+                <div class="risk-cell risk-low">6 risks</div>
+                <div class="risk-cell risk-low">2 risks</div>
+                <div class="risk-cell risk-medium">2 risks</div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Risk Trend (Last 6 Months)</h3>
+                <div class="chart-container">
+                    <canvas id="riskTrendChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Risk by Category</h3>
+                <div class="chart-container">
+                    <canvas id="riskCategoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Risks List -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Active Risks (35)</h3>
+                <div class="flex gap-3">
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option>All Categories</option>
+                        <option>Technical</option>
+                        <option>Financial</option>
+                        <option>Operational</option>
+                    </select>
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option>All Severities</option>
+                        <option>Critical</option>
+                        <option>High</option>
+                        <option>Medium</option>
+                        <option>Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Risk Card 1 -->
+                <div class="risk-card border-l-4 border-red-500 bg-red-50 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h4 class="font-bold text-gray-800 text-lg">Database Performance Degradation</h4>
+                                <span class="bg-red-500 text-white text-xs px-3 py-1 rounded-full font-semibold">CRITICAL</span>
+                                <span class="bg-purple-100 text-purple-700 text-xs px-3 py-1 rounded-full font-semibold">
+                                    <i class="fas fa-robot mr-1"></i>AI Detected
+                                </span>
+                            </div>
+                            <p class="text-gray-600 mb-3">Query response times increasing by 40% over past 2 weeks. Risk of system downtime if not addressed.</p>
+                            <div class="grid grid-cols-4 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Category:</span>
+                                    <span class="font-semibold text-gray-800 ml-2">Technical</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Probability:</span>
+                                    <span class="font-semibold text-red-600 ml-2">High (3)</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Impact:</span>
+                                    <span class="font-semibold text-red-600 ml-2">High (3)</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Score:</span>
+                                    <span class="font-semibold text-red-600 ml-2">9</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="text-purple-600 hover:text-purple-700 p-2">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-gray-600 hover:text-gray-800 p-2">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-red-200">
+                        <div class="flex items-center gap-3">
+                            <img src="https://i.pravatar.cc/32?img=33" alt="Owner" class="w-8 h-8 rounded-full">
+                            <div>
+                                <div class="text-sm font-semibold text-gray-800">Michael Chen</div>
+                                <div class="text-xs text-gray-500">Updated 2 hours ago</div>
+                            </div>
+                        </div>
+                        <button class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700 transition-all">
+                            <i class="fas fa-shield-alt mr-1"></i>View Mitigation
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Risk Card 2 -->
+                <div class="risk-card border-l-4 border-orange-500 bg-orange-50 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h4 class="font-bold text-gray-800 text-lg">Budget Overrun - Q1 Projects</h4>
+                                <span class="bg-orange-500 text-white text-xs px-3 py-1 rounded-full font-semibold">HIGH</span>
+                            </div>
+                            <p class="text-gray-600 mb-3">Three major projects tracking 15-20% over budget. Potential impact on Q2 funding allocation.</p>
+                            <div class="grid grid-cols-4 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Category:</span>
+                                    <span class="font-semibold text-gray-800 ml-2">Financial</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Probability:</span>
+                                    <span class="font-semibold text-orange-600 ml-2">High (3)</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Impact:</span>
+                                    <span class="font-semibold text-orange-600 ml-2">Medium (2)</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Score:</span>
+                                    <span class="font-semibold text-orange-600 ml-2">6</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="text-purple-600 hover:text-purple-700 p-2">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-gray-600 hover:text-gray-800 p-2">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-orange-200">
+                        <div class="flex items-center gap-3">
+                            <img src="https://i.pravatar.cc/32?img=12" alt="Owner" class="w-8 h-8 rounded-full">
+                            <div>
+                                <div class="text-sm font-semibold text-gray-800">Sarah Johnson</div>
+                                <div class="text-xs text-gray-500">Updated 5 hours ago</div>
+                            </div>
+                        </div>
+                        <button class="bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-orange-700 transition-all">
+                            <i class="fas fa-shield-alt mr-1"></i>View Mitigation
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Risk Card 3 -->
+                <div class="risk-card border-l-4 border-yellow-500 bg-yellow-50 rounded-lg p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h4 class="font-bold text-gray-800 text-lg">Key Resource Availability</h4>
+                                <span class="bg-yellow-500 text-white text-xs px-3 py-1 rounded-full font-semibold">MEDIUM</span>
+                            </div>
+                            <p class="text-gray-600 mb-3">Senior developer planning extended leave during critical project phase. Need backup resource identified.</p>
+                            <div class="grid grid-cols-4 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Category:</span>
+                                    <span class="font-semibold text-gray-800 ml-2">Operational</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Probability:</span>
+                                    <span class="font-semibold text-yellow-600 ml-2">Medium (2)</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Impact:</span>
+                                    <span class="font-semibold text-yellow-600 ml-2">Medium (2)</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Score:</span>
+                                    <span class="font-semibold text-yellow-600 ml-2">4</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="text-purple-600 hover:text-purple-700 p-2">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-gray-600 hover:text-gray-800 p-2">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-yellow-200">
+                        <div class="flex items-center gap-3">
+                            <img src="https://i.pravatar.cc/32?img=45" alt="Owner" class="w-8 h-8 rounded-full">
+                            <div>
+                                <div class="text-sm font-semibold text-gray-800">Emily Rodriguez</div>
+                                <div class="text-xs text-gray-500">Updated 1 day ago</div>
+                            </div>
+                        </div>
+                        <button class="bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-700 transition-all">
+                            <i class="fas fa-shield-alt mr-1"></i>View Mitigation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toast notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-check-circle text-2xl"></i>
+                    <span class="font-semibold">${message}</span>
+                </div>
+            `;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Risk panel functions
+        function openRiskPanel() {
+            document.getElementById('riskPanel').classList.add('active');
+        }
+
+        function closeRiskPanel() {
+            document.getElementById('riskPanel').classList.remove('active');
+        }
+
+        document.getElementById('riskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showToast('Risk saved successfully');
+            closeRiskPanel();
+        });
+
+        // Risk Trend Chart
+        const trendCtx = document.getElementById('riskTrendChart').getContext('2d');
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [
+                    {
+                        label: 'High Risks',
+                        data: [5, 6, 7, 9, 8, 8],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Medium Risks',
+                        data: [12, 14, 13, 16, 15, 15],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Low Risks',
+                        data: [8, 10, 11, 12, 12, 12],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Risk Category Chart
+        const categoryCtx = document.getElementById('riskCategoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Technical', 'Financial', 'Operational', 'Strategic', 'Compliance'],
+                datasets: [{
+                    data: [12, 8, 7, 5, 3],
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showToast('Risk Management module loaded successfully');
+        });
+    </script>
+</body>
+</html>

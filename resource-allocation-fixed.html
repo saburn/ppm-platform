@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Management - AI PPM Pro Enterprise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .glass-morphism { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .chart-container { position: relative; height: 250px; width: 100%; }
+        .sidebar { width: 280px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+        .nav-item { padding: 12px 20px; color: white; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.1); padding-left: 28px; }
+        .nav-item.active { background: rgba(255, 255, 255, 0.2); border-left: 4px solid #4ade80; }
+        .resource-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; }
+        .resource-card:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; }
+        .modal-content { background: white; border-radius: 16px; padding: 30px; max-width: 900px; margin: 50px auto; max-height: 80vh; overflow-y: auto; }
+        .heatmap-cell { width: 40px; height: 40px; border: 1px solid #e5e7eb; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 11px; }
+        .heatmap-cell:hover { transform: scale(1.2); z-index: 10; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+        .utilization-low { background: #10b981; }
+        .utilization-medium { background: #f59e0b; }
+        .utilization-high { background: #ef4444; }
+        .utilization-critical { background: #7c3aed; }
+        .ai-insight { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin: 20px 0; }
+        .action-button { padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; border: none; }
+        .action-button:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; }
+        .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .btn-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .btn-danger { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+        .btn-purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; }
+        .approval-card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 4px solid #3b82f6; }
+        .timeline-item { position: relative; padding-left: 30px; margin-bottom: 20px; }
+        .timeline-item::before { content: ''; position: absolute; left: 0; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #3b82f6; }
+        .timeline-item::after { content: ''; position: absolute; left: 5px; top: 17px; width: 2px; height: calc(100% + 10px); background: #e5e7eb; }
+        .timeline-item:last-child::after { display: none; }
+        .skill-tag { padding: 2px 8px; border-radius: 12px; font-size: 11px; background: #e0e7ff; color: #3730a3; }
+        .progress-ring { transform: rotate(-90deg); }
+        .progress-ring-circle { transition: stroke-dashoffset 0.35s; stroke: #4ade80; stroke-width: 4; fill: transparent; }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="flex h-screen">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar fixed left-0 top-0 h-full z-50 overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-white text-xl font-bold">AI PPM Pro</h1>
+                        <p class="text-blue-200 text-xs">Enterprise Edition</p>
+                    </div>
+                </div>
+                
+                <nav class="space-y-2">
+                    <div class="nav-item" onclick="navigateTo('dashboard-beautiful.html')">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Main Dashboard</span>
+                    </div>
+                    <div class="nav-item" onclick="navigateTo('project-management-enterprise.html')">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>Project Management</span>
+                    </div>
+                    <div class="nav-item" onclick="navigateTo('gantt-chart-enterprise.html')">
+                        <i class="fas fa-chart-gantt"></i>
+                        <span>Gantt Charts</span>
+                    </div>
+                    <div class="nav-item active" onclick="navigateTo('resource-allocation-fixed.html')">
+                        <i class="fas fa-users"></i>
+                        <span>Resource Management</span>
+                    </div>
+                    <div class="nav-item" onclick="navigateTo('raid-management-fixed.html')">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>RAID Management</span>
+                    </div>
+                    <div class="nav-item" onclick="navigateTo('automated-reports-enterprise.html')">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Automated Reports</span>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 ml-80">
+            <!-- Header -->
+            <header class="glass-morphism shadow-lg">
+                <div class="px-8 py-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Enterprise Resource Management</h2>
+                            <p class="text-gray-600">AI-powered resource allocation and capacity planning</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <button onclick="openResourceRequest()" class="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all">
+                                <i class="fas fa-user-plus mr-2"></i>Request Resource
+                            </button>
+                            <button onclick="runOptimization()" class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all">
+                                <i class="fas fa-brain mr-2"></i>AI Optimize
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Dashboard -->
+            <div class="p-8">
+                <!-- KPI Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600 text-xl"></i>
+                            </div>
+                            <span class="text-green-600 text-sm font-semibold">+8%</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800">156</div>
+                        <div class="text-gray-600 text-sm">Total Resources</div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                            </div>
+                            <span class="text-yellow-600 text-sm font-semibold">78%</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800">78%</div>
+                        <div class="text-gray-600 text-sm">Utilization Rate</div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-hourglass-half text-orange-600 text-xl"></i>
+                            </div>
+                            <span class="text-red-600 text-sm font-semibold">12</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800">34</div>
+                        <div class="text-gray-600 text-sm">Available Resources</div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
+                            </div>
+                            <span class="text-green-600 text-sm font-semibold">+12%</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800">$45K</div>
+                        <div class="text-gray-600 text-sm">Monthly Savings</div>
+                    </div>
+                </div>
+
+                <!-- Resource Allocation Heatmap & Capacity Planning -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-bold mb-4">Resource Utilization Heatmap</h3>
+                        <p class="text-gray-600 text-sm mb-4">Click on any cell to view detailed resource information</p>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left p-2">Resource</th>
+                                        <th class="text-center p-2">Mon</th>
+                                        <th class="text-center p-2">Tue</th>
+                                        <th class="text-center p-2">Wed</th>
+                                        <th class="text-center p-2">Thu</th>
+                                        <th class="text-center p-2">Fri</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="heatmapTable">
+                                    <!-- Heatmap will be dynamically generated -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-4 flex gap-4 text-xs">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 utilization-low rounded"></div>
+                                <span>Low (0-50%)</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 utilization-medium rounded"></div>
+                                <span>Medium (51-75%)</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 utilization-high rounded"></div>
+                                <span>High (76-90%)</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 utilization-critical rounded"></div>
+                                <span>Critical (91-100%)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Capacity Planning -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-bold mb-4">Capacity Planning Forecast</h3>
+                        <div class="chart-container mb-4">
+                            <canvas id="capacityChart"></canvas>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <div class="font-semibold">Predicted Shortage</div>
+                                <div class="text-xl font-bold text-red-600">8 Resources</div>
+                                <div class="text-gray-600">Next Month</div>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <div class="font-semibold">Hiring Recommendation</div>
+                                <div class="text-xl font-bold text-blue-600">5 Positions</div>
+                                <div class="text-gray-600">Q2 2024</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Insights -->
+                <div class="ai-insight rounded-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold">
+                            <i class="fas fa-brain mr-2"></i>AI Resource Intelligence
+                        </h3>
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-sm">94% Accuracy</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <h4 class="font-semibold mb-2">⚠️ Capacity Alerts</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li>• DevOps team at 95% capacity - critical overload risk</li>
+                                <li>• UX design shortage predicted in 3 weeks</li>
+                                <li>• 3 senior developers approaching burnout threshold</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2">💰 Optimization Opportunities</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li>• $45K savings through cross-training</li>
+                                <li>• 23% efficiency gain with rebalancing</li>
+                                <li>• Reduce contractor usage by 40%</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2">🎯 AI Recommendations</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li>• Reallocate 2 devs from Project B to A</li>
+                                <li>• Hire 2 senior cloud architects</li>
+                                <li>• Implement skill rotation program</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Approvals & Resource Requests -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                    <!-- Pending Approvals -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold">Pending Approvals</h3>
+                            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">5 New</span>
+                        </div>
+                        <div id="approvalsList">
+                            <!-- Approvals will be dynamically loaded -->
+                        </div>
+                    </div>
+
+                    <!-- Resource Requests -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold">Recent Requests</h3>
+                            <button onclick="viewAllRequests()" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                View All →
+                            </button>
+                        </div>
+                        <div id="requestsList">
+                            <!-- Requests will be dynamically loaded -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Performance Analytics -->
+                <div class="mt-8 bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-bold mb-6">Team Performance Analytics</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div>
+                            <h4 class="font-semibold mb-3">Top Performers</h4>
+                            <div class="space-y-3" id="topPerformers">
+                                <!-- Top performers will be loaded here -->
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-3">Skills Gap Analysis</h4>
+                            <div class="chart-container">
+                                <canvas id="skillsGapChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-3">Burnout Risk Analysis</h4>
+                            <div class="space-y-3" id="burnoutRisks">
+                                <!-- Burnout risks will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Details Modal -->
+    <div id="resourceDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold" id="resourceModalTitle">Resource Details</h2>
+                <button onclick="closeResourceModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-semibold mb-3">Resource Information</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <p id="resourceName" class="text-gray-600">Resource name here...</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                            <p id="resourceRole" class="text-gray-600">Role here...</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                            <p id="resourceDepartment" class="text-gray-600">Department here...</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Skills</label>
+                            <div id="resourceSkills" class="flex flex-wrap gap-2">
+                                <!-- Skills will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold mb-3">Performance Metrics</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Current Utilization</span>
+                                <span id="resourceUtilization">85%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="resourceUtilizationBar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Performance Score</span>
+                                <span id="resourcePerformance">92/100</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Burnout Risk</span>
+                                <span id="resourceBurnout">Low</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-yellow-500 to-orange-600 h-2 rounded-full" style="width: 25%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h4 class="font-semibold mb-2">AI Actions</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="optimizeWorkload()" class="action-button btn-primary">
+                                <i class="fas fa-balance-scale mr-1"></i>Optimize Workload
+                            </button>
+                            <button onclick="suggestTraining()" class="action-button btn-success">
+                                <i class="fas fa-graduation-cap mr-1"></i>Suggest Training
+                            </button>
+                            <button onclick="analyzePerformance()" class="action-button btn-purple">
+                                <i class="fas fa-chart-line mr-1"></i>Analyze Performance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="resourceAIResults" class="mt-6 p-4 bg-blue-50 rounded-lg hidden">
+                <h4 class="font-semibold mb-2">AI Analysis Results</h4>
+                <div id="resourceAIResultsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Request Modal -->
+    <div id="resourceRequestModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">New Resource Request</h2>
+                <button onclick="closeResourceRequestModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form onsubmit="submitResourceRequest(event)">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Request Type</label>
+                        <select id="requestType" class="w-full px-4 py-2 border rounded-lg" required>
+                            <option value="new-hire">New Hire</option>
+                            <option value="contractor">Contractor</option>
+                            <option value="internal-transfer">Internal Transfer</option>
+                            <option value="reallocation">Resource Reallocation</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                        <select id="requestPriority" class="w-full px-4 py-2 border rounded-lg" required>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Role Required</label>
+                        <input type="text" id="requestRole" class="w-full px-4 py-2 border rounded-lg" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                        <input type="text" id="requestDepartment" class="w-full px-4 py-2 border rounded-lg" required>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>
+                        <input type="text" id="requestProject" class="w-full px-4 py-2 border rounded-lg" required>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Justification</label>
+                        <textarea id="requestJustification" rows="4" class="w-full px-4 py-2 border rounded-lg" required></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                        <input type="date" id="requestStartDate" class="w-full px-4 py-2 border rounded-lg" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Duration (months)</label>
+                        <input type="number" id="requestDuration" class="w-full px-4 py-2 border rounded-lg" required>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Required Skills</label>
+                        <input type="text" id="requestSkills" class="w-full px-4 py-2 border rounded-lg" placeholder="e.g., JavaScript, React, AWS">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-4 mt-6">
+                    <button type="button" onclick="closeResourceRequestModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Submit Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample data
+        const resources = [
+            { id: 1, name: 'Sarah Chen', role: 'Senior Developer', department: 'Engineering', utilization: 85, performance: 92, burnoutRisk: 'Low', skills: ['JavaScript', 'React', 'Node.js'] },
+            { id: 2, name: 'Mike Johnson', role: 'DevOps Engineer', department: 'Operations', utilization: 95, performance: 88, burnoutRisk: 'High', skills: ['AWS', 'Docker', 'Kubernetes'] },
+            { id: 3, name: 'Emily Rodriguez', role: 'UX Designer', department: 'Design', utilization: 70, performance: 95, burnoutRisk: 'Low', skills: ['Figma', 'Adobe XD', 'Prototyping'] },
+            { id: 4, name: 'David Kim', role: 'Project Manager', department: 'PMO', utilization: 80, performance: 90, burnoutRisk: 'Medium', skills: ['Agile', 'Scrum', 'JIRA'] },
+            { id: 5, name: 'Lisa Wang', role: 'Data Analyst', department: 'Analytics', utilization: 75, performance: 87, burnoutRisk: 'low', skills: ['Python', 'SQL', 'Tableau'] }
+        ];
+
+        const pendingApprovals = [
+            {
+                id: 1,
+                type: 'new-hire',
+                requestor: 'John Doe',
+                role: 'Senior Cloud Architect',
+                project: 'Digital Transformation',
+                priority: 'high',
+                justification: 'Need expert for cloud migration phase',
+                requestedDate: '2024-02-10',
+                timeline: 'Immediate'
+            },
+            {
+                id: 2,
+                type: 'contractor',
+                requestor: 'Jane Smith',
+                role: 'UI/UX Designer',
+                project: 'Mobile App Development',
+                priority: 'medium',
+                justification: 'Additional design capacity for sprint 3',
+                requestedDate: '2024-02-12',
+                timeline: '3 months'
+            },
+            {
+                id: 3,
+                type: 'reallocation',
+                requestor: 'Mike Johnson',
+                role: 'Backend Developer',
+                project: 'API Integration',
+                priority: 'critical',
+                justification: 'Critical dependency blocked',
+                requestedDate: '2024-02-13',
+                timeline: '2 weeks'
+            }
+        ];
+
+        const recentRequests = [
+            {
+                id: 4,
+                type: 'internal-transfer',
+                requestor: 'Sarah Lee',
+                role: 'QA Engineer',
+                status: 'approved',
+                requestedDate: '2024-02-08',
+                approvedDate: '2024-02-09'
+            },
+            {
+                id: 5,
+                type: 'new-hire',
+                requestor: 'Tom Wilson',
+                role: 'Data Scientist',
+                status: 'pending',
+                requestedDate: '2024-02-11'
+            }
+        ];
+
+        let charts = {};
+        let currentResource = null;
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHeatmap();
+            loadApprovals();
+            loadRequests();
+            loadTopPerformers();
+            loadBurnoutRisks();
+            initializeCharts();
+        });
+
+        function loadHeatmap() {
+            const tbody = document.getElementById('heatmapTable');
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            
+            tbody.innerHTML = resources.slice(0, 6).map(resource => {
+                const utilization = [];
+                for (let i = 0; i < 5; i++) {
+                    const randomUtilization = Math.floor(Math.random() * 40) + 60; // 60-100%
+                    utilization.push(randomUtilization);
+                }
+                
+                return `
+                    <tr>
+                        <td class="p-2 font-medium">${resource.name}</td>
+                        ${utilization.map((util, index) => {
+                            const colorClass = util <= 50 ? 'utilization-low' : 
+                                             util <= 75 ? 'utilization-medium' : 
+                                             util <= 90 ? 'utilization-high' : 'utilization-critical';
+                            return `<td class="p-1 text-center">
+                                <div class="heatmap-cell ${colorClass}" 
+                                     onclick="showResourceDetails(${resource.id}, '${days[index]}', ${util})"
+                                     title="${resource.name} - ${days[index]}: ${util}%">
+                                    ${util}%
+                                </div>
+                            </td>`;
+                        }).join('')}
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function loadApprovals() {
+            const list = document.getElementById('approvalsList');
+            list.innerHTML = pendingApprovals.map(approval => `
+                <div class="approval-card">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h4 class="font-semibold">${approval.role}</h4>
+                            <p class="text-sm text-gray-600">${approval.project}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="status-badge ${
+                                approval.priority === 'critical' ? 'bg-red-100 text-red-800' :
+                                approval.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                                approval.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-green-100 text-green-800'
+                            }">${approval.priority}</span>
+                            <span class="status-badge bg-blue-100 text-blue-800">${approval.type}</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 mb-3">${approval.justification}</p>
+                    
+                    <div class="flex justify-between items-center text-sm">
+                        <div class="text-gray-600">
+                            <i class="fas fa-user mr-1"></i>${approval.requestor} • 
+                            <i class="fas fa-calendar mr-1"></i>${new Date(approval.requestedDate).toLocaleDateString()}
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="approveRequest(${approval.id})" class="action-button btn-success">
+                                <i class="fas fa-check mr-1"></i>Approve
+                            </button>
+                            <button onclick="rejectRequest(${approval.id})" class="action-button btn-danger">
+                                <i class="fas fa-times mr-1"></i>Reject
+                            </button>
+                            <button onclick="modifyRequest(${approval.id})" class="action-button btn-warning">
+                                <i class="fas fa-edit mr-1"></i>Modify
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadRequests() {
+            const list = document.getElementById('requestsList');
+            list.innerHTML = recentRequests.map(request => `
+                <div class="border-l-4 ${
+                    request.status === 'approved' ? 'border-green-500' : 'border-yellow-500'
+                } bg-gray-50 p-4 rounded-r-lg">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold">${request.role}</h4>
+                            <p class="text-sm text-gray-600">Requested by ${request.requestor}</p>
+                        </div>
+                        <span class="status-badge ${
+                            request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                            'bg-yellow-100 text-yellow-800'
+                        }">${request.status}</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-600">
+                        Requested: ${new Date(request.requestedDate).toLocaleDateString()}
+                        ${request.approvedDate ? `• Approved: ${new Date(request.approvedDate).toLocaleDateString()}` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadTopPerformers() {
+            const list = document.getElementById('topPerformers');
+            const topResources = resources.sort((a, b) => b.performance - a.performance).slice(0, 3);
+            
+            list.innerHTML = topResources.map((resource, index) => `
+                <div class="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        ${index + 1}
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-medium text-sm">${resource.name}</div>
+                        <div class="text-xs text-gray-600">${resource.role}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-green-600">${resource.performance}/100</div>
+                        <div class="text-xs text-gray-600">Score</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadBurnoutRisks() {
+            const list = document.getElementById('burnoutRisks');
+            const highRiskResources = resources.filter(r => r.burnoutRisk === 'High' || r.burnoutRisk === 'Medium');
+            
+            if (highRiskResources.length === 0) {
+                list.innerHTML = '<p class="text-gray-600 text-sm">No burnout risks detected</p>';
+                return;
+            }
+            
+            list.innerHTML = highRiskResources.map(resource => `
+                <div class="p-3 ${
+                    resource.burnoutRisk === 'High' ? 'bg-red-50 border border-red-200' : 'bg-yellow-50 border border-yellow-200'
+                } rounded-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="font-medium text-sm">${resource.name}</div>
+                        <span class="text-xs px-2 py-1 rounded ${
+                            resource.burnoutRisk === 'High' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                        }">${resource.burnoutRisk} Risk</span>
+                    </div>
+                    <div class="text-xs text-gray-600 mb-2">
+                        Utilization: ${resource.utilization}% • Performance: ${resource.performance}/100
+                    </div>
+                    <button onclick="suggestBurnoutMitigation(${resource.id})" class="text-xs text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-lightbulb mr-1"></i>AI Suggestion
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function initializeCharts() {
+            // Capacity Chart
+            const capacityCtx = document.getElementById('capacityChart').getContext('2d');
+            charts.capacityChart = new Chart(capacityCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Required Resources',
+                        data: [120, 125, 135, 145, 155, 165],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Available Resources',
+                        data: [140, 138, 142, 140, 138, 140],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Skills Gap Chart
+            const skillsCtx = document.getElementById('skillsGapChart').getContext('2d');
+            charts.skillsGapChart = new Chart(skillsCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Cloud', 'AI/ML', 'Security', 'DevOps', 'Mobile', 'Data'],
+                    datasets: [{
+                        label: 'Current Skills',
+                        data: [8, 4, 6, 7, 5, 6],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 2
+                    }, {
+                        label: 'Required Skills',
+                        data: [9, 8, 8, 8, 7, 8],
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderColor: '#ef4444',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10
+                        }
+                    }
+                }
+            });
+        }
+
+        function showResourceDetails(resourceId, day, utilization) {
+            currentResource = resources.find(r => r.id === resourceId);
+            if (!currentResource) return;
+
+            document.getElementById('resourceModalTitle').textContent = currentResource.name;
+            document.getElementById('resourceName').textContent = currentResource.name;
+            document.getElementById('resourceRole').textContent = currentResource.role;
+            document.getElementById('resourceDepartment').textContent = currentResource.department;
+            
+            const skillsContainer = document.getElementById('resourceSkills');
+            skillsContainer.innerHTML = currentResource.skills.map(skill => 
+                `<span class="skill-tag">${skill}</span>`
+            ).join('');
+            
+            document.getElementById('resourceUtilization').textContent = `${utilization}%`;
+            document.getElementById('resourceUtilizationBar').style.width = `${utilization}%`;
+            document.getElementById('resourcePerformance').textContent = `${currentResource.performance}/100`;
+            document.getElementById('resourceBurnout').textContent = currentResource.burnoutRisk;
+
+            document.getElementById('resourceDetailsModal').style.display = 'block';
+        }
+
+        function closeResourceModal() {
+            document.getElementById('resourceDetailsModal').style.display = 'none';
+            document.getElementById('resourceAIResults').classList.add('hidden');
+        }
+
+        function openResourceRequest() {
+            document.getElementById('resourceRequestModal').style.display = 'block';
+        }
+
+        function closeResourceRequestModal() {
+            document.getElementById('resourceRequestModal').style.display = 'none';
+        }
+
+        function submitResourceRequest(event) {
+            event.preventDefault();
+            
+            const newRequest = {
+                id: recentRequests.length + pendingApprovals.length + 1,
+                type: document.getElementById('requestType').value,
+                requestor: 'Current User',
+                role: document.getElementById('requestRole').value,
+                department: document.getElementById('requestDepartment').value,
+                project: document.getElementById('requestProject').value,
+                priority: document.getElementById('requestPriority').value,
+                justification: document.getElementById('requestJustification').value,
+                startDate: document.getElementById('requestStartDate').value,
+                duration: document.getElementById('requestDuration').value,
+                skills: document.getElementById('requestSkills').value,
+                requestedDate: new Date().toISOString().split('T')[0],
+                status: 'pending'
+            };
+            
+            pendingApprovals.unshift(newRequest);
+            loadApprovals();
+            closeResourceRequestModal();
+            
+            showNotification('Resource request submitted successfully!', 'success');
+        }
+
+        // Action Functions
+        function approveRequest(requestId) {
+            const approval = pendingApprovals.find(a => a.id === requestId);
+            if (approval) {
+                approval.status = 'approved';
+                approval.approvedDate = new Date().toISOString().split('T')[0];
+                recentRequests.unshift(approval);
+                pendingApprovals.splice(pendingApprovals.indexOf(approval), 1);
+                loadApprovals();
+                loadRequests();
+                showNotification('Request approved successfully!', 'success');
+            }
+        }
+
+        function rejectRequest(requestId) {
+            const approval = pendingApprovals.find(a => a.id === requestId);
+            if (approval) {
+                pendingApprovals.splice(pendingApprovals.indexOf(approval), 1);
+                loadApprovals();
+                showNotification('Request rejected', 'info');
+            }
+        }
+
+        function modifyRequest(requestId) {
+            showNotification('Modification form would open here', 'info');
+        }
+
+        function viewAllRequests() {
+            showNotification('Full request history would open here', 'info');
+        }
+
+        function optimizeWorkload() {
+            const results = document.getElementById('resourceAIResults');
+            const content = document.getElementById('resourceAIResultsContent');
+            
+            content.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-balance-scale text-blue-600 mt-1"></i>
+                        <div>
+                            <div class="font-semibold">Workload Optimization Recommendations</div>
+                            <div class="text-sm text-gray-600">Reduce workload by 15% through task redistribution</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <div class="font-medium">Current Load</div>
+                            <div class="text-xl font-bold text-blue-600">45 hours/week</div>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-lg">
+                            <div class="font-medium">Optimized Load</div>
+                            <div class="text-xl font-bold text-green-600">38 hours/week</div>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-50 p-3 rounded-lg">
+                        <div class="font-medium">Suggested Actions</div>
+                        <ul class="text-sm text-gray-600 mt-2">
+                            <li>• Delegate 2 code review tasks to junior developers</li>
+                            <li>• Reschedule non-critical meetings to next week</li>
+                            <li>• Automate routine deployment processes</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            results.classList.remove('hidden');
+            results.className = 'mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200';
+        }
+
+        function suggestTraining() {
+            const results = document.getElementById('resourceAIResults');
+            const content = document.getElementById('resourceAIResultsContent');
+            
+            content.innerHTML = `
+                <div class="space-y-3">
+                    <div class="font-semibold mb-3">AI Training Recommendations</div>
+                    <div class="grid grid-cols-1 gap-3">
+                        <div class="border rounded-lg p-3">
+                            <div class="font-medium">Cloud Architecture Advanced</div>
+                            <div class="text-sm text-gray-600">AWS Solutions Architect Professional</div>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">High Priority</span>
+                                <span class="text-sm text-gray-600">6 weeks duration</span>
+                            </div>
+                        </div>
+                        <div class="border rounded-lg p-3">
+                            <div class="font-medium">AI/ML Fundamentals</div>
+                            <div class="text-sm text-gray-600">Machine Learning Specialization</div>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Medium Priority</span>
+                                <span class="text-sm text-gray-600">12 weeks duration</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 p-3 rounded-lg">
+                        <div class="font-medium">Expected Impact</div>
+                        <div class="text-sm text-gray-600 mt-1">
+                            Performance improvement: +15% • New project eligibility: +3 projects • Salary impact: +12%
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            results.classList.remove('hidden');
+            results.className = 'mt-6 p-4 bg-green-50 rounded-lg border border-green-200';
+        }
+
+        function analyzePerformance() {
+            const results = document.getElementById('resourceAIResults');
+            const content = document.getElementById('resourceAIResultsContent');
+            
+            content.innerHTML = `
+                <div class="space-y-3">
+                    <div class="font-semibold mb-3">Performance Analysis</div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-green-600">92/100</div>
+                            <div class="text-sm text-gray-600">Overall Score</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-600">Top 10%</div>
+                            <div class="text-sm text-gray-600">Team Ranking</div>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm">Code Quality</span>
+                            <div class="flex items-center gap-2">
+                                <div class="w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 95%"></div>
+                                </div>
+                                <span class="text-sm">95%</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm">Delivery Speed</span>
+                            <div class="flex items-center gap-2">
+                                <div class="w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 88%"></div>
+                                </div>
+                                <span class="text-sm">88%</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm">Team Collaboration</span>
+                            <div class="flex items-center gap-2">
+                                <div class="w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-purple-500 h-2 rounded-full" style="width: 92%"></div>
+                                </div>
+                                <span class="text-sm">92%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            results.classList.remove('hidden');
+            results.className = 'mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200';
+        }
+
+        function suggestBurnoutMitigation(resourceId) {
+            const resource = resources.find(r => r.id === resourceId);
+            showNotification(`AI suggests: ${resource.name} should take 2 days off and reduce weekly hours to 40`, 'info');
+        }
+
+        function runOptimization() {
+            showNotification('AI is analyzing resource allocation patterns... This may take a few moments.', 'info');
+            setTimeout(() => {
+                showNotification('Optimization Complete! Found $45K savings and 23% efficiency improvements.', 'success');
+            }, 2000);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full`;
+            
+            if (type === 'success') {
+                notification.className += ' bg-green-500 text-white';
+            } else if (type === 'error') {
+                notification.className += ' bg-red-500 text-white';
+            } else {
+                notification.className += ' bg-blue-500 text-white';
+            }
+            
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+                notification.classList.add('translate-x-0');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const resourceModal = document.getElementById('resourceDetailsModal');
+            const requestModal = document.getElementById('resourceRequestModal');
+            
+            if (event.target === resourceModal) {
+                closeResourceModal();
+            }
+            if (event.target === requestModal) {
+                closeResourceRequestModal();
+            }
+        }
+    </script>
+</body>
+</html>

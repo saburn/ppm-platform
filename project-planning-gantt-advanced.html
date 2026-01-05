@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Interactive Gantt Chart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Gantt Container */
+        .gantt-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .gantt-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+        }
+        
+        .gantt-container {
+            position: relative;
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        
+        .gantt-grid {
+            position: relative;
+            min-width: 2000px;
+            padding: 20px;
+        }
+        
+        /* Timeline Header */
+        .timeline-header {
+            display: flex;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+        
+        .timeline-month {
+            flex: 1;
+            text-align: center;
+            font-weight: 600;
+            color: #1f2937;
+            border-right: 1px solid #e5e7eb;
+        }
+        
+        .timeline-days {
+            display: flex;
+            position: absolute;
+            top: 40px;
+            left: 0;
+            right: 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .timeline-day {
+            flex: 1;
+            text-align: center;
+            font-size: 11px;
+            color: #6b7280;
+            padding: 5px 0;
+            border-right: 1px solid #f3f4f6;
+        }
+        
+        /* Task Rows */
+        .task-row {
+            position: relative;
+            height: 60px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+        }
+        
+        .task-label {
+            position: sticky;
+            left: 0;
+            width: 250px;
+            padding: 10px;
+            background: white;
+            border-right: 2px solid #e5e7eb;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .task-timeline {
+            flex: 1;
+            position: relative;
+            height: 100%;
+        }
+        
+        /* Gantt Bars */
+        .gantt-bar {
+            position: absolute;
+            height: 36px;
+            border-radius: 6px;
+            cursor: move;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 12px;
+            color: white;
+            font-weight: 500;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            top: 12px;
+        }
+        
+        .gantt-bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        
+        .gantt-bar.dragging {
+            opacity: 0.8;
+            cursor: grabbing;
+            z-index: 1000;
+        }
+        
+        .gantt-bar.critical-path {
+            border: 2px solid #fbbf24;
+            box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
+        }
+        
+        /* Resize Handles */
+        .resize-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            cursor: ew-resize;
+            background: rgba(255,255,255,0.3);
+            transition: background 0.2s;
+        }
+        
+        .resize-handle:hover {
+            background: rgba(255,255,255,0.6);
+        }
+        
+        .resize-handle.left {
+            left: 0;
+            border-radius: 6px 0 0 6px;
+        }
+        
+        .resize-handle.right {
+            right: 0;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        /* Effort Badge */
+        .effort-badge {
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            color: #6b7280;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        /* Dependencies */
+        .dependency-line {
+            position: absolute;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .dependency-arrow {
+            stroke: #3b82f6;
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+        
+        /* Today Line */
+        .today-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ef4444;
+            z-index: 2;
+        }
+        
+        .today-marker {
+            position: absolute;
+            top: -20px;
+            left: -30px;
+            background: #ef4444;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        /* Milestones */
+        .milestone {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #8b5cf6;
+            transform: rotate(45deg);
+            top: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .milestone:hover {
+            transform: rotate(45deg) scale(1.2);
+        }
+        
+        /* Grid Lines */
+        .grid-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: #f3f4f6;
+            pointer-events: none;
+        }
+        
+        /* Tooltips */
+        .gantt-tooltip {
+            position: fixed;
+            background: #1f2937;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            max-width: 300px;
+            display: none;
+        }
+        
+        .gantt-tooltip.show {
+            display: block;
+        }
+        
+        /* Resource Panel */
+        .slide-panel {
+            position: fixed;
+            top: 0;
+            right: -600px;
+            width: 600px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 12px rgba(0,0,0,0.15);
+            transition: right 0.3s ease;
+            z-index: 9999;
+            overflow-y: auto;
+        }
+        
+        .slide-panel.open {
+            right: 0;
+        }
+        
+        .slide-panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 9998;
+        }
+        
+        .slide-panel-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 10000;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success { border-left: 4px solid #10b981; }
+        
+        /* Zoom Controls */
+        .zoom-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .zoom-btn {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .zoom-btn:hover {
+            background: #f3f4f6;
+            border-color: #3b82f6;
+        }
+        
+        .zoom-level {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            min-width: 60px;
+            text-align: center;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="bg-gray-50 p-6">
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+    
+    <!-- Tooltip -->
+    <div id="gantt-tooltip" class="gantt-tooltip"></div>
+    
+    <!-- Slide Panel Overlay -->
+    <div id="slide-panel-overlay" class="slide-panel-overlay" onclick="closeResourcePanel()"></div>
+    
+    <!-- Resource Request Panel -->
+    <div id="resource-panel" class="slide-panel">
+        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-users text-white"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Request Resources</h3>
+                    <p class="text-sm text-gray-500" id="resource-task-name">Select a task to request resources</p>
+                </div>
+            </div>
+            <button onclick="closeResourcePanel()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div id="resource-panel-content" class="p-6">
+            <!-- Resource search will be loaded here -->
+        </div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+                <i class="fas fa-chart-gantt text-blue-600"></i>
+                Advanced Interactive Gantt Chart
+                <span class="text-sm font-normal px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full">
+                    Drag & Drop Edition
+                </span>
+            </h1>
+            <p class="text-gray-600">Drag bars to reschedule • Resize to adjust duration • Click for resource request</p>
+        </div>
+        
+        <!-- Controls -->
+        <div class="bg-white rounded-lg shadow-sm p-4 mb-6 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="zoom-controls">
+                    <button class="zoom-btn" onclick="zoomOut()">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <div class="zoom-level" id="zoom-level">100%</div>
+                    <button class="zoom-btn" onclick="zoomIn()">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                </div>
+                <div class="h-6 w-px bg-gray-300"></div>
+                <button class="zoom-btn" onclick="fitToScreen()">
+                    <i class="fas fa-expand"></i> Fit to Screen
+                </button>
+                <button class="zoom-btn" onclick="showCriticalPath()">
+                    <i class="fas fa-route"></i> Critical Path
+                </button>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 text-sm">
+                    <div class="w-3 h-3 bg-blue-500 rounded"></div>
+                    <span class="text-gray-600">In Progress</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                    <div class="w-3 h-3 bg-green-500 rounded"></div>
+                    <span class="text-gray-600">Completed</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                    <div class="w-3 h-3 bg-gray-400 rounded"></div>
+                    <span class="text-gray-600">Not Started</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                    <div class="w-3 h-3 bg-yellow-400 rounded border-2 border-yellow-500"></div>
+                    <span class="text-gray-600">Critical Path</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gantt Chart -->
+        <div class="gantt-wrapper">
+            <div class="gantt-header">
+                <h2 class="text-xl font-semibold mb-1">Project Alpha Timeline</h2>
+                <p class="text-sm opacity-90">January 2024 - March 2024</p>
+            </div>
+            <div class="gantt-container" id="gantt-container">
+                <div class="gantt-grid" id="gantt-grid">
+                    <!-- SVG for dependency lines -->
+                    <svg id="dependency-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#3b82f6" />
+                            </marker>
+                        </defs>
+                    </svg>
+                    
+                    <!-- Timeline Header -->
+                    <div class="timeline-header" id="timeline-header">
+                        <!-- Will be generated by JS -->
+                    </div>
+                    
+                    <!-- Today Line -->
+                    <div class="today-line" id="today-line" style="left: 400px;">
+                        <div class="today-marker">TODAY</div>
+                    </div>
+                    
+                    <!-- Grid Lines -->
+                    <div id="grid-lines">
+                        <!-- Will be generated by JS -->
+                    </div>
+                    
+                    <!-- Task Rows -->
+                    <div id="task-rows">
+                        <!-- Will be generated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Legend -->
+        <div class="mt-6 bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">How to Use</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-arrows-alt text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-900 mb-1">Drag to Reschedule</p>
+                        <p class="text-gray-600">Click and drag any task bar to change its start date</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-arrows-alt-h text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-900 mb-1">Resize Duration</p>
+                        <p class="text-gray-600">Drag the edges of a task bar to adjust its duration</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-user-plus text-purple-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-900 mb-1">Request Resources</p>
+                        <p class="text-gray-600">Click on any task to open the resource request panel</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample Tasks Data
+        const tasks = [
+            { id: 1, name: 'Project Kickoff', start: '2024-01-01', duration: 5, effort: 2, status: 'completed', assignee: 'John Doe', dependencies: [] },
+            { id: 2, name: 'Requirements Gathering', start: '2024-01-06', duration: 10, effort: 7, status: 'completed', assignee: 'Jane Smith', dependencies: [1] },
+            { id: 3, name: 'Design Phase', start: '2024-01-16', duration: 15, effort: 10, status: 'in-progress', assignee: 'Mike Johnson', dependencies: [2] },
+            { id: 4, name: 'Development Sprint 1', start: '2024-02-01', duration: 14, effort: 12, status: 'in-progress', assignee: 'Sarah Williams', dependencies: [3] },
+            { id: 5, name: 'Testing Phase', start: '2024-02-15', duration: 14, effort: 8, status: 'not-started', assignee: 'Tom Brown', dependencies: [4] },
+            { id: 6, name: 'Documentation', start: '2024-02-01', duration: 20, effort: 5, status: 'in-progress', assignee: 'Emily Davis', dependencies: [3] },
+            { id: 7, name: 'UAT', start: '2024-03-01', duration: 10, effort: 6, status: 'not-started', assignee: 'David Wilson', dependencies: [5] },
+            { id: 8, name: 'Deployment Prep', start: '2024-03-11', duration: 5, effort: 4, status: 'not-started', assignee: 'Lisa Anderson', dependencies: [7] },
+            { id: 9, name: 'Go Live', start: '2024-03-16', duration: 1, effort: 1, status: 'not-started', assignee: 'John Doe', dependencies: [8], milestone: true },
+            { id: 10, name: 'Post-Launch Support', start: '2024-03-17', duration: 15, effort: 8, status: 'not-started', assignee: 'Jane Smith', dependencies: [9] }
+        ];
+
+        let zoomLevel = 1;
+        let draggedTask = null;
+        let resizingTask = null;
+        let resizeDirection = null;
+        let startX = 0;
+        let startLeft = 0;
+        let startWidth = 0;
+        let criticalPathVisible = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderGanttChart();
+            setupEventListeners();
+            showToast('Interactive Gantt Chart loaded! Try dragging tasks.', 'success');
+        });
+
+        // Render Gantt Chart
+        function renderGanttChart() {
+            renderTimelineHeader();
+            renderGridLines();
+            renderTaskRows();
+            renderDependencies();
+            positionTodayLine();
+        }
+
+        // Render Timeline Header
+        function renderTimelineHeader() {
+            const header = document.getElementById('timeline-header');
+            const months = ['January 2024', 'February 2024', 'March 2024'];
+            header.innerHTML = months.map(month => `
+                <div class="timeline-month">${month}</div>
+            `).join('');
+        }
+
+        // Render Grid Lines
+        function renderGridLines() {
+            const container = document.getElementById('grid-lines');
+            const days = 90; // 3 months
+            const dayWidth = 20;
+            
+            let html = '';
+            for (let i = 0; i <= days; i += 7) {
+                html += `<div class="grid-line" style="left: ${250 + i * dayWidth}px;"></div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        // Render Task Rows
+        function renderTaskRows() {
+            const container = document.getElementById('task-rows');
+            const startDate = new Date('2024-01-01');
+            const dayWidth = 20;
+            
+            container.innerHTML = tasks.map((task, index) => {
+                const taskStart = new Date(task.start);
+                const daysFromStart = Math.floor((taskStart - startDate) / (1000 * 60 * 60 * 24));
+                const left = 250 + daysFromStart * dayWidth;
+                const width = task.duration * dayWidth;
+                const color = getTaskColor(task.status);
+                
+                return `
+                    <div class="task-row">
+                        <div class="task-label">
+                            <i class="fas fa-grip-vertical text-gray-400"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">${task.name}</div>
+                                <div class="text-xs text-gray-500">${task.assignee}</div>
+                            </div>
+                        </div>
+                        <div class="task-timeline">
+                            ${task.milestone ? `
+                                <div class="milestone" 
+                                     style="left: ${left}px;"
+                                     data-task-id="${task.id}"
+                                     onmouseenter="showTooltip(event, ${task.id})"
+                                     onmouseleave="hideTooltip()">
+                                </div>
+                            ` : `
+                                <div class="gantt-bar ${criticalPathVisible && isCriticalPath(task.id) ? 'critical-path' : ''}" 
+                                     style="left: ${left}px; width: ${width}px; background: ${color};"
+                                     data-task-id="${task.id}"
+                                     draggable="true"
+                                     onclick="openResourcePanel(${task.id})"
+                                     onmouseenter="showTooltip(event, ${task.id})"
+                                     onmouseleave="hideTooltip()">
+                                    <span class="flex-1">${task.name}</span>
+                                    <span class="text-xs opacity-90">${task.duration}d</span>
+                                    <div class="resize-handle left" data-task-id="${task.id}" data-direction="left"></div>
+                                    <div class="resize-handle right" data-task-id="${task.id}" data-direction="right"></div>
+                                    <div class="effort-badge">
+                                        <i class="fas fa-clock"></i> ${task.effort}d effort
+                                    </div>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Dependencies
+        function renderDependencies() {
+            const svg = document.getElementById('dependency-svg');
+            const startDate = new Date('2024-01-01');
+            const dayWidth = 20;
+            let paths = '';
+            
+            tasks.forEach((task, index) => {
+                if (task.dependencies && task.dependencies.length > 0) {
+                    task.dependencies.forEach(depId => {
+                        const depTask = tasks.find(t => t.id === depId);
+                        if (depTask) {
+                            const depStart = new Date(depTask.start);
+                            const taskStart = new Date(task.start);
+                            const depDays = Math.floor((depStart - startDate) / (1000 * 60 * 60 * 24));
+                            const taskDays = Math.floor((taskStart - startDate) / (1000 * 60 * 60 * 24));
+                            
+                            const x1 = 250 + (depDays + depTask.duration) * dayWidth;
+                            const y1 = tasks.findIndex(t => t.id === depId) * 60 + 42;
+                            const x2 = 250 + taskDays * dayWidth;
+                            const y2 = index * 60 + 42;
+                            
+                            paths += `<path class="dependency-arrow" d="M ${x1} ${y1} L ${x1 + 20} ${y1} L ${x1 + 20} ${y2} L ${x2} ${y2}" />`;
+                        }
+                    });
+                }
+            });
+            
+            svg.innerHTML += paths;
+        }
+
+        // Position Today Line
+        function positionTodayLine() {
+            const today = new Date();
+            const startDate = new Date('2024-01-01');
+            const daysFromStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+            const dayWidth = 20;
+            const left = 250 + daysFromStart * dayWidth;
+            
+            const todayLine = document.getElementById('today-line');
+            todayLine.style.left = left + 'px';
+        }
+
+        // Get Task Color
+        function getTaskColor(status) {
+            const colors = {
+                'completed': '#10b981',
+                'in-progress': '#3b82f6',
+                'not-started': '#9ca3af'
+            };
+            return colors[status] || colors['not-started'];
+        }
+
+        // Check if task is on critical path
+        function isCriticalPath(taskId) {
+            // Simplified critical path detection
+            const criticalTasks = [1, 2, 3, 4, 5, 7, 8, 9];
+            return criticalTasks.includes(taskId);
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            const container = document.getElementById('gantt-grid');
+            
+            // Drag and Drop
+            container.addEventListener('dragstart', handleDragStart);
+            container.addEventListener('dragover', handleDragOver);
+            container.addEventListener('drop', handleDrop);
+            container.addEventListener('dragend', handleDragEnd);
+            
+            // Resize
+            container.addEventListener('mousedown', handleResizeStart);
+            document.addEventListener('mousemove', handleResizeMove);
+            document.addEventListener('mouseup', handleResizeEnd);
+        }
+
+        // Drag Handlers
+        function handleDragStart(e) {
+            if (e.target.classList.contains('gantt-bar')) {
+                draggedTask = e.target;
+                draggedTask.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            }
+        }
+
+        function handleDragOver(e) {
+            if (draggedTask) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            }
+        }
+
+        function handleDrop(e) {
+            if (draggedTask) {
+                e.preventDefault();
+                const rect = document.getElementById('gantt-grid').getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const dayWidth = 20;
+                const newLeft = Math.round((x - 250) / dayWidth) * dayWidth + 250;
+                
+                draggedTask.style.left = newLeft + 'px';
+                
+                const taskId = parseInt(draggedTask.dataset.taskId);
+                const task = tasks.find(t => t.id === taskId);
+                const startDate = new Date('2024-01-01');
+                const newDays = Math.round((newLeft - 250) / dayWidth);
+                const newDate = new Date(startDate);
+                newDate.setDate(newDate.getDate() + newDays);
+                task.start = newDate.toISOString().split('T')[0];
+                
+                renderDependencies();
+                showToast(`Task "${task.name}" rescheduled to ${task.start}`, 'success');
+            }
+        }
+
+        function handleDragEnd(e) {
+            if (draggedTask) {
+                draggedTask.classList.remove('dragging');
+                draggedTask = null;
+            }
+        }
+
+        // Resize Handlers
+        function handleResizeStart(e) {
+            if (e.target.classList.contains('resize-handle')) {
+                e.preventDefault();
+                resizingTask = e.target.parentElement;
+                resizeDirection = e.target.dataset.direction;
+                startX = e.clientX;
+                startLeft = parseInt(resizingTask.style.left);
+                startWidth = parseInt(resizingTask.style.width);
+            }
+        }
+
+        function handleResizeMove(e) {
+            if (resizingTask) {
+                e.preventDefault();
+                const dx = e.clientX - startX;
+                const dayWidth = 20;
+                const days = Math.round(dx / dayWidth);
+                
+                if (resizeDirection === 'right') {
+                    const newWidth = Math.max(dayWidth, startWidth + days * dayWidth);
+                    resizingTask.style.width = newWidth + 'px';
+                } else if (resizeDirection === 'left') {
+                    const newWidth = Math.max(dayWidth, startWidth - days * dayWidth);
+                    const newLeft = startLeft + days * dayWidth;
+                    resizingTask.style.width = newWidth + 'px';
+                    resizingTask.style.left = newLeft + 'px';
+                }
+            }
+        }
+
+        function handleResizeEnd(e) {
+            if (resizingTask) {
+                const taskId = parseInt(resizingTask.dataset.taskId);
+                const task = tasks.find(t => t.id === taskId);
+                const dayWidth = 20;
+                const newDuration = Math.round(parseInt(resizingTask.style.width) / dayWidth);
+                task.duration = newDuration;
+                
+                if (resizeDirection === 'left') {
+                    const startDate = new Date('2024-01-01');
+                    const newDays = Math.round((parseInt(resizingTask.style.left) - 250) / dayWidth);
+                    const newDate = new Date(startDate);
+                    newDate.setDate(newDate.getDate() + newDays);
+                    task.start = newDate.toISOString().split('T')[0];
+                }
+                
+                renderDependencies();
+                showToast(`Task "${task.name}" duration changed to ${newDuration} days`, 'success');
+                
+                resizingTask = null;
+                resizeDirection = null;
+            }
+        }
+
+        // Tooltip
+        function showTooltip(e, taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            const tooltip = document.getElementById('gantt-tooltip');
+            
+            tooltip.innerHTML = `
+                <div class="font-semibold mb-2">${task.name}</div>
+                <div class="space-y-1 text-xs">
+                    <div><strong>Assignee:</strong> ${task.assignee}</div>
+                    <div><strong>Duration:</strong> ${task.duration} days</div>
+                    <div><strong>Effort:</strong> ${task.effort} days</div>
+                    <div><strong>Start:</strong> ${task.start}</div>
+                    <div><strong>Status:</strong> ${task.status}</div>
+                    ${task.dependencies && task.dependencies.length > 0 ? 
+                        `<div><strong>Dependencies:</strong> ${task.dependencies.map(id => tasks.find(t => t.id === id)?.name).join(', ')}</div>` 
+                        : ''}
+                </div>
+            `;
+            
+            tooltip.style.left = e.clientX + 10 + 'px';
+            tooltip.style.top = e.clientY + 10 + 'px';
+            tooltip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            document.getElementById('gantt-tooltip').classList.remove('show');
+        }
+
+        // Resource Panel
+        function openResourcePanel(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            const panel = document.getElementById('resource-panel');
+            const overlay = document.getElementById('slide-panel-overlay');
+            
+            document.getElementById('resource-task-name').textContent = `Requesting resources for: ${task.name}`;
+            
+            const content = document.getElementById('resource-panel-content');
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search by Name or Role</label>
+                        <input type="text" placeholder="e.g., Developer, John Doe..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3">Available Resources</h4>
+                        <div class="space-y-3">
+                            ${generateResourceCards()}
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-4">
+                        <h4 class="font-semibold text-gray-900 mb-3">AI Recommendations</h4>
+                        <div class="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-star text-purple-600 mt-1"></i>
+                                <div class="text-sm">
+                                    <p class="font-medium text-gray-900">Best Match: Alex Chen</p>
+                                    <p class="text-gray-600">92% skill match, 65% available, completed 15 similar tasks</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            overlay.classList.add('show');
+            panel.classList.add('open');
+        }
+
+        function closeResourcePanel() {
+            document.getElementById('resource-panel').classList.remove('open');
+            document.getElementById('slide-panel-overlay').classList.remove('show');
+        }
+
+        function generateResourceCards() {
+            const resources = [
+                { name: 'Alex Chen', role: 'Senior Developer', available: 65, skills: 'React, Node.js, Python', avatar: 'AC' },
+                { name: 'Maria Garcia', role: 'UI/UX Designer', available: 80, skills: 'Figma, Adobe XD, CSS', avatar: 'MG' },
+                { name: 'James Wilson', role: 'QA Engineer', available: 90, skills: 'Selenium, Jest, Cypress', avatar: 'JW' },
+                { name: 'Sophie Turner', role: 'Project Manager', available: 45, skills: 'Agile, Scrum, JIRA', avatar: 'ST' },
+                { name: 'Robert Lee', role: 'DevOps Engineer', available: 70, skills: 'AWS, Docker, K8s', avatar: 'RL' }
+            ];
+
+            return resources.map(r => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                ${r.avatar}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">${r.name}</p>
+                                <p class="text-sm text-gray-600">${r.role}</p>
+                            </div>
+                        </div>
+                        <button onclick="assignResource('${r.name}')" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                            Assign
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="flex-1 bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: ${r.available}%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600">${r.available}%</span>
+                    </div>
+                    <p class="text-xs text-gray-500">${r.skills}</p>
+                </div>
+            `).join('');
+        }
+
+        function assignResource(name) {
+            showToast(`${name} assigned successfully!`, 'success');
+            closeResourcePanel();
+        }
+
+        // Zoom Functions
+        function zoomIn() {
+            zoomLevel = Math.min(2, zoomLevel + 0.25);
+            applyZoom();
+        }
+
+        function zoomOut() {
+            zoomLevel = Math.max(0.5, zoomLevel - 0.25);
+            applyZoom();
+        }
+
+        function fitToScreen() {
+            zoomLevel = 1;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            const grid = document.getElementById('gantt-grid');
+            grid.style.transform = `scale(${zoomLevel})`;
+            grid.style.transformOrigin = 'top left';
+            document.getElementById('zoom-level').textContent = Math.round(zoomLevel * 100) + '%';
+            showToast(`Zoom level: ${Math.round(zoomLevel * 100)}%`, 'info');
+        }
+
+        function showCriticalPath() {
+            criticalPathVisible = !criticalPathVisible;
+            renderTaskRows();
+            renderDependencies();
+            showToast(criticalPathVisible ? 'Critical path highlighted' : 'Critical path hidden', 'info');
+        }
+
+        // Toast
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                info: 'fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <i class="fas ${icons[type]} text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-semibold text-gray-900">${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                    <p class="text-sm text-gray-600">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

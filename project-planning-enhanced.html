@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Project Planning - Full Features</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
+    <style>
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Drag and Drop Styles */
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #f3f4f6;
+        }
+        
+        .sortable-drag {
+            opacity: 1;
+            cursor: move;
+        }
+        
+        .drag-handle {
+            cursor: move;
+            color: #9ca3af;
+        }
+        
+        .drag-handle:hover {
+            color: #6b7280;
+        }
+        
+        /* Task Row Styles */
+        .task-row {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .task-row:hover {
+            background: #f9fafb;
+            transform: translateX(4px);
+        }
+        
+        /* Dependency Line Styles */
+        .dependency-line {
+            position: absolute;
+            height: 2px;
+            background: #8b5cf6;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .dependency-arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 6px solid #8b5cf6;
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+            right: -6px;
+            top: -3px;
+        }
+        
+        /* Milestone Styles */
+        .milestone-marker {
+            width: 20px;
+            height: 20px;
+            background: #f59e0b;
+            transform: rotate(45deg);
+            position: absolute;
+        }
+        
+        /* Form Styles */
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 2000;
+            animation: slideInRight 0.3s ease;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Undo/Redo Buttons */
+        .history-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .history-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Multi-select */
+        .task-row.selected {
+            background: #ede9fe;
+            border-color: #8b5cf6;
+        }
+        
+        /* Gantt Bar Styles */
+        .gantt-bar {
+            cursor: move;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .gantt-bar:hover {
+            filter: brightness(1.1);
+            transform: scaleY(1.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 shadow-lg">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-project-diagram text-3xl"></i>
+                <div>
+                    <h1 class="text-3xl font-bold">Enhanced Project Planning</h1>
+                    <p class="text-purple-100 text-sm">Drag-Drop • Dependencies • Milestones • Import/Export • Undo/Redo</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <!-- Undo/Redo -->
+                <button onclick="undo()" id="undo-btn" class="history-btn px-3 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors" disabled>
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button onclick="redo()" id="redo-btn" class="history-btn px-3 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors" disabled>
+                    <i class="fas fa-redo"></i>
+                </button>
+                
+                <!-- Import/Export -->
+                <button onclick="exportToCSV()" class="px-4 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors font-semibold">
+                    <i class="fas fa-download mr-2"></i>Export CSV
+                </button>
+                <button onclick="document.getElementById('import-file').click()" class="px-4 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors font-semibold">
+                    <i class="fas fa-upload mr-2"></i>Import CSV
+                </button>
+                <input type="file" id="import-file" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
+                
+                <!-- Save -->
+                <button onclick="saveProject()" class="px-4 py-2 bg-white text-purple-600 rounded-lg hover:bg-purple-50 transition-colors font-semibold">
+                    <i class="fas fa-save mr-2"></i>Save
+                </button>
+                
+                <!-- New Project -->
+                <button onclick="openProjectWizard()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold">
+                    <i class="fas fa-plus mr-2"></i>New
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto p-6">
+        
+        <!-- Project Info Bar -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 id="project-name" class="text-2xl font-bold text-gray-800 cursor-pointer hover:text-purple-600" onclick="editProjectName()">
+                        Click to create a project
+                    </h2>
+                    <p id="project-description" class="text-gray-600 mt-1 cursor-pointer hover:text-purple-600" onclick="editProjectDescription()">
+                        Click to add description
+                    </p>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600" id="task-count">0</div>
+                        <div class="text-sm text-gray-600">Tasks</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-orange-600" id="milestone-count">0</div>
+                        <div class="text-sm text-gray-600">Milestones</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600" id="progress-percent">0%</div>
+                        <div class="text-sm text-gray-600">Complete</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600" id="team-size">0</div>
+                        <div class="text-sm text-gray-600">Team</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+            <button onclick="openTaskModal()" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all text-left">
+                <i class="fas fa-plus-circle text-3xl text-purple-600 mb-3"></i>
+                <h3 class="font-bold text-lg">Add Task</h3>
+                <p class="text-gray-600 text-sm">Create new task</p>
+            </button>
+            
+            <button onclick="openMilestoneModal()" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all text-left">
+                <i class="fas fa-flag text-3xl text-orange-600 mb-3"></i>
+                <h3 class="font-bold text-lg">Add Milestone</h3>
+                <p class="text-gray-600 text-sm">Set milestone</p>
+            </button>
+            
+            <button onclick="openDependencyModal()" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all text-left">
+                <i class="fas fa-link text-3xl text-blue-600 mb-3"></i>
+                <h3 class="font-bold text-lg">Dependencies</h3>
+                <p class="text-gray-600 text-sm">Link tasks</p>
+            </button>
+            
+            <button onclick="bulkDelete()" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all text-left">
+                <i class="fas fa-trash-alt text-3xl text-red-600 mb-3"></i>
+                <h3 class="font-bold text-lg">Bulk Delete</h3>
+                <p class="text-gray-600 text-sm">Delete selected</p>
+            </button>
+            
+            <button onclick="exportToExcel()" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all text-left">
+                <i class="fas fa-file-excel text-3xl text-green-600 mb-3"></i>
+                <h3 class="font-bold text-lg">Export Excel</h3>
+                <p class="text-gray-600 text-sm">Download XLSX</p>
+            </button>
+        </div>
+
+        <!-- Task List with Drag & Drop -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-tasks text-purple-600 mr-2"></i>
+                    Task List
+                    <span class="text-sm text-gray-500 font-normal ml-2">(Drag to reorder)</span>
+                </h3>
+                <div class="flex items-center space-x-3">
+                    <button onclick="selectAll()" class="px-3 py-2 text-sm bg-gray-100 rounded-lg hover:bg-gray-200">
+                        <i class="fas fa-check-square mr-1"></i>Select All
+                    </button>
+                    <input type="text" id="task-search" placeholder="Search tasks..." 
+                           class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                           oninput="filterTasks()">
+                    <select id="task-filter" onchange="filterTasks()" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="all">All Tasks</option>
+                        <option value="todo">To Do</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="task-list" class="space-y-2">
+                <div class="text-center py-12 text-gray-400">
+                    <i class="fas fa-inbox text-6xl mb-4"></i>
+                    <p class="text-lg">No tasks yet. Click "Add Task" to get started!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Milestones Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-flag text-orange-600 mr-2"></i>
+                    Milestones
+                </h3>
+                <button onclick="openMilestoneModal()" class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Add Milestone
+                </button>
+            </div>
+            
+            <div id="milestone-list" class="space-y-3">
+                <div class="text-center py-8 text-gray-400">
+                    <i class="fas fa-flag text-4xl mb-3"></i>
+                    <p>No milestones yet. Add your first milestone!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gantt Chart with Dependencies -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-chart-gantt text-purple-600 mr-2"></i>
+                    Gantt Chart with Dependencies
+                </h3>
+                <div class="flex items-center space-x-3">
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="show-dependencies" checked onchange="renderGantt()">
+                        <span class="text-sm">Show Dependencies</span>
+                    </label>
+                    <button onclick="zoomGantt('in')" class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button onclick="zoomGantt('out')" class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="gantt-container" class="overflow-x-auto custom-scrollbar relative" style="height: 500px;">
+                <div class="text-center py-12 text-gray-400">
+                    <i class="fas fa-chart-bar text-6xl mb-4"></i>
+                    <p class="text-lg">Add tasks to see them on the Gantt chart</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Task Modal -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-tasks text-purple-600 mr-2"></i>
+                    <span id="modal-title">Add New Task</span>
+                </h2>
+                <button onclick="closeTaskModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="task-form" onsubmit="saveTask(event)">
+                <input type="hidden" id="task-id">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Task Name *</label>
+                    <input type="text" id="task-name" class="form-input" placeholder="Enter task name" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                    <textarea id="task-description" class="form-input" rows="3" placeholder="Enter task description"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Start Date *</label>
+                        <input type="date" id="task-start" class="form-input" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">End Date *</label>
+                        <input type="date" id="task-end" class="form-input" required>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                        <select id="task-status" class="form-input">
+                            <option value="todo">To Do</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Priority</label>
+                        <select id="task-priority" class="form-input">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Assigned To</label>
+                    <select id="task-assignee" class="form-input">
+                        <option value="">Unassigned</option>
+                        <option value="John Smith">John Smith</option>
+                        <option value="Sarah Johnson">Sarah Johnson</option>
+                        <option value="Mike Wilson">Mike Wilson</option>
+                        <option value="Emily Chen">Emily Chen</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Dependencies (Predecessors)</label>
+                    <select id="task-dependencies" class="form-input" multiple size="4">
+                        <!-- Will be populated dynamically -->
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple tasks</p>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Progress (%)</label>
+                    <input type="range" id="task-progress" class="w-full" min="0" max="100" value="0" 
+                           oninput="document.getElementById('progress-value').textContent = this.value + '%'">
+                    <div class="text-center text-sm text-gray-600 mt-2">
+                        <span id="progress-value">0%</span>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeTaskModal()" class="btn-secondary">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save mr-2"></i>Save Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Milestone Modal -->
+    <div id="milestone-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-flag text-orange-600 mr-2"></i>
+                    <span id="milestone-modal-title">Add Milestone</span>
+                </h2>
+                <button onclick="closeMilestoneModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="milestone-form" onsubmit="saveMilestone(event)">
+                <input type="hidden" id="milestone-id">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Milestone Name *</label>
+                    <input type="text" id="milestone-name" class="form-input" placeholder="Enter milestone name" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                    <textarea id="milestone-description" class="form-input" rows="3" placeholder="Enter description"></textarea>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Target Date *</label>
+                    <input type="date" id="milestone-date" class="form-input" required>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <select id="milestone-status" class="form-input">
+                        <option value="upcoming">Upcoming</option>
+                        <option value="at-risk">At Risk</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeMilestoneModal()" class="btn-secondary">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save mr-2"></i>Save Milestone
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dependency Modal -->
+    <div id="dependency-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-link text-blue-600 mr-2"></i>
+                    Manage Dependencies
+                </h2>
+                <button onclick="closeDependencyModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Select Task</label>
+                <select id="dep-task-select" class="form-input" onchange="updateDependencyList()">
+                    <option value="">Choose a task...</option>
+                </select>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Dependencies (Tasks that must finish first)</label>
+                <select id="dep-predecessor-select" class="form-input" multiple size="6">
+                    <!-- Will be populated dynamically -->
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeDependencyModal()" class="btn-secondary">
+                    Cancel
+                </button>
+                <button onclick="saveDependencies()" class="btn-primary">
+                    <i class="fas fa-save mr-2"></i>Save Dependencies
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('Enhanced Planning JavaScript Loading...');
+        alert('Enhanced Planning JavaScript is loading!');
+        
+        // Global State
+        let projectData = {
+            name: '',
+            description: '',
+            tasks: [],
+            milestones: [],
+            team: []
+        };
+        
+        let history = {
+            past: [],
+            future: []
+        };
+        
+        let currentTaskId = null;
+        let currentMilestoneId = null;
+        let selectedTasks = new Set();
+        let sortable = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProject();
+            updateStats();
+            initializeSortable();
+            
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('task-start').value = today;
+            document.getElementById('task-end').value = today;
+            document.getElementById('milestone-date').value = today;
+        });
+
+        // History Management (Undo/Redo)
+        function saveToHistory() {
+            history.past.push(JSON.stringify(projectData));
+            history.future = []; // Clear redo stack
+            updateHistoryButtons();
+            
+            // Limit history to 50 states
+            if (history.past.length > 50) {
+                history.past.shift();
+            }
+        }
+
+        function undo() {
+            if (history.past.length > 0) {
+                history.future.push(JSON.stringify(projectData));
+                const previousState = history.past.pop();
+                projectData = JSON.parse(previousState);
+                
+                saveProject();
+                renderTasks();
+                renderMilestones();
+                renderGantt();
+                updateStats();
+                updateHistoryButtons();
+                showToast('Undo successful', 'info');
+            }
+        }
+
+        function redo() {
+            if (history.future.length > 0) {
+                history.past.push(JSON.stringify(projectData));
+                const nextState = history.future.pop();
+                projectData = JSON.parse(nextState);
+                
+                saveProject();
+                renderTasks();
+                renderMilestones();
+                renderGantt();
+                updateStats();
+                updateHistoryButtons();
+                showToast('Redo successful', 'info');
+            }
+        }
+
+        function updateHistoryButtons() {
+            document.getElementById('undo-btn').disabled = history.past.length === 0;
+            document.getElementById('redo-btn').disabled = history.future.length === 0;
+        }
+
+        // Drag and Drop Initialization
+        function initializeSortable() {
+            const taskList = document.getElementById('task-list');
+            sortable = new Sortable(taskList, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                onEnd: function(evt) {
+                    // Reorder tasks array
+                    const movedTask = projectData.tasks[evt.oldIndex];
+                    projectData.tasks.splice(evt.oldIndex, 1);
+                    projectData.tasks.splice(evt.newIndex, 0, movedTask);
+                    
+                    saveToHistory();
+                    saveProject();
+                    showToast('Task order updated', 'success');
+                }
+            });
+        }
+
+        // Project Management
+        function loadProject() {
+            const saved = localStorage.getItem('projectDataEnhanced');
+            if (saved) {
+                projectData = JSON.parse(saved);
+                document.getElementById('project-name').textContent = projectData.name || 'Click to create a project';
+                document.getElementById('project-description').textContent = projectData.description || 'Click to add description';
+                renderTasks();
+                renderMilestones();
+                renderGantt();
+                updateStats();
+            }
+        }
+
+        function saveProject() {
+            localStorage.setItem('projectDataEnhanced', JSON.stringify(projectData));
+        }
+
+        function editProjectName() {
+            const newName = prompt('Enter project name:', projectData.name);
+            if (newName !== null && newName.trim()) {
+                saveToHistory();
+                projectData.name = newName.trim();
+                document.getElementById('project-name').textContent = newName.trim();
+                saveProject();
+            }
+        }
+
+        function editProjectDescription() {
+            const newDesc = prompt('Enter project description:', projectData.description);
+            if (newDesc !== null && newDesc.trim()) {
+                saveToHistory();
+                projectData.description = newDesc.trim();
+                document.getElementById('project-description').textContent = newDesc.trim();
+                saveProject();
+            }
+        }
+
+        // Task Modal
+        function openTaskModal(taskId = null) {
+            currentTaskId = taskId;
+            const modal = document.getElementById('task-modal');
+            
+            // Populate dependencies dropdown
+            const depSelect = document.getElementById('task-dependencies');
+            depSelect.innerHTML = projectData.tasks
+                .filter(t => !taskId || t.id !== taskId)
+                .map(t => `<option value="${t.id}">${t.name}</option>`)
+                .join('');
+            
+            if (taskId) {
+                // Edit mode
+                const task = projectData.tasks.find(t => t.id === taskId);
+                if (task) {
+                    document.getElementById('modal-title').textContent = 'Edit Task';
+                    document.getElementById('task-id').value = task.id;
+                    document.getElementById('task-name').value = task.name;
+                    document.getElementById('task-description').value = task.description || '';
+                    document.getElementById('task-start').value = task.start;
+                    document.getElementById('task-end').value = task.end;
+                    document.getElementById('task-status').value = task.status;
+                    document.getElementById('task-priority').value = task.priority;
+                    document.getElementById('task-assignee').value = task.assignee || '';
+                    document.getElementById('task-progress').value = task.progress;
+                    document.getElementById('progress-value').textContent = task.progress + '%';
+                    
+                    // Select dependencies
+                    if (task.dependencies) {
+                        Array.from(depSelect.options).forEach(option => {
+                            option.selected = task.dependencies.includes(parseInt(option.value));
+                        });
+                    }
+                }
+            } else {
+                // Add mode
+                document.getElementById('modal-title').textContent = 'Add New Task';
+                document.getElementById('task-form').reset();
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('task-start').value = today;
+                document.getElementById('task-end').value = today;
+                document.getElementById('progress-value').textContent = '0%';
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('task-modal').classList.remove('active');
+            currentTaskId = null;
+        }
+
+        function saveTask(event) {
+            event.preventDefault();
+            
+            saveToHistory();
+            
+            const depSelect = document.getElementById('task-dependencies');
+            const selectedDeps = Array.from(depSelect.selectedOptions).map(opt => parseInt(opt.value));
+            
+            const task = {
+                id: currentTaskId || Date.now(),
+                name: document.getElementById('task-name').value,
+                description: document.getElementById('task-description').value,
+                start: document.getElementById('task-start').value,
+                end: document.getElementById('task-end').value,
+                status: document.getElementById('task-status').value,
+                priority: document.getElementById('task-priority').value,
+                assignee: document.getElementById('task-assignee').value,
+                progress: parseInt(document.getElementById('task-progress').value),
+                dependencies: selectedDeps
+            };
+            
+            if (currentTaskId) {
+                // Update existing task
+                const index = projectData.tasks.findIndex(t => t.id === currentTaskId);
+                projectData.tasks[index] = task;
+                showToast('Task updated successfully!', 'success');
+            } else {
+                // Add new task
+                projectData.tasks.push(task);
+                showToast('Task added successfully!', 'success');
+            }
+            
+            saveProject();
+            renderTasks();
+            renderGantt();
+            updateStats();
+            closeTaskModal();
+        }
+
+        // Milestone Functions
+        function openMilestoneModal(milestoneId = null) {
+            currentMilestoneId = milestoneId;
+            const modal = document.getElementById('milestone-modal');
+            
+            if (milestoneId) {
+                const milestone = projectData.milestones.find(m => m.id === milestoneId);
+                if (milestone) {
+                    document.getElementById('milestone-modal-title').textContent = 'Edit Milestone';
+                    document.getElementById('milestone-id').value = milestone.id;
+                    document.getElementById('milestone-name').value = milestone.name;
+                    document.getElementById('milestone-description').value = milestone.description || '';
+                    document.getElementById('milestone-date').value = milestone.date;
+                    document.getElementById('milestone-status').value = milestone.status;
+                }
+            } else {
+                document.getElementById('milestone-modal-title').textContent = 'Add Milestone';
+                document.getElementById('milestone-form').reset();
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('milestone-date').value = today;
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeMilestoneModal() {
+            document.getElementById('milestone-modal').classList.remove('active');
+            currentMilestoneId = null;
+        }
+
+        function saveMilestone(event) {
+            event.preventDefault();
+            
+            saveToHistory();
+            
+            const milestone = {
+                id: currentMilestoneId || Date.now(),
+                name: document.getElementById('milestone-name').value,
+                description: document.getElementById('milestone-description').value,
+                date: document.getElementById('milestone-date').value,
+                status: document.getElementById('milestone-status').value
+            };
+            
+            if (currentMilestoneId) {
+                const index = projectData.milestones.findIndex(m => m.id === currentMilestoneId);
+                projectData.milestones[index] = milestone;
+                showToast('Milestone updated successfully!', 'success');
+            } else {
+                projectData.milestones.push(milestone);
+                showToast('Milestone added successfully!', 'success');
+            }
+            
+            saveProject();
+            renderMilestones();
+            renderGantt();
+            updateStats();
+            closeMilestoneModal();
+        }
+
+        function deleteMilestone(milestoneId) {
+            if (confirm('Are you sure you want to delete this milestone?')) {
+                saveToHistory();
+                projectData.milestones = projectData.milestones.filter(m => m.id !== milestoneId);
+                saveProject();
+                renderMilestones();
+                renderGantt();
+                updateStats();
+                showToast('Milestone deleted successfully!', 'success');
+            }
+        }
+
+        // Dependency Modal
+        function openDependencyModal() {
+            const modal = document.getElementById('dependency-modal');
+            const taskSelect = document.getElementById('dep-task-select');
+            
+            taskSelect.innerHTML = '<option value="">Choose a task...</option>' +
+                projectData.tasks.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+            
+            modal.classList.add('active');
+        }
+
+        function closeDependencyModal() {
+            document.getElementById('dependency-modal').classList.remove('active');
+        }
+
+        function updateDependencyList() {
+            const taskId = parseInt(document.getElementById('dep-task-select').value);
+            const predSelect = document.getElementById('dep-predecessor-select');
+            
+            if (!taskId) {
+                predSelect.innerHTML = '';
+                return;
+            }
+            
+            const task = projectData.tasks.find(t => t.id === taskId);
+            predSelect.innerHTML = projectData.tasks
+                .filter(t => t.id !== taskId)
+                .map(t => `<option value="${t.id}" ${task.dependencies && task.dependencies.includes(t.id) ? 'selected' : ''}>${t.name}</option>`)
+                .join('');
+        }
+
+        function saveDependencies() {
+            const taskId = parseInt(document.getElementById('dep-task-select').value);
+            if (!taskId) {
+                showToast('Please select a task', 'error');
+                return;
+            }
+            
+            saveToHistory();
+            
+            const predSelect = document.getElementById('dep-predecessor-select');
+            const selectedDeps = Array.from(predSelect.selectedOptions).map(opt => parseInt(opt.value));
+            
+            const task = projectData.tasks.find(t => t.id === taskId);
+            task.dependencies = selectedDeps;
+            
+            saveProject();
+            renderTasks();
+            renderGantt();
+            closeDependencyModal();
+            showToast('Dependencies updated successfully!', 'success');
+        }
+
+        // Render Tasks
+        function renderTasks() {
+            const container = document.getElementById('task-list');
+            
+            if (projectData.tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-400">
+                        <i class="fas fa-inbox text-6xl mb-4"></i>
+                        <p class="text-lg">No tasks yet. Click "Add Task" to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = projectData.tasks.map((task, index) => {
+                const statusColors = {
+                    'todo': 'bg-gray-100 text-gray-700',
+                    'in-progress': 'bg-blue-100 text-blue-700',
+                    'completed': 'bg-green-100 text-green-700'
+                };
+                
+                const priorityColors = {
+                    'low': 'text-green-600',
+                    'medium': 'text-yellow-600',
+                    'high': 'text-red-600'
+                };
+                
+                const depCount = task.dependencies ? task.dependencies.length : 0;
+                const isSelected = selectedTasks.has(task.id);
+                
+                return `
+                    <div class="task-row p-4 border-2 ${isSelected ? 'border-purple-500 selected' : 'border-gray-200'} rounded-lg flex items-center" 
+                         data-task-id="${task.id}">
+                        <div class="drag-handle mr-3">
+                            <i class="fas fa-grip-vertical text-xl"></i>
+                        </div>
+                        <input type="checkbox" class="mr-3" ${isSelected ? 'checked' : ''} 
+                               onchange="toggleTaskSelection(${task.id})" onclick="event.stopPropagation()">
+                        <div class="flex-1" onclick="openTaskModal(${task.id})">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <h4 class="font-semibold text-gray-800">${task.name}</h4>
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusColors[task.status]}">
+                                    ${task.status.replace('-', ' ')}
+                                </span>
+                                <i class="fas fa-flag ${priorityColors[task.priority]}"></i>
+                                ${depCount > 0 ? `<span class="text-xs text-blue-600"><i class="fas fa-link mr-1"></i>${depCount} deps</span>` : ''}
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span><i class="fas fa-calendar mr-1"></i>${task.start} - ${task.end}</span>
+                                ${task.assignee ? `<span><i class="fas fa-user mr-1"></i>${task.assignee}</span>` : ''}
+                                <span><i class="fas fa-chart-line mr-1"></i>${task.progress}%</span>
+                            </div>
+                            <div class="mt-3 bg-gray-200 rounded-full h-2">
+                                <div class="bg-purple-600 h-2 rounded-full" style="width: ${task.progress}%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 ml-4">
+                            <button onclick="event.stopPropagation(); openTaskModal(${task.id})" 
+                                    class="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="event.stopPropagation(); deleteTask(${task.id})" 
+                                    class="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Milestones
+        function renderMilestones() {
+            const container = document.getElementById('milestone-list');
+            
+            if (projectData.milestones.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fas fa-flag text-4xl mb-3"></i>
+                        <p>No milestones yet. Add your first milestone!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const sorted = projectData.milestones.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            container.innerHTML = sorted.map(milestone => {
+                const statusColors = {
+                    'upcoming': 'bg-blue-100 text-blue-700',
+                    'at-risk': 'bg-yellow-100 text-yellow-700',
+                    'completed': 'bg-green-100 text-green-700'
+                };
+                
+                return `
+                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                        <div class="flex items-center space-x-4">
+                            <div class="milestone-marker"></div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">${milestone.name}</h4>
+                                <p class="text-sm text-gray-600">${milestone.description || 'No description'}</p>
+                                <div class="flex items-center space-x-3 mt-2">
+                                    <span class="text-sm text-gray-600"><i class="fas fa-calendar mr-1"></i>${milestone.date}</span>
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusColors[milestone.status]}">
+                                        ${milestone.status}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="openMilestoneModal(${milestone.id})" 
+                                    class="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteMilestone(${milestone.id})" 
+                                    class="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Gantt Chart with Dependencies
+        function renderGantt() {
+            const container = document.getElementById('gantt-container');
+            
+            if (projectData.tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-400">
+                        <i class="fas fa-chart-bar text-6xl mb-4"></i>
+                        <p class="text-lg">Add tasks to see them on the Gantt chart</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const showDeps = document.getElementById('show-dependencies').checked;
+            const tasks = projectData.tasks.sort((a, b) => new Date(a.start) - new Date(b.start));
+            const milestones = projectData.milestones;
+            
+            const allDates = [
+                ...tasks.map(t => new Date(t.start)),
+                ...tasks.map(t => new Date(t.end)),
+                ...milestones.map(m => new Date(m.date))
+            ];
+            
+            const minDate = new Date(Math.min(...allDates));
+            const maxDate = new Date(Math.max(...allDates));
+            const totalDays = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1;
+            
+            const dayWidth = 40;
+            const rowHeight = 50;
+            
+            let html = `<div style="min-width: ${totalDays * dayWidth + 250}px; position: relative;">`;
+            
+            // Render tasks
+            tasks.forEach((task, index) => {
+                const start = new Date(task.start);
+                const end = new Date(task.end);
+                const startOffset = Math.ceil((start - minDate) / (1000 * 60 * 60 * 24));
+                const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+                
+                const statusColors = {
+                    'todo': '#9ca3af',
+                    'in-progress': '#3b82f6',
+                    'completed': '#10b981'
+                };
+                
+                const top = index * rowHeight + 10;
+                
+                html += `
+                    <div class="flex items-center mb-2" style="height: ${rowHeight}px;">
+                        <div class="w-48 pr-4 text-sm font-medium text-gray-700 truncate">${task.name}</div>
+                        <div class="flex-1 relative" style="height: ${rowHeight}px;">
+                            <div class="gantt-bar absolute rounded cursor-pointer" 
+                                 style="left: ${startOffset * dayWidth}px; width: ${duration * dayWidth}px; height: 30px; background: ${statusColors[task.status]}; top: 10px;"
+                                 onclick="openTaskModal(${task.id})"
+                                 data-task-id="${task.id}">
+                                <div class="text-white text-xs px-2 py-1 truncate">${task.progress}%</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Render milestones
+            milestones.forEach(milestone => {
+                const date = new Date(milestone.date);
+                const offset = Math.ceil((date - minDate) / (1000 * 60 * 60 * 24));
+                
+                html += `
+                    <div class="milestone-marker" 
+                         style="position: absolute; left: ${offset * dayWidth + 250}px; top: ${tasks.length * rowHeight + 20}px;"
+                         title="${milestone.name}">
+                    </div>
+                `;
+            });
+            
+            // Render dependency lines
+            if (showDeps) {
+                tasks.forEach((task, index) => {
+                    if (task.dependencies && task.dependencies.length > 0) {
+                        task.dependencies.forEach(depId => {
+                            const depTask = tasks.find(t => t.id === depId);
+                            if (depTask) {
+                                const depIndex = tasks.indexOf(depTask);
+                                const depEnd = new Date(depTask.end);
+                                const taskStart = new Date(task.start);
+                                
+                                const depEndOffset = Math.ceil((depEnd - minDate) / (1000 * 60 * 60 * 24));
+                                const taskStartOffset = Math.ceil((taskStart - minDate) / (1000 * 60 * 60 * 24));
+                                
+                                const x1 = depEndOffset * dayWidth + 250;
+                                const y1 = depIndex * rowHeight + 25;
+                                const x2 = taskStartOffset * dayWidth + 250;
+                                const y2 = index * rowHeight + 25;
+                                
+                                const width = x2 - x1;
+                                
+                                html += `
+                                    <div class="dependency-line" 
+                                         style="left: ${x1}px; top: ${y1}px; width: ${width}px;">
+                                        <div class="dependency-arrow"></div>
+                                    </div>
+                                `;
+                            }
+                        });
+                    }
+                });
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Delete Task
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                saveToHistory();
+                projectData.tasks = projectData.tasks.filter(t => t.id !== taskId);
+                
+                // Remove dependencies referencing this task
+                projectData.tasks.forEach(task => {
+                    if (task.dependencies) {
+                        task.dependencies = task.dependencies.filter(id => id !== taskId);
+                    }
+                });
+                
+                saveProject();
+                renderTasks();
+                renderGantt();
+                updateStats();
+                showToast('Task deleted successfully!', 'success');
+            }
+        }
+
+        // Selection Functions
+        function toggleTaskSelection(taskId) {
+            if (selectedTasks.has(taskId)) {
+                selectedTasks.delete(taskId);
+            } else {
+                selectedTasks.add(taskId);
+            }
+            renderTasks();
+        }
+
+        function selectAll() {
+            if (selectedTasks.size === projectData.tasks.length) {
+                selectedTasks.clear();
+            } else {
+                projectData.tasks.forEach(task => selectedTasks.add(task.id));
+            }
+            renderTasks();
+        }
+
+        function bulkDelete() {
+            if (selectedTasks.size === 0) {
+                showToast('No tasks selected', 'error');
+                return;
+            }
+            
+            if (confirm(`Delete ${selectedTasks.size} selected task(s)?`)) {
+                saveToHistory();
+                projectData.tasks = projectData.tasks.filter(t => !selectedTasks.has(t.id));
+                selectedTasks.clear();
+                saveProject();
+                renderTasks();
+                renderGantt();
+                updateStats();
+                showToast('Tasks deleted successfully!', 'success');
+            }
+        }
+
+        // Filter Tasks
+        function filterTasks() {
+            const search = document.getElementById('task-search').value.toLowerCase();
+            const filter = document.getElementById('task-filter').value;
+            
+            const rows = document.querySelectorAll('.task-row');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const matchesSearch = text.includes(search);
+                const status = row.querySelector('.px-2')?.textContent.trim().toLowerCase().replace(' ', '-');
+                const matchesFilter = filter === 'all' || status === filter;
+                
+                row.style.display = matchesSearch && matchesFilter ? 'flex' : 'none';
+            });
+        }
+
+        // Update Stats
+        function updateStats() {
+            document.getElementById('task-count').textContent = projectData.tasks.length;
+            document.getElementById('milestone-count').textContent = projectData.milestones.length;
+            
+            const completed = projectData.tasks.filter(t => t.status === 'completed').length;
+            const progress = projectData.tasks.length > 0 
+                ? Math.round((completed / projectData.tasks.length) * 100) 
+                : 0;
+            document.getElementById('progress-percent').textContent = progress + '%';
+            
+            const uniqueAssignees = new Set(projectData.tasks.map(t => t.assignee).filter(a => a));
+            document.getElementById('team-size').textContent = uniqueAssignees.size;
+        }
+
+        // CSV Export
+        function exportToCSV() {
+            if (projectData.tasks.length === 0) {
+                showToast('No tasks to export', 'error');
+                return;
+            }
+            
+            const headers = ['Name', 'Description', 'Start Date', 'End Date', 'Status', 'Priority', 'Assignee', 'Progress'];
+            const rows = projectData.tasks.map(task => [
+                task.name,
+                task.description || '',
+                task.start,
+                task.end,
+                task.status,
+                task.priority,
+                task.assignee || '',
+                task.progress
+            ]);
+            
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csv += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${projectData.name || 'project'}_tasks.csv`;
+            a.click();
+            
+            showToast('CSV exported successfully!', 'success');
+        }
+
+        // CSV Import
+        function importFromCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                const headers = lines[0].split(',');
+                
+                saveToHistory();
+                
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    
+                    const values = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                    if (!values || values.length < 8) continue;
+                    
+                    const task = {
+                        id: Date.now() + i,
+                        name: values[0].replace(/"/g, ''),
+                        description: values[1].replace(/"/g, ''),
+                        start: values[2].replace(/"/g, ''),
+                        end: values[3].replace(/"/g, ''),
+                        status: values[4].replace(/"/g, ''),
+                        priority: values[5].replace(/"/g, ''),
+                        assignee: values[6].replace(/"/g, ''),
+                        progress: parseInt(values[7].replace(/"/g, '')) || 0,
+                        dependencies: []
+                    };
+                    
+                    projectData.tasks.push(task);
+                }
+                
+                saveProject();
+                renderTasks();
+                renderGantt();
+                updateStats();
+                showToast(`Imported ${lines.length - 1} tasks successfully!`, 'success');
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Excel Export
+        function exportToExcel() {
+            showToast('Excel export feature coming soon! Use CSV export for now.', 'info');
+        }
+
+        // Toast Notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            const colors = {
+                'success': 'text-green-600',
+                'error': 'text-red-600',
+                'info': 'text-blue-600'
+            };
+            
+            const icons = {
+                'success': 'fa-check-circle',
+                'error': 'fa-exclamation-circle',
+                'info': 'fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${icons[type]} ${colors[type]} text-xl mr-3"></i>
+                    <span class="font-medium">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // Placeholder functions
+        function openProjectWizard() {
+            showToast('Project wizard coming soon!', 'info');
+        }
+
+        function zoomGantt(direction) {
+            showToast(`Gantt ${direction === 'in' ? 'zoom in' : 'zoom out'} coming soon!', 'info');
+        }
+    </script>
+</body>
+</html>
